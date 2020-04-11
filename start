@@ -1,0 +1,11 @@
+#! /usr/bin/env node
+
+const crawler = require('./src/events/crawler/index.js')
+
+const args = require('./src/cli/args.js')
+
+const { location } = args
+
+if (location) {
+  crawler({location})
+}
