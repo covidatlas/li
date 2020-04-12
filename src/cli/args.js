@@ -1,7 +1,17 @@
 const args = require('yargs')
   .option('location', {
     alias: 'l',
-    description: 'Scrape only the location provided by src/shared/locations path name',
+    description: 'Crawl & scrape the location path name (src/shared/locations)',
+    type: 'string'
+  })
+  .option('crawl', {
+    alias: 'c',
+    description: 'Crawl the location path name (src/shared/locations)',
+    type: 'string'
+  })
+  .option('scrape', {
+    alias: 's',
+    description: 'Scrape the location path name (src/shared/locations)',
     type: 'string'
   })
   .help()

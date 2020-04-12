@@ -1,11 +1,20 @@
 #! /usr/bin/env node
 
 const crawler = require('./src/events/crawler/index.js')
+const scraper = require('./src/events/scraper/index.js')
 
 const args = require('./src/cli/args.js')
+const { location, crawl, scrape } = args
 
-const { location } = args
-
-if (location) {
-  crawler({location})
-}
+;(async () => {
+  if (location) {
+    await crawler({location})
+    await scraper({location})
+  }
+  if (crawl) {
+    await crawler({location: crawl})
+  }
+  if (scrape) {
+    await scraper({location: scrape})
+  }
+})()

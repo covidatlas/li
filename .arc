@@ -11,3 +11,4 @@ get /get/headless
 
 @events
 crawler # Crawls our locations
+scraper # Operates the scrapers
