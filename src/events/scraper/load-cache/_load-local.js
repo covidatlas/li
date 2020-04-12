@@ -3,7 +3,8 @@ const { join } = require('path')
 const sorter = require('./_sorter.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
 
-module.exports = async function loadLocal (scraper, _sourceKey, date, tz) {
+module.exports = async function loadLocal (params) {
+  let { scraper, _sourceKey, date, tz } = params
 
   if (!date) date = new Date().toISOString().substr(0, 10)
 
