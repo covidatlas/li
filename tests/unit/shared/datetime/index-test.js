@@ -5,6 +5,7 @@ const sut = join(process.cwd(), 'src', 'shared', 'datetime', 'index.js')
 const datetime = require(sut)
 
 const {
+  cast,
   today,
   now,
   parse,
@@ -208,4 +209,13 @@ test('scrapeDateIs', t => {
 
   delete process.env.SCRAPE_DATE
   t.end()
+})
+
+test('cast', t => {
+  t.plan(5)
+  t.equal(cast(`2020-04-02T01:23:45.678Z`, 'America/Los_Angeles'), '2020-04-01', 'Returns the day before')
+  t.equal(cast(`2020-04-02T01:23:45.678Z`, 'UTC'), '2020-04-02', 'Returns the same day (UTC)')
+  t.equal(cast(`2020-04-02T01:23:45.678Z`, 'Europe/Rome'), '2020-04-02', 'Returns the same day (IANA name)')
+  t.equal(cast(`2020-04-02T12:34:56.789Z`, 'Pacific/Fiji'), '2020-04-03', 'Returns the day after')
+  t.equal(cast(`2020-04-02T01:23:45.678Z`), '2020-04-01', 'Returns default tz (US / PT)')
 })
