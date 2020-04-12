@@ -26,11 +26,13 @@ module.exports = {
     'no-useless-escape': 'off',
     // Style specific
     'no-trailing-spaces': 'error',
+    // Cleanup on aisle semicolon
+    semi: [2, 'never'],
     // Plugins
     'import/no-unresolved': [2, {commonjs: true, amd: true}]
   },
   ignorePatterns: [
-    "scratch",
-    "node_modules/"
+    'scratch',
+    'node_modules'
   ]
 }
