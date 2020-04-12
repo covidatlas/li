@@ -70,7 +70,7 @@ async function getNormal (req) {
         }
       }
 
-      // 400-499 means "not found", retrying is not likely to help
+      // 400-499 means retrying is not likely to help
       if (status < 500) {
         return {
           statusCode: status

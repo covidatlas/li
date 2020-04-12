@@ -3,9 +3,9 @@ const { join } = require('path')
 const sut = join(process.cwd(), 'src', 'shared', 'locations', '_lib', 'load-locations.js')
 const loadLocations = require(sut)
 
-test('Env', t => {
+test('Set up', t => {
   t.plan(1)
-  t.ok(loadLocations, 'Location loader exists')
+  t.ok(loadLocations, 'loadLocations module exists')
 })
 
 test('Load locations', t => {

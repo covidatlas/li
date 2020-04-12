@@ -9,14 +9,14 @@ module.exports = {
   scrapers: [
     {
       startDate: '2020-03-01',
-      get: [
+      crawl: [
         {
           type: 'page',
           data: 'paragraph',
           url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
         }
       ],
-      async scraper($) {
+      async scrape($) {
         let deaths
         let cases
         const $h2 = $('h2:contains("Cases in San Francisco")')

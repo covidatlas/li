@@ -13,7 +13,16 @@ module.exports = async function crawl (params) {
       ? `http://localhost:${process.env.PORT || 3333}`
       : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
     const path = `${root}/get/${getType}?options=${options}`
-    return await got(path)
+    const result = await got(path)
+
+    if (result.statusCode === 200) {
+      return new Buffer.from(result.body, 'base64')
+    }
+    else {
+      const err = result.body && result.body.error || 'Request failed'
+      throw Error(err)
+    }
+
   }
   catch (err) {
     console.log('Crawler error', err)

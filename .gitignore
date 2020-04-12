@@ -1,5 +1,6 @@
 .DS_Store
+crawler-cache/
 node_modules/
-scratch/
 sam.json
 sam.yaml
+scratch/
