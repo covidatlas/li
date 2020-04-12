@@ -1,25 +1,23 @@
-﻿const { DateTimeFormatter, LocalDate } = require('@js-joda/core')
-require('@js-joda/timezone/dist/js-joda-timezone-10-year-range') // minimize package size by only importing tz data for current year ±5 yrs
+﻿const spacetime = require('spacetime')
 const parse = require('./_parse.js')
 const { today } = require('./_today.js')
 
 /**
- * @param {string} pattern using [SimpleDateFormat](http://js-joda.github.io/js-joda/manual/formatting.html#format-patterns) codes
+ * @param {string} pattern using SimpleDateFormat codes
  * @param {string=} defaultSeparator the separator used in the pattern provided (can be replaced by caller)
  * @returns A formatting function that takes a date and an optional separator, and returns a string
  */
-function buildFormatter (pattern, defaultSeparator = '-') {
+function format (pattern, defaultSeparator='-') {
   /**
    * @param {string|Date} date The date to format. Defaults to the current date.
    * @param {string=} separator The separator to use instead of the default
    * @returns {string} The formatted date
    */
-  const formatterFunction = (date = today.utc(), separator = defaultSeparator) => {
+  const formatterFunction = (date = today.utc(), separator=defaultSeparator) => {
     const separatorRegex = new RegExp(defaultSeparator, 'g')
     const patternWithSeparator = pattern.replace(separatorRegex, separator)
-    const formatter = DateTimeFormatter.ofPattern(patternWithSeparator)
-    const isoDate = parse(date)
-    return LocalDate.parse(isoDate).format(formatter)
+    const s = spacetime(date)
+    return s.unixFmt(patternWithSeparator)
   }
   return formatterFunction
 }
@@ -30,7 +28,7 @@ function buildFormatter (pattern, defaultSeparator = '-') {
  * @returns The formatted date
  */
 function getMonthDYYYY (date = today.utc(), sep = '_') {
-  // not worth bringing in @js-joda/locale_en just for this, so we'll keep this one artisanal
+  // not worth bringing in a locale lib just for this, so we'll keep this one artisanal
   const MONTHS = [
     'January',
     'February',
@@ -52,9 +50,9 @@ function getMonthDYYYY (date = today.utc(), sep = '_') {
 
 module.exports = {
   getMonthDYYYY,
-  getYYYYMMDD: buildFormatter('yyyy-MM-dd'),
-  getYYYYMD: buildFormatter('yyyy-M-d'),
-  getDDMMYYYY: buildFormatter('dd-MM-yyyy'),
-  getMDYYYY: buildFormatter('M/d/yyyy', '/'),
-  getMDYY: buildFormatter('M/d/yy', '/'),
+  getYYYYMMDD: format('yyyy-MM-dd'),
+  getYYYYMD: format('yyyy-M-d'),
+  getDDMMYYYY: format('dd-MM-yyyy'),
+  getMDYYYY: format('M/d/yyyy', '/'),
+  getMDYY: format('M/d/yy', '/'),
 }

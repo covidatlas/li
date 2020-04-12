@@ -1,6 +1,4 @@
-﻿const { LocalDate, ZoneId } = require('@js-joda/core')
-require('@js-joda/timezone/dist/js-joda-timezone-10-year-range') // minimize package size by only importing tz data for current year ±5 yrs
-const { currentZdt } = require('./_utils.js')
+﻿const spacetime = require('spacetime')
 
 const today = {
   /**
@@ -15,8 +13,9 @@ const today = {
    * @returns {string} The current date at the given timezone, in ISO format. Example: `2020-03-16`
    */
   at: function (tz) {
-    const currentZdtThere = currentZdt().withZoneSameInstant(ZoneId.of(tz))
-    return LocalDate.from(currentZdtThere).toString()
+    const s = spacetime(Date.now())
+    const there = s.goto(tz)
+    return there.format('iso-short')
   }
 }
 

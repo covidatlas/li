@@ -1,6 +1,4 @@
-﻿/* eslint-disable import/prefer-default-export */
-const { LocalDate } = require('@js-joda/core')
-require('@js-joda/timezone/dist/js-joda-timezone-10-year-range') // minimize package size by only importing tz data for current year ±5 yrs
+﻿const spacetime = require('spacetime')
 
 const { truncate, normalize } = require('./_utils.js')
 const looksLike = require('./_looks-like.js')
@@ -22,32 +20,37 @@ module.exports = function parse (date) {
 
   // String
   if (typeof date === 'string') {
-    const s = truncate(normalize(date))
+    const str = truncate(normalize(date))
+    const s = spacetime(str)
 
     // ISO date
-    if (looksLike.isoDate(s)) return LocalDate.parse(s).toString()
+    if (looksLike.isoDate(str)) {
+      return s.format('iso-short')
+    }
 
     // YYYY-M-D
-    if (looksLike.YYYYMD(s)) {
-      const [y, m, d] = s.split('-').map(Number) // e.g. [2020, 3, 16]
-      return LocalDate.of(y, m, d).toString()
+    if (looksLike.YYYYMD(str)) {
+      const [y, m, d] = str.split('-').map(Number) // e.g. [2020, 3, 16]
+      return spacetime([y, m - 1, d]).format('iso-short')
     }
 
     // M-D-YYYY
-    if (looksLike.MDYYYY(s)) {
-      const [m, d, yyyy] = s.split('-').map(Number) // e.g. [3, 16, 2020]
-      return LocalDate.of(yyyy, m, d).toString()
+    if (looksLike.MDYYYY(str)) {
+      const [m, d, yyyy] = str.split('-').map(Number) // e.g. [3, 16, 2020]
+      return spacetime([yyyy, m - 1, d]).format('iso-short')
     }
 
     // M-D-YY
-    if (looksLike.MDYY(s)) {
-      const [m, d, yy] = s.split('-').map(Number) // e.g. [3, 16, 20]
+    if (looksLike.MDYY(str)) {
+      const [m, d, yy] = str.split('-').map(Number) // e.g. [3, 16, 20]
       const yyyy = yy + 2000 // assume current century
-      return LocalDate.of(yyyy, m, d).toString()
+      return spacetime([yyyy, m - 1, d]).format('iso-short')
     }
 
     // 0: Treat zero as the beginning of unix epoch
-    if (s === '0') return LocalDate.of(1970, 1, 1).toString()
+    if (s === '0') {
+      return spacetime([1970, 1, 1]).format('iso-short')
+    }
 
     // last chance - try using js Date
     // for some values, this will return the previous day when run > GMT

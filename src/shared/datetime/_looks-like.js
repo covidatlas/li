@@ -1,6 +1,4 @@
-﻿require('@js-joda/timezone/dist/js-joda-timezone-10-year-range') // minimize package size by only importing tz data for current year ±5 yrs
-
-const { normalize } = require('./_utils.js')
+﻿const { normalize } = require('./_utils.js')
 
 function dateTester (pattern) {
   /**
