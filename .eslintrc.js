@@ -7,21 +7,30 @@ module.exports = {
     es6: true
   },
   extends: 'eslint:recommended',
+  plugins: [
+    'import'
+  ],
   rules: {
-    // enable additional rules
+    // Enable additional rules
     'linebreak-style': ['error', 'unix'],
-    // node specific
+    // Node specific
     'global-require': 'error',
     'handle-callback-err': 'error',
-    // override default options for rules from base configurations
+    // Override default options for rules from base configurations
     'no-cond-assign': ['error', 'always'],
-    // disable rules from base configurations
+    // Disable rules from base configurations
     'arrow-body-style': 'off',
     'no-console': 'off',
     'no-inner-declarations': 'off',
     'no-redeclare': 'off',
     'no-useless-escape': 'off',
-    // style specific
-    'no-trailing-spaces': 'error'
-  }
+    // Style specific
+    'no-trailing-spaces': 'error',
+    // Plugins
+    'import/no-unresolved': [2, {commonjs: true, amd: true}]
+  },
+  ignorePatterns: [
+    "scratch",
+    "node_modules/"
+  ]
 }
