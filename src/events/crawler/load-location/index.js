@@ -14,16 +14,11 @@ module.exports = function loadLocation (params) {
   if (!filePath) {
     throw Error(`Specified location not found ${location}`)
   }
-  try {
-    // eslint-disable-next-line
-    const loc = require(filePath)
+  // eslint-disable-next-line
+  const loc = require(filePath)
 
-    // Populate the locationKey for caching
-    loc._locationKey = locationKey(filePath)
+  // Populate the locationKey for caching
+  loc._locationKey = locationKey(filePath)
 
-    return loc
-  }
-  catch (err) {
-    throw Error(`Location could not be loaded ${location}`)
-  }
+  return loc
 }

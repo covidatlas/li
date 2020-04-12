@@ -3,7 +3,9 @@ const { join } = require('path')
 
 module.exports = async function writeLocal (data, filePath, filename) {
   const localPath = join('crawler-cache', filePath)
+  const file = join(localPath, filename)
   fs.mkdirSync(localPath, { recursive: true })
-  fs.writeFileSync(join(localPath, filename), data)
+  fs.writeFileSync(file, data)
+  console.log(`Wrote to cache:`, file)
   return
 }

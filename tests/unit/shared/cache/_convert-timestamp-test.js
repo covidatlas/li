@@ -4,7 +4,7 @@ const test = require('tape')
 const sut = join(process.cwd(), 'src', 'shared', 'cache', '_convert-timestamp.js')
 const convertTimestamp = require(sut)
 
-test('Set up', t => {
+test('Module exists', t => {
   t.plan(1)
   t.ok(convertTimestamp, 'convertTimestamp module exists')
 })

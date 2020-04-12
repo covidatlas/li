@@ -4,15 +4,15 @@ const convert = require('@architect/shared/cache/_convert-timestamp.js')
 const writeLocal = require('./_write-local.js')
 const writeS3 = require('./_write-s3.js')
 
-const local = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
-const write = local ? writeLocal : writeS3
-
 /**
  * Saves one or more files to cache
  *
  * @param {*} results Array of crawl results
  */
 module.exports = async function saveToCache (results) {
+
+  const local = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
+  const write = local ? writeLocal : writeS3
 
   const extensions = {
     csv: 'csv',

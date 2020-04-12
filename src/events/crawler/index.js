@@ -4,50 +4,55 @@ const crawler = require('./crawl')
 const cache = require('./cache')
 
 async function crawlLocation (event) {
+  try {
+    /**
+     * Load the requested location
+     */
+    const location = loadLocation(event)
+    const { scrapers, _locationKey } = location
 
-  /**
-   * Load the requested location
-   */
-  const location = loadLocation(event)
-  const { scrapers, _locationKey } = location
+    /**
+     * Select the current scraper from the location's available scrapers
+     */
+    // TODO actually calculate latest start date; this hack works for now
+    const scraper = scrapers[scrapers.length - 1]
 
-  /**
-   * Select the current scraper from the location's available scrapers
-   */
-  // TODO actually calculate latest start date; this hack works for now
-  const scraper = scrapers[scrapers.length - 1]
+    /**
+     * Prepare all the 'get' results to be cached
+     */
+    const results = []
+    // TODO maybe want to make this Promise.all once things are stable
+    for (let crawl of scraper.crawl) {
+      let { type, url } = crawl
+      crawl.url = typeof url === 'string'
+                     ? url
+                     : await url(/*client*/)
+      const data = await crawler(crawl)
+      const result = {
+        // Caching metadata
+        _locationKey,
+        _name: scraper.crawl.length > 1 ? crawl.name : 'default',
+        // Payload
+        data,
+        type
+      }
 
-  /**
-   * Prepare all the 'get' results to be cached
-   */
-  const results = []
-  // TODO maybe want to make this Promise.all once things are stable
-  for (let crawl of scraper.crawl) {
-    let { type, url } = crawl
-    crawl.url = typeof url === 'string'
-                   ? url
-                   : await url(/*client*/)
-    const data = await crawler(crawl)
-    const result = {
-      // Caching metadata
-      _locationKey,
-      _name: scraper.crawl.length > 1 ? crawl.name : 'default',
-      // Payload
-      data,
-      type
+      results.push(result)
     }
 
-    results.push(result)
-  }
+    if (results.length !== scraper.crawl.length) {
+      throw Error(`Failed to crawl all requested 'get' sources`)
+    }
 
-  if (results.length !== scraper.crawl.length) {
-    throw Error(`Failed to crawl all requested 'get' sources`)
+    /**
+     * Cache the results
+     */
+    await cache(results)
   }
-
-  /**
-   * Cache the results
-   */
-  await cache(results)
+  catch (err) {
+    console.log('Crawler error', err)
+    throw Error(err)
+  }
 }
 
 exports.handler = arc.events.subscribe(crawlLocation)

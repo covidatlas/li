@@ -9,8 +9,8 @@ module.exports = function loadLocations () {
   const filterFiles = file => {
     const parts = file.split('/')
     return !parts.some(part => part.startsWith('_'))
-  };
-  filePaths = filePaths.filter(filterFiles);
+  }
+  filePaths = filePaths.filter(filterFiles)
 
   return filePaths
 }

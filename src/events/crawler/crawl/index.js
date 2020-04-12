@@ -8,24 +8,17 @@ module.exports = async function crawl (params) {
   let options = JSON.stringify({ type, url, rejectUnauthorized })
   options = encodeURIComponent(options)
 
-  try {
-    const root = isLocal
-      ? `http://localhost:${process.env.PORT || 3333}`
-      : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
-    const path = `${root}/get/${getType}?options=${options}`
-    const result = await got(path)
+  const root = isLocal
+    ? `http://localhost:${process.env.PORT || 3333}`
+    : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
+  const path = `${root}/get/${getType}?options=${options}`
+  const result = await got(path)
 
-    if (result.statusCode === 200) {
-      return new Buffer.from(result.body, 'base64')
-    }
-    else {
-      const err = result.body && result.body.error || 'Request failed'
-      throw Error(err)
-    }
-
+  if (result.statusCode === 200) {
+    return new Buffer.from(result.body, 'base64')
   }
-  catch (err) {
-    console.log('Crawler error', err)
+  else {
+    const err = result.body && result.body.error || 'Request failed'
     throw Error(err)
   }
 }
