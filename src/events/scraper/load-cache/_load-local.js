@@ -3,11 +3,11 @@ const { join } = require('path')
 const sorter = require('./_sorter.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
 
-module.exports = async function loadLocal (scraper, _locationKey, date, tz) {
+module.exports = async function loadLocal (scraper, _sourceKey, date, tz) {
 
   if (!date) date = new Date().toISOString().substr(0, 10)
 
-  const cachePath = join(process.cwd(), 'crawler-cache', _locationKey)
+  const cachePath = join(process.cwd(), 'crawler-cache', _sourceKey)
 
   if (!fs.existsSync(cachePath)) {
     // TODO add local cache downloading here

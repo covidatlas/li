@@ -10,5 +10,5 @@ get /get/normal
 get /get/headless
 
 @events
-crawler # Crawls our locations
+crawler # Crawls our sources
 scraper # Operates the scrapers

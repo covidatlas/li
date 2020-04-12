@@ -24,13 +24,13 @@ module.exports = async function saveToCache (results) {
   }
 
   for (const result of results) {
-    const { _locationKey, _name, data, type } = result
+    const { _sourceKey, _name, data, type } = result
     const now = new Date().toISOString()
     const contents = hash(data, 5)
     const ext = extensions[type]
     const date = now.substr(0, 10)
     const time = convert.Z8601ToFilename(now)
-    const filePath = join(_locationKey, date)
+    const filePath = join(_sourceKey, date)
     const filename = `${time}-${_name}-${contents}.${ext}`
     await write(data, filePath, filename)
   }

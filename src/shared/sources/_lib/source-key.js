@@ -1,10 +1,10 @@
 const { sep } = require('path')
 
 /**
- * Get a canonical key derived from a location file
+ * Get a canonical key derived from a source file
  */
-module.exports = function locationKey (filePath) {
-  const parts = filePath.split(`shared${sep}locations`)
+module.exports = function sourceKey (filePath) {
+  const parts = filePath.split(`shared${sep}sources`)
   if (!parts[1]) {
     throw Error(`Invalid filePath: ${filePath}`)
   }

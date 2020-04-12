@@ -4,17 +4,17 @@ const crawler = require('./src/events/crawler/index.js')
 const scraper = require('./src/events/scraper/index.js')
 
 const args = require('./src/cli/args.js')
-const { location, crawl, scrape } = args
+const { source, crawl, scrape } = args
 
 ;(async () => {
-  if (location) {
-    await crawler({location})
-    await scraper({location})
+  if (source) {
+    await crawler({source})
+    await scraper({source})
   }
   if (crawl) {
-    await crawler({location: crawl})
+    await crawler({source: crawl})
   }
   if (scrape) {
-    await scraper({location: scrape})
+    await scraper({source: scrape})
   }
 })()

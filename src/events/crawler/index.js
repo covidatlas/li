@@ -1,18 +1,18 @@
 const arc = require('@architect/functions')
-const loadLocation = require('./load-location/index.js')
+const loadSource = require('./load-source/index.js')
 const crawler = require('./crawl')
 const cache = require('./cache')
 
-async function crawlLocation (event) {
+async function crawlSource (event) {
   try {
     /**
-     * Load the requested location
+     * Load the requested source
      */
-    const location = loadLocation(event)
-    const { scrapers, _locationKey } = location
+    const source = loadSource(event)
+    const { scrapers, _sourceKey } = source
 
     /**
-     * Select the current scraper from the location's available scrapers
+     * Select the current scraper from the source's available scrapers
      */
     // TODO actually calculate latest start date; this hack works for now
     const scraper = scrapers[scrapers.length - 1]
@@ -30,7 +30,7 @@ async function crawlLocation (event) {
       const data = await crawler(crawl)
       const result = {
         // Caching metadata
-        _locationKey,
+        _sourceKey,
         _name: scraper.crawl.length > 1 ? crawl.name : 'default',
         // Payload
         data,
@@ -55,5 +55,5 @@ async function crawlLocation (event) {
   }
 }
 
-exports.handler = arc.events.subscribe(crawlLocation)
-module.exports = crawlLocation
+exports.handler = arc.events.subscribe(crawlSource)
+module.exports = crawlSource
