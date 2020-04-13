@@ -39,7 +39,7 @@ async function scrapeSource (event) {
     /**
      * Scrape the specified source on the specified date
      */
-    const scrape = await runScraper(scraper, parsed)
+    const scrape = await runScraper(scraper, parsed, date)
     // TODO ↓ remove me! ↓
     console.log(`scrape:`, scrape)
 
