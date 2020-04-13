@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
 const loadSource = require('./load-source/index.js')
 const findTz = require('./find-tz/index.js')
+const findScraper = require('./find-scraper/index.js')
 const loadCache = require('./load-cache/index.js')
 const parseCache = require('./parse-cache/index.js')
 const runScraper = require('./run-scraper/index.js')
@@ -13,7 +14,7 @@ async function scrapeSource (event) {
      * Load the requested source
      */
     const source = loadSource(event)
-    const { scrapers, _sourceKey } = source
+    const { _sourceKey } = source
 
     /**
      * Get the timezone so we can locale-cast the specified date
@@ -23,8 +24,7 @@ async function scrapeSource (event) {
     /**
      * Select the correct scraper for the specified date
      */
-    // This is NOT the right way to select our scraper
-    const scraper = scrapers[scrapers.length - 1]
+    const scraper = findScraper(source, date)
 
     /**
      * Go acquire the data from the cache
