@@ -1,9 +1,9 @@
-// const path = require('path')
-// const convert = require('@architect/shared/cache/_convert-timestamp.js')
-// const datetime = require('@architect/shared/datetime/index.js')
+const path = require('path')
+const convert = require('@architect/shared/cache/_convert-timestamp.js')
+const datetime = require('@architect/shared/datetime/index.js')
 
-module.exports = function getLocalDateFromFilename(/*filename, tz='America/Los_Angeles'*/) {
-  /*
+module.exports = function getLocalDateFromFilename(filename, tz='America/Los_Angeles') {
+
   let file = JSON.parse(JSON.stringify(filename)) // Let's not mutate anything inadvertently
 
   // Extract the file from the path
@@ -20,9 +20,6 @@ module.exports = function getLocalDateFromFilename(/*filename, tz='America/Los_A
 
   // Re-cast it from UTC to the source's timezone
   const castDate = datetime.cast(ts, tz)
-  */
-
-  const castDate = new Date().toISOString().substr(0, 10)
 
   return castDate
 }

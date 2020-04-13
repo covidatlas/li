@@ -13,6 +13,11 @@ const args = require('yargs')
     description: 'Scrape the source path name (src/shared/sources)',
     type: 'string'
   })
+  .option('date', {
+    alias: 'd',
+    description: 'Generate data for (or start the timeseries at) the provided date in YYYY-MM-DD format',
+    type: 'string'
+  })
   .help()
   .alias('help', 'h')
   .argv

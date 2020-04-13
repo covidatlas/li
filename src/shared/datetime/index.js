@@ -1,5 +1,5 @@
 const cast = require('./_cast.js')
-const { dateIsBefore, dateIsBeforeOrEqualTo } = require('./_compare.js')
+const { dateIsBefore, dateIsBeforeOrEqualTo, dateIsAfter } = require('./_compare.js')
 const { getYYYYMD, getYYYYMMDD, getDDMMYYYY, getMDYY, getMDYYYY, getMonthDYYYY } = require('./_format.js')
 const { scrapeDate, scrapeDateIsBefore, scrapeDateIsAfter, scrapeDateIs } = require('./_scrape-date.js')
 const { getDate, today } = require('./_today.js')
@@ -11,6 +11,7 @@ module.exports = {
   cast,
   dateIsBefore,
   dateIsBeforeOrEqualTo,
+  dateIsAfter,
   getDate,
   getDDMMYYYY,
   getMDYY,

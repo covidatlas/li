@@ -6,21 +6,22 @@ const datetime = require(sut)
 
 const {
   cast,
-  today,
-  now,
-  parse,
-  getYYYYMMDD,
-  getYYYYMD,
-  getDDMMYYYY,
-  getMDYYYY,
-  getMDYY,
-  getMonthDYYYY,
   dateIsBefore,
   dateIsBeforeOrEqualTo,
-  scrapeDateIsBefore,
-  scrapeDateIsAfter,
+  dateIsAfter,
+  getDDMMYYYY,
+  getMDYY,
+  getMDYYYY,
+  getMonthDYYYY,
+  getYYYYMD,
+  getYYYYMMDD,
+  looksLike,
+  now,
+  parse,
   scrapeDateIs,
-  looksLike
+  scrapeDateIsAfter,
+  scrapeDateIsBefore,
+  today
 } = datetime
 
 const mockDate = d => {
@@ -181,6 +182,13 @@ test('dateIsBeforeOrEqualTo', t => {
   t.equal(dateIsBeforeOrEqualTo('2020-03-16', '2020-03-16'), true, 'same')
   t.equal(dateIsBeforeOrEqualTo('2020-03-20', '2020-03-16'), false, 'after')
   t.end()
+})
+
+test('dateIsAfter', t => {
+  t.plan(3)
+  t.equal(dateIsAfter('2020-03-20', '2020-03-16'), true, 'after')
+  t.equal(dateIsAfter('2020-03-16', '2020-03-16'), false, 'same')
+  t.equal(dateIsAfter('2020-03-16', '2020-03-20'), false, 'before')
 })
 
 test('scrapeDateIsBefore', t => {
