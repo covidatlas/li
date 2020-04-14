@@ -1,9 +1,11 @@
 module.exports = async function runScraper (scraper, parsed, date) {
   let params = {}
+  // A single crawl passes back a single object
   if (parsed.length === 1) params = parsed[0]['default']
+  // Multiple crawls pass back an object with a named param for each `crawl.name`
   else {
     for (const item of parsed) {
-      params[item] = item
+      Object.assign(params, item)
     }
   }
   let results
