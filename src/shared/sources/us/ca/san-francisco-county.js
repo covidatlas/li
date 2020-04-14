@@ -9,11 +9,15 @@ module.exports = {
   scrapers: [
     {
       startDate: '2020-03-01',
+      friendly: {
+        name: 'SF Department of Public Health',
+        url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
+      },
       crawl: [
         {
           type: 'page',
           data: 'paragraph',
-          url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
+          url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp',
         }
       ],
       scrape($) {
