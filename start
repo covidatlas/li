@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+const { join } = require('path')
 
 const crawler = require('./src/events/crawler/index.js')
 const scraper = require('./src/events/scraper/index.js')
@@ -7,7 +8,15 @@ const datetime = require('./src/shared/datetime/index.js')
 const args = require('./src/cli/args.js')
 let { source, crawl, scrape, date } = args
 
-;(async () => {
+// Enable -[c|s] 'nl' instead of 'nl/index.js'
+if (crawl || scrape || source) {
+  const addIndex = p => p.endsWith('index.js') ? p : join(p, 'index.js')
+  if (source) source = addIndex(source)
+  if (crawl) crawl = addIndex(crawl)
+  if (scrape) scrape = addIndex(scrape)
+}
+
+(async () => {
   // Normalize date
   date = date ? datetime.getYYYYMMDD(date) :  datetime.getYYYYMMDD(new Date().toLocaleDateString())
 
