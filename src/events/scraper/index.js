@@ -5,6 +5,7 @@ const findScraper = require('./find-scraper/index.js')
 const loadCache = require('./load-cache/index.js')
 const parseCache = require('./parse-cache/index.js')
 const runScraper = require('./run-scraper/index.js')
+const normalizeData = require('./normalize-data/index.js')
 
 async function scrapeSource (event) {
   try {
@@ -39,11 +40,18 @@ async function scrapeSource (event) {
     /**
      * Scrape the specified source on the specified date
      */
-    const scrape = await runScraper(scraper, parsed, date)
-    // TODO ↓ remove me! ↓
-    console.log(`scrape:`, scrape)
+    const output = await runScraper(scraper, parsed, date)
 
-    // TODO add location normalization!
+    /**
+     * Normalize output
+     */
+    const data = normalizeData(source, output, date)
+    // TODO ↓ remove me! ↓
+    console.log(`data:`, data)
+
+    // TODO coming soon:
+    // await write(data)
+
   }
   catch (err) {
     console.error(err)

@@ -16,7 +16,7 @@ module.exports = {
           url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
         }
       ],
-      async scrape($) {
+      scrape($) {
         let deaths
         let cases
         const $h2 = $('h2:contains("Cases in San Francisco")')

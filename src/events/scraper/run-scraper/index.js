@@ -6,9 +6,15 @@ module.exports = async function runScraper (scraper, parsed, date) {
       params[item] = item
     }
   }
+  let results
   // Only await async functions; most scrapers should not be async
   if (scraper.scrape.constructor.name === 'AsyncFunction') {
-    return await scraper.scrape(params, date)
+    results = await scraper.scrape(params, date)
   }
-  return scraper.scrape(params, date)
+  results = scraper.scrape(params, date)
+
+  // Ensure single results are iterable
+  results = results instanceof Array ? results : [results]
+
+  return results
 }
