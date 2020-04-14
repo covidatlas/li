@@ -15,7 +15,6 @@ async function scrapeSource (event) {
      * Load the requested source
      */
     const source = loadSource(event)
-    const { _sourceKey } = source
 
     /**
      * Get the timezone so we can locale-cast the specified date
@@ -30,7 +29,7 @@ async function scrapeSource (event) {
     /**
      * Go acquire the data from the cache
      */
-    const cache = await loadCache({ scraper, _sourceKey, date, tz })
+    const cache = await loadCache({ source, scraper, date, tz })
 
     /**
      * Parse the requested data to be passed on to the 'scrape' function

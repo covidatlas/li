@@ -1,4 +1,4 @@
-const sorter = require('./_sorter.js')
+const sorter = require('@architect/shared/utils/sorter.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
 
 /**

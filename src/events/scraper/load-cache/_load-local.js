@@ -1,12 +1,13 @@
 const fs = require('fs')
 const { join } = require('path')
-const sorter = require('./_sorter.js')
+const sorter = require('@architect/shared/utils/sorter.js')
 const datetime = require('@architect/shared/datetime/index.js')
 const getDateBounds = require('./_get-date-bounds.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
 
 module.exports = async function loadLocal (params) {
-  let { scraper, _sourceKey, date, tz } = params
+  let { source, scraper, date, tz } = params
+  const { _sourceKey, timeseries } = source
 
   if (!date) date = new Date().toISOString().substr(0, 10)
 
@@ -22,7 +23,6 @@ module.exports = async function loadLocal (params) {
   /**
    * All cache data is saved with a 8601Z timestamp
    *   In order to match the date requested to the timestamp, we must re-cast it to the locale in question
-   *   FIXME that can't happen yet, as we need the scrapers to become tz aware
    */
   if (folders.length) {
     // Sort from earliest to latest
@@ -42,34 +42,41 @@ module.exports = async function loadLocal (params) {
       } catch (err) { /* noop */ }
     }
 
-    /**
-     * If date is earlier than we have cached, bail
-     */
-    const { earliest, latest } = getDateBounds(files, tz)
-    if (datetime.dateIsBefore(date, earliest)) {
-      console.error('Sorry McFly, we need more gigawatts to go back in time')
-      throw Error(`Date requested (${date}) is before our earliest cache ${earliest}`)
-    }
 
-    // Fix this soon: it won't work until we can cast the requested date to today for the locale in question, otherwise we'll get false positives on future
-    if (datetime.dateIsAfter(date, latest)) {
-      console.error('Sorry, without increasing gravity we cannot speed up time to get this data')
-      throw Error(`Date requested (${date}) is after our latest cache ${latest}`)
-    }
+    if (!timeseries) {
+      /**
+       * If date is earlier than we have cached, bail
+       */
+      const { earliest, latest } = getDateBounds(files, tz)
+      if (datetime.dateIsBefore(date, earliest)) {
+        console.error('Sorry McFly, we need more gigawatts to go back in time')
+        throw Error(`Date requested (${date}) is before our earliest cache ${earliest}`)
+      }
 
-    // Filter files that match date when locale-cast from UTC
-    files = files.filter(filename => {
-      const castDate = getLocalDateFromFilename(filename, tz)
-      return castDate === date
-    })
+      // Fix this soon: it won't work until we can cast the requested date to today for the locale in question, otherwise we'll get false positives on future
+      if (datetime.dateIsAfter(date, latest)) {
+        console.error('Sorry, without increasing gravity we cannot speed up time to get this data')
+        throw Error(`Date requested (${date}) is after our latest cache ${latest}`)
+      }
+
+      // Filter files that match date when locale-cast from UTC
+      files = files.filter(filename => {
+        const castDate = getLocalDateFromFilename(filename, tz)
+        return castDate === date
+      })
+    }
 
     if (!files.length) {
-      // TODO add local cache downloading here
-      return
+      const msg = timeseries
+        ? 'No cached files for this timeseries'
+        : `No cached files found for ${date}`
+      throw Error(msg)
     }
 
     let cache = []
     for (const crawl of scraper.crawl) {
+      // We may have multiple crawls for a single scraper (each with a unique name key)
+      // Disambiguate and match them so we are getting back the correct data sources
       const { name='default' } = crawl
       const matchName = file => name === file.split('-')[3] // Skips over 8601Z ts
       const matches = files.filter(matchName)
@@ -78,7 +85,7 @@ module.exports = async function loadLocal (params) {
         return
       }
 
-      // We may have multiple files for this day choose the last one
+      // We may have multiple files for this day, choose the last one
       // TODO we may want to do more here, including:
       // - analysis of contents (e.g. stale files, etc.)
       // - attempting to scrape this file, and if it doesn't work, trying a previous scrape from the same day?
