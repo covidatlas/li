@@ -1,4 +1,4 @@
-// TODO impl FIPS lookups
+const normalizeUS = require('./_normalize-us.js')
 
 module.exports = function normalizeData (source, output, date) {
 
@@ -9,6 +9,9 @@ module.exports = function normalizeData (source, output, date) {
     if (!country && source.country) location.country = source.country
     if (!state && source.state) location.state = source.state
     if (!county && source.county) location.county = source.county
+
+    // Maybe normalize US state and county entities
+    location = normalizeUS(location)
 
     // Generate primary key ('location')
     let key = location.country

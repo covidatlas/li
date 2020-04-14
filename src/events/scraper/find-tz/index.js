@@ -1,7 +1,6 @@
 const assert = require('assert')
 const iso1Codes = require('country-levels/iso1.json')
-const iso2Codes = require('country-levels/iso2.json')
-const usStates = require('./usa-states.json')
+const usStates = require('../vendor/usa-states.json')
 
 /**
  * Find a location timezone, before scraping
@@ -18,6 +17,11 @@ module.exports = async function calculateScraperTz (location) {
   // The US uses FIPS for its >3,000 counties
   if (country === 'iso1:US') {
     assert(!usStates[state], `Long form of state name used: ${state}, ${location._path}`)
+
+    // iso2.json is kinda big, only load it if we need it
+    // eslint-disable-next-line
+    const iso2Codes = require('country-levels/iso2.json')
+
     const stateCode = `US-${state}`
     const stateData = iso2Codes[stateCode]
     assert(stateData, `State data not found for ${state}, ${location._path}`)
@@ -26,10 +30,16 @@ module.exports = async function calculateScraperTz (location) {
   }
 
   // First try the state
-  else if (state && state.startsWith('iso2:') && iso2Codes[state.substr(5)]) {
-    const stateData = iso2Codes[state.substr(5)]
-    assert(stateData.timezone, `State missing timezone information ${state}`)
-    return stateData.timezone
+  else if (state && state.startsWith('iso2:')) {
+    // iso2.json is kinda big, only load it if we need it
+    // eslint-disable-next-line
+    const iso2Codes = require('country-levels/iso2.json')
+
+    if (iso2Codes[state.substr(5)]) {
+      const stateData = iso2Codes[state.substr(5)]
+      assert(stateData.timezone, `State missing timezone information ${state}`)
+      return stateData.timezone
+    }
   }
 
   // Fall back to a national timezone
