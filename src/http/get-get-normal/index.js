@@ -1,3 +1,4 @@
+const { brotliCompressSync } = require('zlib')
 const arc = require('@architect/functions')
 const validate = require('./_validate.js')
 const got = require('got')
@@ -55,10 +56,11 @@ async function getNormal (req) {
 
       // We got a good response, return it
       if (status < 400) {
-        // FIXME add compression here
-        // base64 encode body in case we transit binaries, max 10MB payload
-        const body = new Buffer.from(response.body).toString('base64')
+        // Compress, then base64 encode body in case we transit binaries, max 10MB payload
+        let body = new Buffer.from(response.body)
+        body = brotliCompressSync(body).toString('base64')
         if (body.length >= 1000 * 1000 * 10) {
+          console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
           return {
             statusCode: 500,
             json: { error: 'maximum_size_exceeded' }

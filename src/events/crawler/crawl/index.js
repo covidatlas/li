@@ -1,3 +1,4 @@
+const { brotliDecompressSync } = require('zlib')
 const got = require('got')
 
 module.exports = async function crawl (params) {
@@ -15,7 +16,9 @@ module.exports = async function crawl (params) {
   const result = await got(path)
 
   if (result.statusCode === 200) {
-    return new Buffer.from(result.body, 'base64')
+    let body = new Buffer.from(result.body, 'base64')
+    body = brotliDecompressSync(body)
+    return body
   }
   else {
     const err = result.body && result.body.error || 'Request failed'

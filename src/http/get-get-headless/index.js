@@ -1,3 +1,4 @@
+const { brotliCompressSync } = require('zlib')
 const arc = require('@architect/functions')
 const validate = require('./_validate.js')
 const chromium = require('chrome-aws-lambda')
@@ -64,9 +65,9 @@ async function getHeadless (req) {
         const html = await page.content()
         browser.close()
 
-        // FIXME add compression here
-        // base64 encode body in case we transit binaries, max 10MB payload
-        const body = new Buffer.from(html).toString('base64')
+        // Compress, then base64 encode body in case we transit binaries, max 10MB payload
+        let body = new Buffer.from(html)
+        body = brotliCompressSync(body).toString('base64')
         if (body.length >= 1000 * 1000 * 10) {
           return {
             statusCode: 500,
