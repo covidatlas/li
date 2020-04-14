@@ -1,5 +1,6 @@
 const fs = require('fs')
 const { join } = require('path')
+const { gunzipSync } = require('zlib')
 const sorter = require('@architect/shared/utils/sorter.js')
 const datetime = require('@architect/shared/datetime/index.js')
 const getDateBounds = require('./_get-date-bounds.js')
@@ -94,7 +95,7 @@ module.exports = async function loadLocal (params) {
       const filePath = join(cachePath, dir, file)
 
       if (fs.existsSync(filePath)) {
-        crawl.data = fs.readFileSync(filePath)
+        crawl.data = gunzipSync(fs.readFileSync(filePath))
         cache.push(crawl)
       }
       else throw Error('Unknown file cache reading error')
