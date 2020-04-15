@@ -33,7 +33,9 @@ module.exports = async function loadLocal (params) {
      * Gather yesterday (UTC+), today, and tomorrow (UTC-)
      */
     let files = []
-    const today = folders.findIndex(f => f === date)
+    let today = folders.findIndex(f => f === date)
+    // Fresh cache, and maybe behind the UTC tomorrow
+    if (today === -1) today = folders.findIndex(f => f === datetime.getYYYYMMDD())
     const cacheDirs = [today - 1, today, today + 1]
     for (const cacheDir of cacheDirs) {
       try {
