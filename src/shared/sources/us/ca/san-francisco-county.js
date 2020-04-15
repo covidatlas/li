@@ -2,25 +2,25 @@ const parse = require('../../_lib/parse.js')
 const maintainers = require('../../_lib/maintainers.js')
 
 module.exports = {
-  county: 'San Francisco County',
-  state: 'CA',
   country: 'iso1:US',
+  state: 'CA',
+  county: 'San Francisco County',
   maintainers: [maintainers.jbencina],
+  friendly: {
+    name: 'SF Department of Public Health',
+    url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
+  },
   scrapers: [
     {
       startDate: '2020-03-01',
-      friendly: {
-        name: 'SF Department of Public Health',
-        url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
-      },
       crawl: [
         {
           type: 'page',
           data: 'paragraph',
-          url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp',
+          url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
         }
       ],
-      scrape($) {
+      scrape ($) {
         let deaths
         let cases
         const $h2 = $('h2:contains("Cases in San Francisco")')
