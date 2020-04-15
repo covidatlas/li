@@ -2,8 +2,7 @@ const loadSources = require('@architect/shared/sources/_lib/load-sources.js')
 const sourceKey = require('@architect/shared/sources/_lib/source-key.js')
 
 /**
- * Check source inclusion, based on command-line options.
- * (*) source - the source
+ * If it wasn't obvious from all the naming, this thing loads a specified source
  */
 module.exports = function loadSource (params) {
   const { source } = params
@@ -12,13 +11,13 @@ module.exports = function loadSource (params) {
   const filePath = sources.find(l => l.endsWith(source))
 
   if (!filePath) {
-    throw Error(`Specified source not found ${source}`)
+    throw Error(`Specified source not found: ${source}`)
   }
   // eslint-disable-next-line
-  const loc = require(filePath)
+  const src = require(filePath)
 
   // Populate the sourceKey for caching
-  loc._sourceKey = sourceKey(filePath)
+  src._sourceKey = sourceKey(filePath)
 
-  return loc
+  return src
 }

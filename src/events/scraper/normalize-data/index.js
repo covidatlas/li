@@ -22,7 +22,7 @@ module.exports = function normalizeData (source, output, date) {
     // Add secondary keys
     return Object.assign(location, {
       location: key,
-      date: date,
+      date,
       source: source._sourceKey,
       priority: source.priority || 0 // Backfill to 0 for sorting later
     })
