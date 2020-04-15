@@ -39,12 +39,11 @@ module.exports = async function loadLocal (params) {
     const cacheDirs = [today - 1, today, today + 1]
     for (const cacheDir of cacheDirs) {
       try {
-        const result = await fs.readdirSync(join(cachePath, folders[cacheDir]))
+        const result = fs.readdirSync(join(cachePath, folders[cacheDir]))
         files = files.concat(result)
         // eslint-disable-next-line
       } catch (err) { /* noop */ }
     }
-
 
     if (!timeseries) {
       /**

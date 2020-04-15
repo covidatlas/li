@@ -2,6 +2,7 @@ const csv = require('./types/csv.js')
 const json = require('./types/json.js')
 const page = require('./types/page.js')
 const pdf = require('./types/pdf.js')
+const raw = require('./types/raw.js')
 const tsv = require('./types/tsv.js')
 
 module.exports = async function parseCache (cache, date) {
@@ -12,6 +13,7 @@ module.exports = async function parseCache (cache, date) {
     json: json,
     page,
     pdf: pdf,
+    raw: raw,
     tsv: tsv
   }
 

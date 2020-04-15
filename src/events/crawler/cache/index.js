@@ -20,7 +20,8 @@ module.exports = async function saveToCache (results) {
     json: 'json',
     page: 'html',
     pdf: 'pdf',
-    tsv: 'tsv'
+    tsv: 'tsv',
+    raw: 'raw'
   }
 
   for (const result of results) {
