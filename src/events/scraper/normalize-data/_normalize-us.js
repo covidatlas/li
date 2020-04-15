@@ -40,10 +40,27 @@ module.exports = function lookupFIPS (location) {
         const stateMatches = fip.state_code_postal === state
 
         // Match the normalized county name ("sanfranciscocounty")
-        const countyMatches = norm(fip.name) == norm(county)
+        let countyMatches = norm(fip.name) === norm(county)
+
+        // Looks like we've got a wonky one, try to strip out all known stuff
+        if (!countyMatches) {
+          const replacer = str => norm(str).replace('county', '')
+                                           .replace('parish', '')
+                                           .replace('municipality', '')
+                                           .replace('borough', '')
+                                           .replace('censusarea', '')
+          countyMatches = replacer(fip.name) === replacer(county)
+        }
 
         return stateMatches && countyMatches
       })
+
+      // These are cases where an impacted individual may not belong to a specific county, but is still counted
+      // 'unassigned' county is special / reserved
+      if (norm(county) === 'unknown') {
+        location.county = 'unassigned'
+        return location
+      }
 
       if (!fips) {
         const info = JSON.stringify(location, null, 2)
