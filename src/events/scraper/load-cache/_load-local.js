@@ -105,4 +105,5 @@ module.exports = async function loadLocal (params) {
 
     return cache
   }
+  // TODO blow up or fetch cache here
 }

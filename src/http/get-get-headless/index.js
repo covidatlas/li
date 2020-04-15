@@ -6,7 +6,7 @@ const chromium = require('chrome-aws-lambda')
 async function getHeadless (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { rejectUnauthorized, url } = options
+  let { cookie, rejectUnauthorized, url } = options
 
   let browser = null
 
@@ -33,6 +33,10 @@ async function getHeadless (req) {
 
     await page.setUserAgent(agent)
     await page.setViewport(defaultViewport)
+    if (cookie) {
+      // TODO test this (this probably works though?)
+      await page.setExtraHTTPHeaders({ cookie })
+    }
 
     let tries = 0
     while (tries < 5) {

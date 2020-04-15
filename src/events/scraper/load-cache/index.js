@@ -9,5 +9,5 @@ module.exports = async function loadFromCache (params) {
   const local = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
   const load = local ? loadLocal : loadS3
 
-  return await load(params)
+  return load(params)
 }
