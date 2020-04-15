@@ -1,4 +1,6 @@
 const arc = require('@architect/functions')
+const datetime = require('@architect/shared/datetime/index.js')
+
 const loadSource = require('./load-source/index.js')
 const findTz = require('./find-tz/index.js')
 const findScraper = require('./find-scraper/index.js')
@@ -9,7 +11,9 @@ const normalizeData = require('./normalize-data/index.js')
 
 async function scrapeSource (event) {
   try {
-    const { date } = event
+    let { date } = event
+    // Normalize date
+    date = date ? datetime.getYYYYMMDD(date) :  datetime.getYYYYMMDD(new Date().toLocaleDateString())
 
     /**
      * Load the requested source
