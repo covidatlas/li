@@ -97,7 +97,8 @@ module.exports = async function loadLocal (params) {
       const filePath = join(cachePath, dir, file)
 
       if (fs.existsSync(filePath)) {
-        crawl.data = gunzipSync(fs.readFileSync(filePath))
+        const file = fs.readFileSync(filePath)
+        crawl.data = filePath.endsWith('.gz') ? gunzipSync(file) : file
         cache.push(crawl)
       }
       else throw Error('Unknown file cache reading error')
