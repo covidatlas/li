@@ -1,4 +1,7 @@
-const usStates = require('../vendor/usa-states.json')
+const usStates = require('@architect/shared/sources/_lib/geography/us-states.json')
+
+// Ensure county name consistency once isolated to a state
+const norm = str => str.replace(/ /g, '').toLowerCase()
 
 module.exports = function lookupFIPS (location) {
   const { country, state, county } = location
@@ -25,8 +28,6 @@ module.exports = function lookupFIPS (location) {
     // Possible FIXME: may need to add "subcounty" support for older AK datasets?
     // TODO change startsWith to Zsolt's fips lookup helper
     if (county && !county.startsWith('fips:')) {
-      // Ensure county name consistency once isolated to a state
-      const norm = str => str.replace(/ /g, '').toLowerCase()
 
       // fips.json is kinda big, only load it if we need it
       // eslint-disable-next-line

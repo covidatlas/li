@@ -1,6 +1,6 @@
 const assert = require('assert')
 const iso1Codes = require('country-levels/iso1.json')
-const usStates = require('../vendor/usa-states.json')
+const usStates = require('@architect/shared/sources/_lib/geography/us-states.json')
 
 /**
  * Find a source timezone, before scraping

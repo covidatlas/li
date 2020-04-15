@@ -1,7 +1,7 @@
 const test = require('tape')
 const { join } = require('path')
 
-const sut = join(process.cwd(), 'src', 'shared', 'sources', '_lib', 'geography.js')
+const sut = join(process.cwd(), 'src', 'shared', 'sources', '_lib', 'geography', 'index.js')
 const geography = require(sut)
 
 test('Module exists', t => {

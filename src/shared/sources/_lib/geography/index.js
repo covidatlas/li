@@ -1,3 +1,5 @@
+const usStates = require('./us-states.json')
+
 /**
  * Append ' County' to the end of a string, if not already present
  */
@@ -45,7 +47,15 @@ function addEmptyRegions (regionDataArray, regionNameArray, regionGranularity) {
   return regionDataArray
 }
 
+/**
+ * Get a proper state name
+ */
+function getState (state) {
+  return usStates[state] || state
+}
+
 module.exports = {
   addCounty,
-  addEmptyRegions
+  addEmptyRegions,
+  getState
 }
