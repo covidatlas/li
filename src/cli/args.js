@@ -18,6 +18,11 @@ const args = require('yargs')
     description: 'Generate data for (or start the timeseries at) the provided date in YYYY-MM-DD format',
     type: 'string'
   })
+  .option('regenerate', {
+    alias: 'r',
+    description: 'Regenerate a timeseries',
+    type: 'string'
+  })
   .help()
   .alias('help', 'h')
   .argv

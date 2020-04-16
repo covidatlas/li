@@ -1,26 +1,24 @@
 #! /usr/bin/env node
 const crawler = require('./src/events/crawler/index.js')
 const scraper = require('./src/events/scraper/index.js')
-const datetime = require('./src/shared/datetime/index.js')
+const regenerator = require('./src/scheduled/regenerate/index.js')
 
 const args = require('./src/cli/args.js')
 const makeNice = require('./src/cli/make-nice.js')
 
 let { date } = args
-let { source, crawl, scrape } = makeNice(args)
+let { source, crawl, scrape, regenerate } = makeNice(args)
 
 ;(async () => {
-  // Normalize date
-  date = date ? datetime.getYYYYMMDD(date) :  datetime.getYYYYMMDD(new Date().toLocaleDateString())
+  // TODO add warning about sandbox not being started here
 
-  if (source) {
-    await crawler({ source })
-    await scraper({ source })
-  }
   if (crawl) {
     await crawler({ source: crawl })
   }
   if (scrape) {
     await scraper({ source: scrape, date })
+  }
+  if (regenerate) {
+    await regenerator({ source })
   }
 })()

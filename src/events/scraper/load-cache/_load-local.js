@@ -10,9 +10,7 @@ module.exports = async function loadLocal (params) {
   let { source, scraper, date, tz } = params
   const { _sourceKey, timeseries } = source
 
-  if (!date) date = new Date().toISOString().substr(0, 10)
-
-  const cachePath = join(process.cwd(), 'crawler-cache', _sourceKey)
+  const cachePath = join(__dirname, '..', '..', '..', '..', 'crawler-cache', _sourceKey)
 
   if (!fs.existsSync(cachePath)) {
     // TODO add local cache downloading here
@@ -33,7 +31,8 @@ module.exports = async function loadLocal (params) {
      * Gather yesterday (UTC+), today, and tomorrow (UTC-)
      */
     let files = []
-    let today = folders.findIndex(f => f === date)
+    let d = timeseries ? datetime.today.at(tz) : date
+    let today = folders.findIndex(f => f === d)
     // Fresh cache, and maybe behind the UTC tomorrow
     if (today === -1) today = folders.findIndex(f => f === datetime.getYYYYMMDD())
     const cacheDirs = [today - 1, today, today + 1]

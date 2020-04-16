@@ -7,10 +7,9 @@ const loadSources = require('../../src/shared/sources/_lib/load-sources.js')
  * --[source|crawl|scrape] 'us/ca/san-francisco-county' instead of 'us/ca/san-francisco-county.js'
  */
 module.exports = function makeNice (params) {
-  let { source, crawl, scrape } = params
+  let { source, crawl, scrape, regenerate } = params
 
-  if (crawl || scrape || source) {
-
+  if (crawl || scrape || source || regenerate) {
     const sources = loadSources().map(s => s.split(`shared${sep}sources`)[1].substr(1))
     const makeNice = p => {
       const exact = sources.find(s => p === s)
@@ -25,6 +24,10 @@ module.exports = function makeNice (params) {
     if (source) source = makeNice(source)
     if (crawl) crawl = makeNice(crawl)
     if (scrape) scrape = makeNice(scrape)
+    if (regenerate) regenerate = makeNice(regenerate)
   }
-  return { source, crawl, scrape }
+  if (regenerate === '') {
+    regenerate = true
+  }
+  return { source, crawl, scrape, regenerate }
 }
