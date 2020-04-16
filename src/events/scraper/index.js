@@ -63,4 +63,3 @@ async function scrapeSource (event) {
 }
 
 exports.handler = arc.events.subscribe(scrapeSource)
-module.exports = scrapeSource

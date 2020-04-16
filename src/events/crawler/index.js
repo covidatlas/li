@@ -64,4 +64,4 @@ async function crawlSource (event) {
 }
 
 exports.handler = arc.events.subscribe(crawlSource)
-module.exports = crawlSource
+// exports.handler = crawlSource

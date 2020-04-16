@@ -9,6 +9,7 @@ module.exports = async function findNextInvoke (sources) {
 
   // Ensure retired sources don't make their way into the pool
   const isActiveSource = key => sources.some(s => s._sourceKey === key)
+  // Maybe swap this later for a query, scan should prob be fine forever tho
   let invokes = await data.invokes.scan({})
   invokes = invokes.Items.filter(i => i.type === type && isActiveSource(i.key))
 
@@ -20,6 +21,7 @@ module.exports = async function findNextInvoke (sources) {
     }
   }
 
+  // Find the next that's 12+ hours old, order shouldn't matter until we have a ton of these
   const next = invokes.find(i => {
     // Never regenerate more than every 12 hours
     const meow = new Date()
@@ -38,5 +40,5 @@ module.exports = async function findNextInvoke (sources) {
     lastInvoke: new Date().toISOString()
   })
 
-  return sources.find(s => s._sourceKey === next.key)
+  return next.key
 }

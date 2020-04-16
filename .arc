@@ -10,11 +10,12 @@ get /get/normal
 get /get/headless
 
 @events
-crawler # Crawls our sources
-scraper # Operates the scrapers
+crawler     # Crawls our sources
+scraper     # Operates the scrapers
+# regenerator # Regenerates a source from cache
 
 @scheduled
-regenerate rate(1 hour) # Regenerates timeseries sources
+regen-timeseries rate(1 hour) # Regularly regenerates timeseries sources
 
 @tables
 # case-data
