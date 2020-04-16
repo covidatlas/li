@@ -1,4 +1,3 @@
-const { sep } = require('path')
 const loadSources = require('../../src/shared/sources/_lib/load-sources.js')
 
 /**
@@ -7,27 +6,24 @@ const loadSources = require('../../src/shared/sources/_lib/load-sources.js')
  * --[source|crawl|scrape] 'us/ca/san-francisco-county' instead of 'us/ca/san-francisco-county.js'
  */
 module.exports = function makeNice (params) {
-  let { source, crawl, scrape, regenerate } = params
+  let { crawl, scrape, regenerate, regenTimeseries } = params
 
-  if (crawl || scrape || source || regenerate) {
-    const sources = loadSources().map(s => s.split(`shared${sep}sources`)[1].substr(1))
-    const makeNice = p => {
-      const exact = sources.find(s => p === s)
-      if (exact) return exact
+  // Yargs passes empty strings with truthy cli arguments so ok
+  const yargy = arg => arg || arg === ''
 
-      const sansJs = sources.find(s => p === s.replace('.js', ''))
-      if (sansJs) return sansJs
-
-      const sansIndexJs = sources.find(s => p === s.replace(`${sep}index.js`, ''))
-      if (sansIndexJs) return sansIndexJs
+  if (yargy(crawl) || yargy(scrape) || yargy(regenerate)) {
+    const sources = loadSources()
+    const getSource = p => {
+      const exact = sources[p]
+      if (exact) return p
+      else throw Error('Source not found!')
     }
-    if (source) source = makeNice(source)
-    if (crawl) crawl = makeNice(crawl)
-    if (scrape) scrape = makeNice(scrape)
-    if (regenerate) regenerate = makeNice(regenerate)
+    if (yargy(crawl)) crawl = getSource(crawl)
+    if (yargy(scrape)) scrape = getSource(scrape)
+    if (yargy(regenerate)) regenerate = getSource(regenerate)
   }
-  if (regenerate === '') {
-    regenerate = true
+  if (regenTimeseries === '') {
+    regenTimeseries = true
   }
-  return { source, crawl, scrape, regenerate }
+  return { crawl, scrape, regenerate, regenTimeseries }
 }

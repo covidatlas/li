@@ -3,7 +3,7 @@ const { join } = require('path')
 const { gzipSync } = require('zlib')
 
 module.exports = async function writeLocal (data, filePath, filename) {
-  const localPath = join('crawler-cache', filePath)
+  const localPath = join(__dirname, '..', '..', '..', '..', 'crawler-cache', filePath)
   const file = join(localPath, `${filename}.gz`)
   const compressed = gzipSync(data)
   fs.mkdirSync(localPath, { recursive: true })

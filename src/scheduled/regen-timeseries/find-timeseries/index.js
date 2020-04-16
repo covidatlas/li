@@ -3,10 +3,11 @@ const sourceKey = require('@architect/shared/sources/_lib/source-key.js')
 
 module.exports = function findTimeseries () {
   let sources = loadSources()
+  const filePaths = Object.values(sources)
 
   // Load up our source(s)
   let loaded = []
-  for (const filePath of sources) {
+  for (const filePath of filePaths) {
     // eslint-disable-next-line
     const src = require(filePath)
 

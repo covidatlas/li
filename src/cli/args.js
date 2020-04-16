@@ -1,16 +1,12 @@
 const args = require('yargs')
-  .option('source', {
-    description: 'Crawl & scrape the source path name (src/shared/sources)',
-    type: 'string'
-  })
   .option('crawl', {
     alias: 'c',
-    description: 'Crawl the source path name (src/shared/sources)',
+    description: 'Crawl the source (keyed on path name)',
     type: 'string'
   })
   .option('scrape', {
     alias: 's',
-    description: 'Scrape the source path name (src/shared/sources)',
+    description: 'Scrape the source (keyed on path name)',
     type: 'string'
   })
   .option('date', {
@@ -20,7 +16,11 @@ const args = require('yargs')
   })
   .option('regenerate', {
     alias: 'r',
-    description: 'Regenerate a timeseries',
+    description: 'Regenerate a source from scratch via cache',
+    type: 'string'
+  })
+  .option('regen-timeseries', {
+    description: 'Run the timeseries regenerator (testing only, you should probably be using --regenerate)',
     type: 'string'
   })
   .help()

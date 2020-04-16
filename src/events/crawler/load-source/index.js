@@ -8,7 +8,7 @@ module.exports = function loadSource (params) {
   const { source } = params
 
   const sources = loadSources()
-  const filePath = sources.find(l => l.endsWith(source))
+  const filePath = sources[source]
 
   if (!filePath) {
     throw Error(`Specified source not found: ${source}`)

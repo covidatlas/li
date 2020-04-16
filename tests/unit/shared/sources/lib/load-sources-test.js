@@ -11,8 +11,8 @@ test('Module exists', t => {
 test('Load sources', t => {
   t.plan(3)
   const result = loadSources()
-  t.ok(result instanceof Array, 'loadSources returned an array')
-  t.ok(result.length, 'loadSources found some files')
-  let hasUnderscore = result.some(r => r.includes('_'))
+  t.ok(result instanceof Object, 'loadSources returned an object')
+  t.ok(Object.keys(result).length, 'loadSources found some files')
+  let hasUnderscore = Object.values(result).some(r => r.includes('_'))
   t.notOk(hasUnderscore, `Returned files didn't have any underscores`)
 })

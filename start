@@ -1,24 +1,46 @@
 #! /usr/bin/env node
-const crawler = require('./src/events/crawler/index.js')
-const scraper = require('./src/events/scraper/index.js')
-const regenerator = require('./src/scheduled/regenerate/index.js')
+const arc = require('@architect/functions')
+
+const timeseriesRegenerator = require('./src/scheduled/regen-timeseries/index.js').handler
 
 const args = require('./src/cli/args.js')
 const makeNice = require('./src/cli/make-nice.js')
 
 let { date } = args
-let { source, crawl, scrape, regenerate } = makeNice(args)
+let { crawl, scrape, regenerate, regenTimeseries } = makeNice(args)
 
 ;(async () => {
   // TODO add warning about sandbox not being started here
 
+  process.env.NODE_ENV = 'testing'
+
   if (crawl) {
-    await crawler({ source: crawl })
+    await arc.events.publish({
+      name: 'crawler',
+      payload: {
+        source: crawl
+      }
+    })
   }
   if (scrape) {
-    await scraper({ source: scrape, date })
+    await arc.events.publish({
+      name: 'scraper',
+      payload: {
+        source: scrape,
+        date
+      }
+    })
   }
   if (regenerate) {
-    await regenerator({ source })
+    await arc.events.publish({
+      name: 'regenerator',
+      payload: {
+        source: regenerate,
+        date
+      }
+    })
+  }
+  if (regenTimeseries) {
+    await timeseriesRegenerator()
   }
 })()
