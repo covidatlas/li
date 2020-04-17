@@ -65,6 +65,14 @@ test('looksLike.YYYYMD', t => {
   t.end()
 })
 
+test('looksLike.YYYYMMDD', t => {
+  t.equal(looksLike.YYYYMMDD('2020-3-16'), false, 'valid date but incorrect form')
+  t.equal(looksLike.YYYYMMDD('2020-03-16'), true, 'padding')
+  t.equal(looksLike.YYYYMMDD('20-03-16'), false, 'two-digit year')
+  t.equal(looksLike.YYYYMMDD('pizza'), false, 'etc')
+  t.end()
+})
+
 test('looksLike.MDYY', t => {
   t.equal(looksLike.MDYY('03-16-20'), true, 'valid date')
   t.equal(looksLike.MDYY('3-16-20'), true, 'no padding')

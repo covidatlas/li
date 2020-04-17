@@ -14,6 +14,7 @@ function dateTester (pattern) {
 module.exports = {
   isoDate: dateTester(/^\d{4}-\d{2}-\d{2}$/),
   YYYYMD: dateTester(/^\d{4}-\d{1,2}-\d{1,2}$/),
+  YYYYMMDD: dateTester(/^\d{4}-\d{2}-\d{2}$/),
   MDYYYY: dateTester(/^\d{1,2}-\d{1,2}-\d{4}$/),
   MDYY: dateTester(/^\d{1,2}-\d{1,2}-\d{2}$/)
 }

@@ -7,10 +7,8 @@ const mapping = require('./mapping.json')
 
 module.exports = {
   country: 'iso1:NL',
-  url: 'https://github.com/J535D165/CoronaWatchNL',
   timeseries: true,
   priority: 1,
-  type: 'csv',
   friendly: {
     name: 'National Institute for Public Health and the Environment',
     url: 'https://github.com/J535D165/CoronaWatchNL',
