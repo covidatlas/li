@@ -26,19 +26,22 @@ let { crawl, scrape, regenerate, regenTimeseries } = makeNice(args)
     await arc.events.publish({
       name: 'scraper',
       payload: {
-        source: scrape,
-        date
+        date,
+        source: scrape
       }
     })
   }
   if (regenerate) {
-    await arc.events.publish({
-      name: 'regenerator',
-      payload: {
-        source: regenerate,
-        date
-      }
-    })
+    console.log(`⚠️  About to regenerate ${regenerate}, you've got 3 seconds to cancel!`)
+    setTimeout(async () => {
+      await arc.events.publish({
+        name: 'regenerator',
+        payload: {
+          date,
+          source: regenerate
+        }
+      })
+    }, 3000)
   }
   if (regenTimeseries) {
     await timeseriesRegenerator()

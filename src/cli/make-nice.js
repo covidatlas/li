@@ -1,4 +1,4 @@
-const sourceMap = require('../../src/shared/sources/_lib/source-map.js')
+const getSource = require('../../src/shared/sources/_lib/get-source.js')
 
 /**
  * Enable:
@@ -12,15 +12,13 @@ module.exports = function makeNice (params) {
   const yargy = arg => arg || arg === ''
 
   if (yargy(crawl) || yargy(scrape) || yargy(regenerate)) {
-    const sources = sourceMap()
-    const getSource = p => {
-      const exact = sources[p]
-      if (exact) return p
-      else throw Error('Source not found!')
+    const checkSource = p => {
+      getSource(p)
+      return p
     }
-    if (yargy(crawl)) crawl = getSource(crawl)
-    if (yargy(scrape)) scrape = getSource(scrape)
-    if (yargy(regenerate)) regenerate = getSource(regenerate)
+    if (yargy(crawl)) crawl = checkSource(crawl)
+    if (yargy(scrape)) scrape = checkSource(scrape)
+    if (yargy(regenerate)) regenerate = checkSource(regenerate)
   }
   if (regenTimeseries === '') {
     regenTimeseries = true

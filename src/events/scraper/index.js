@@ -11,6 +11,7 @@ const normalizeData = require('./normalize-data/index.js')
 
 async function scrapeSource (event) {
   try {
+    console.time('Scrape')
     let { date } = event
     // Normalize date
     date = date ? datetime.getYYYYMMDD(date) :  datetime.getYYYYMMDD(new Date().toLocaleDateString())
@@ -55,6 +56,7 @@ async function scrapeSource (event) {
     // TODO coming soon:
     // await write(data)
 
+    console.timeEnd('Scrape')
   }
   catch (err) {
     console.error(err)

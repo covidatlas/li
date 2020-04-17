@@ -5,6 +5,7 @@ const cache = require('./cache')
 
 async function crawlSource (event) {
   try {
+    console.time('Crawl')
     /**
      * Load the requested source
      */
@@ -56,6 +57,8 @@ async function crawlSource (event) {
      * Cache the results
      */
     await cache(results)
+
+    console.timeEnd('Crawl')
   }
   catch (err) {
     console.log('Crawler error', err)

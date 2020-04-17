@@ -12,7 +12,7 @@ get /get/headless
 @events
 crawler     # Crawls our sources
 scraper     # Operates the scrapers
-# regenerator # Regenerates a source from cache
+regenerator # Regenerates a source from cache
 
 @scheduled
 regen-timeseries rate(1 hour) # Regularly regenerates timeseries sources
