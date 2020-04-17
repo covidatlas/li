@@ -1,5 +1,5 @@
 const arc = require('@architect/functions')
-const loadSource = require('./load-source/index.js')
+const getSource = require('@architect/shared/sources/_lib/get-source.js')
 const crawler = require('./crawl')
 const cache = require('./cache')
 
@@ -8,7 +8,7 @@ async function crawlSource (event) {
     /**
      * Load the requested source
      */
-    const source = loadSource(event)
+    const source = getSource(event)
     const { scrapers, _sourceKey } = source
 
     /**

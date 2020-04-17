@@ -1,13 +1,14 @@
-const loadSources = require('@architect/shared/sources/_lib/load-sources.js')
-const sourceKey = require('@architect/shared/sources/_lib/source-key.js')
+const sourceMap = require('./source-map.js')
+const sourceKey = require('./source-key.js')
 
 /**
  * If it wasn't obvious from all the naming, this thing loads a specified source
  */
-module.exports = function loadSource (params) {
-  const { source } = params
+module.exports = function getSource (params) {
+  let source = params
+  if (params.source) source = params.source
 
-  const sources = loadSources()
+  const sources = sourceMap()
   const filePath = sources[source]
 
   if (!filePath) {
@@ -15,7 +16,7 @@ module.exports = function loadSource (params) {
   }
   try {
     // eslint-disable-next-line
-    const src = require(filePath)
+    let src = require(filePath)
 
     // Populate the sourceKey for caching
     src._sourceKey = sourceKey(filePath)

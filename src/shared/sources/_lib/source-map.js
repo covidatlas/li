@@ -2,7 +2,7 @@ const glob = require('glob').sync
 const globJoin = require('../../utils/glob-join.js')
 const sourceKey = require('./source-key.js')
 
-module.exports = function loadSources () {
+module.exports = function sourceMap () {
   const scrapers = globJoin(__dirname, '..', '**', '*.js')
   let filePaths = glob(scrapers)
 

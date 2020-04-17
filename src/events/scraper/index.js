@@ -1,7 +1,7 @@
 const arc = require('@architect/functions')
 const datetime = require('@architect/shared/datetime/index.js')
 
-const loadSource = require('./load-source/index.js')
+const getSource = require('@architect/shared/sources/_lib/get-source.js')
 const findTz = require('./find-tz/index.js')
 const findScraper = require('./find-scraper/index.js')
 const loadCache = require('./load-cache/index.js')
@@ -18,7 +18,7 @@ async function scrapeSource (event) {
     /**
      * Load the requested source
      */
-    const source = loadSource(event)
+    const source = getSource(event)
 
     /**
      * Get the timezone so we can locale-cast the specified date

@@ -1,8 +1,8 @@
-const loadSources = require('@architect/shared/sources/_lib/load-sources.js')
+const sourceMap = require('@architect/shared/sources/_lib/source-map.js')
 const sourceKey = require('@architect/shared/sources/_lib/source-key.js')
 
 module.exports = function findTimeseries () {
-  let sources = loadSources()
+  let sources = sourceMap()
   const filePaths = Object.values(sources)
 
   // Load up our source(s)

@@ -1,4 +1,4 @@
-const loadSources = require('../../src/shared/sources/_lib/load-sources.js')
+const sourceMap = require('../../src/shared/sources/_lib/source-map.js')
 
 /**
  * Enable:
@@ -12,7 +12,7 @@ module.exports = function makeNice (params) {
   const yargy = arg => arg || arg === ''
 
   if (yargy(crawl) || yargy(scrape) || yargy(regenerate)) {
-    const sources = loadSources()
+    const sources = sourceMap()
     const getSource = p => {
       const exact = sources[p]
       if (exact) return p
