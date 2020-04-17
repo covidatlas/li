@@ -43,7 +43,6 @@ test('Scraper validation test', t => {
       // Timezone
       if (tz) assert.ok(is.string(tz), 'Timezone must be a string')
 
-
       // Scrapers
       assert.ok(is.array(scrapers), 'Scrapers must be an array')
       assert.ok(scrapers.length, 'Scrapers must have at least one scraper')
@@ -66,16 +65,16 @@ test('Scraper validation test', t => {
           const { type, data, url } = crawler
 
           // Crawl type
-          const types = /(page$)|(headless$)|(csv$)|(tsv$)|(pdf$)|(json$)|(raw$)/
+          const types = /(^page$)|(^headless$)|(^csv$)|(^tsv$)|(^pdf$)|(^json$)|(^raw$)/
           assert.ok(types.test(type), 'Crawler type must be one of: page, headless, csv, tsv, pdf, json, raw')
 
-          // Data format type (for ranking)
+          // Crawl data format type (for ranking I guess?)
           assert.ok(is.string(data) || !data, 'Crawler data must be a string')
 
-          // URL
+          // Crawl URL
           assert.ok(is.string(url) || is.function(url), 'Crawler url must be a string or function')
 
-          // Crawler names
+          // Crawl name keys
           if (crawl.length === 1) {
             assert.ok(!crawler.name, 'Single crawlers must not have a name key')
           }
@@ -90,7 +89,7 @@ test('Scraper validation test', t => {
         }
 
         // Scrape
-        assert.ok(is.function(scrape), 'Scraper must be a function')
+        assert.ok(is.function(scrape), 'Scrape must be a function')
         if (scrape.constructor.name === 'AsyncFunction') {
           warnings.push(`Source contains an async scraper; scrapers should only contain synchronous logic. See: ${key}`)
         }
@@ -109,6 +108,7 @@ test('Scraper validation test', t => {
       // End date
       if (endDate) assert.ok(datetime.looksLike.YYYYMMDD(endDate), 'endDate must be ISO formatted (YYYY-MM-DD)')
 
+      // Optional and legacy fields
       const { url, type, data, maintainers } = source
       if (url) warnings.push(`Source contains a 'url' param; please move this into a crawler. See: ${key}`)
       if (type) warnings.push(`Source contains a 'type' param; please move this into a crawler. See: ${key}`)
