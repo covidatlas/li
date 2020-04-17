@@ -88,10 +88,15 @@ test('Scraper validation test', t => {
           }
         }
 
-        // Scrape
-        assert.ok(is.function(scrape), 'Scrape must be a function')
-        if (scrape.constructor.name === 'AsyncFunction') {
-          warnings.push(`Source contains an async scraper; scrapers should only contain synchronous logic. See: ${key}`)
+        // Scrape (optional, allows crawl-only sources that need scrapers for later)
+        if (scrape) {
+          assert.ok(is.function(scrape), 'Scrape must be a function')
+          if (scrape.constructor.name === 'AsyncFunction') {
+            warnings.push(`Source contains an async scraper; scrapers should only contain synchronous logic. See: ${key}`)
+          }
+        }
+        else {
+          warnings.push(`Source contains a crawl-only scraper; please add scraper logic ASAP! See: ${key}`)
         }
       }
 
@@ -123,10 +128,12 @@ test('Scraper validation test', t => {
     }
   }
   if (warnings.length) {
-    console.warn('')
-    console.warn('⚠️  Warnings!')
-    for (const warn of warnings) {
-      console.warn(warn)
-    }
+    setTimeout(() => {
+      console.warn('')
+      console.warn('⚠️  Warnings!')
+      for (const warn of warnings) {
+        console.warn(warn)
+      }
+    }, 100)
   }
 })
