@@ -77,10 +77,6 @@ const dummyScraper = {
       crawl: [
         { name: '2-string', url: 'url' },
         { name: '2-OK-f-string', url: () => 'https://someurl.com' },
-        { name: '2-X-array', url: () => ['failure array'] },
-        { name: '2-X-number', url: () => 1234 },
-        { name: '2-OK-hash', url: () => { return { url: 'https://u.com', cookie: 'c' } } },
-        { name: '2-X-no-cookie', url: () => { return { url: 'https://u.com' } } }
       ],
     },
     {
@@ -93,19 +89,15 @@ const dummyScraper = {
 }
 
 test('getCrawlFunctions', t => {
-  const testSources = { FAKE: dummyScraper }
-  const actual = getCrawlFunctions(testSources)
-  t.equal(7, actual.length, "7 functions defined in dummy")
-
+  const actual = getCrawlFunctions({ A: dummyScraper, B: dummyScraper })
   const names = actual.map(f => [f[0], f[1], f[2].name || 'noname'].join('-'))
   const expected = [
-    'FAKE-2020-04-01-2-OK-f-string',
-    'FAKE-2020-04-02-2-OK-f-string',
-    'FAKE-2020-04-02-2-X-array',
-    'FAKE-2020-04-02-2-X-number',
-    'FAKE-2020-04-02-2-OK-hash',
-    'FAKE-2020-04-02-2-X-no-cookie',
-    'FAKE-2020-04-03-noname'
+    'A-2020-04-01-2-OK-f-string',
+    'A-2020-04-02-2-OK-f-string',
+    'A-2020-04-03-noname',
+    'B-2020-04-01-2-OK-f-string',
+    'B-2020-04-02-2-OK-f-string',
+    'B-2020-04-03-noname'
   ]
   t.deepEqual(names, expected, 'expected function names returned')
   t.end()
