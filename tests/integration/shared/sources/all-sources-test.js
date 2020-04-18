@@ -5,24 +5,22 @@ const is = require('is')
 const srcShared = join(process.cwd(), 'src', 'shared')
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 
-const sourceFiles = sourceMap()
 const sources = {}
-for (const [key, src] of Object.entries(sourceFiles)) {
+for (const [key, src] of Object.entries(sourceMap())) {
   // eslint-disable-next-line
   sources[key] = require(src)
 }
 
 /** A minimal fake scraper with crawl defined.
  *
- * Development of these tests, no scrapers with function crawlers
+ * During dev of these tests, no scrapers with function crawlers
  * existed. This dummy scraper adds some good and bad crawler methods
- * to exercise the tests, and ensure everything would fail as expected
- * for bad scrapers.
+ * to exercise the tests, so we can ensure everything would fail as
+ * expected for bad scrapers.
  *
  * This scraper is checked when ADD_FAKE_SCRAPER is defined in env:
  * $ ADD_FAKE_SCRAPER=1 npm run test:integration
  */
-
 const dummyScraper = {
   scrapers: [
     {
@@ -55,8 +53,8 @@ const dummyScraper = {
 if (process.env.ADD_FAKE_SCRAPER)
   sources['FAKE'] = dummyScraper
 
-// I think there's a clever way to build this array using map etc, but
-// this works too.
+
+/** Crawl functions (e.g., "crawl.url = () => {...}") */
 const crawlFunctions = []
 for (const [key, source] of Object.entries(sources)) {
   const fns = source.scrapers.map(s => {
@@ -69,29 +67,47 @@ for (const [key, source] of Object.entries(sources)) {
   })
 }
 
-console.log(crawlFunctions)
+/** Tests for crawlFunctions */
+for (const [key, dt, crawl] of crawlFunctions) {
+  const s = crawl.name || '(default)'
+  const testname = `${key}: ${dt} '${s}' url function`
 
-for (const [key, date, crawl] of crawlFunctions) {
-  test(`${key} ${date} crawl function ${crawl.name || 'undefined'}`, t => {
-    t.ok('hi')
+  test(`${testname} return value`, t => {
+    const ret = crawl.url()
+    t.ok(is.string(ret) || is.object(ret), 'Is string or object')
+
+    if (is.object(ret)) {
+      t.ok(ret.url, 'Has url')
+      t.ok(ret.cookie, 'Has cookie')
+      t.equal(Object.keys(ret).length, 2, 'Only 2 keys returned')
+    }
+
+    const actualUrl = is.string(ret) ? ret : ret.url
+    t.ok(/^https?\:\/\/.*/.test(actualUrl), 'return valid URL')
     t.end()
   })
-}
 
+  /** TO DISCUSS: I think this is a valid test, need to sort out how
+   * to get cache count. */
+  test.skip(`${testname} cache not touched`, t => {
+    const getCacheCount = (n = 0) => { return 42 + n } // files.
+    const oldCacheCount = getCacheCount()
+    crawl.url()
+    const newCacheCount = getCacheCount(1)
+    t.equal(oldCacheCount, newCacheCount, 'cache not affected')
+    t.end()
+  })
 
-  /*
-    Execute function should return a URL string or obj {url, cookie}
-    Execute function should not write to cache
-    Execute function should fail if no net connection
-    Execute function should handle paginated data sources
-    URL format must be valid (?)
+  /* Discarded ideas:
+     Originally I thought that these tests had value, but I'm not sure
+     now.
+
+    - Execute function should fail if no net connection (???)
+      We can't be sure how devs will write methods.
+
+    - Execute function should handle paginated data sources (???)
+      Not sure how pagination will be implemented.
   */
 
-/*
-for (const [key, src] of Object.entries(sources)) {
-  const name = `${key}.crawl url function`;
-  test(`${key}`, t => {
-    t.end();
-  });
 }
-*/
+
