@@ -31,9 +31,11 @@ function getCrawlFunctions(sourceDictionary) {
 /** Return list of validation failures in array. */
 function validateCrawlFunction(crawl) {
   const errs = []
-  if (is.string(crawl.url)) return errs
 
-  const ret = crawl.url()
+  let ret = crawl.url
+  if (is.function(crawl.url))
+    ret =  crawl.url()
+
   if (!is.string(ret) && !is.object(ret)) errs.push('Not string or object')
   if (is.object(ret)) {
     const requiredKeys = 'cookie, url'
@@ -47,8 +49,12 @@ function validateCrawlFunction(crawl) {
   const actualUrl = is.object(ret) ? ret.url : ret
   const re = /^https?\:\/\/.*/
   if (!re.test(actualUrl)) errs.push(`url '${actualUrl}' does not match url pattern`)
+  console.log(errs)
+  console.log(errs.join(', '))
   return errs
 }
+
+/** Return the crawl keys for a scraper for each date. */
 
 ////////////////////////////////////////////////////////////////////
 /** Testing the validation utility methods.
@@ -59,8 +65,9 @@ function validateCrawlFunction(crawl) {
  * to validate the validation functions, using the fake scraper.
  */
 
-/** Fake scraper.  This scraper is checked when ADD_FAKE_SCRAPER is
- * defined in env:
+/** Fake scraper.  This scraper is checked during actual tests (of
+ * actual scrapers) when ADD_FAKE_SCRAPER is defined in env:
+ *
  * $ ADD_FAKE_SCRAPER=1 npm run test:integration
  */
 const dummyScraper = {
@@ -105,12 +112,10 @@ test('getCrawlFunctions', t => {
 
 test('validateCrawlFunction, valid crawler urls', t => {
   const testcases = [
-    { name: '1-string', url: 'url' },
-    { name: '2-OK-f-string', url: () => { return 'https://someurl.com' } },
-    { name: '2-string', url: 'url' },
-    { name: '2-OK-f-string', url: () => { return 'https://someurl.com' } },
-    { name: '2-OK-hash', url: () => { return { url: 'https://u.com', cookie: 'c' } } },
-    { url: () => { return 'http://ok.com' } }
+    { name: 'https', url: 'https://url' },
+    { name: 'http', url: 'http://url' },
+    { name: 'ret-string', url: () => { return 'https://someurl.com' } },
+    { name: 'ret-object', url: () => { return { url: 'https://u.com', cookie: 'c' } } }
   ]
   testcases.forEach(testcase => {
     t.deepEqual(validateCrawlFunction(testcase), [], testcase.name || 'noname')
@@ -122,15 +127,15 @@ test('validateCrawlFunction, valid crawler urls', t => {
 test('validateCrawlFunction, invalid crawler urls', t => {
   const testcases = [
     {
-      crawler: { name: '2-X-array', url: () => ['failure array'] },
+      crawler: { name: 'array', url: () => ['failure array'] },
       expected: [ 'Not string or object', "url 'failure array' does not match url pattern" ]
     },
     {
-      crawler: { name: '2-X-number', url: () => 1234 },
+      crawler: { name: 'number', url: () => 1234 },
       expected: [ 'Not string or object', "url '1234' does not match url pattern" ]
     },
     {
-      crawler: { name: '2-X-no-cookie', url: () => { return { url: 'https://u.com' } } },
+      crawler: { name: 'no-cookie', url: () => { return { url: 'https://u.com' } } },
       expected: [ "Should have keys 'cookie, url', but got 'url'" ]
     }
   ]
@@ -151,6 +156,11 @@ for (const [key, src] of Object.entries(sourceMap())) {
   sources[key] = require(src)
 }
 
+if (process.env.ADD_FAKE_SCRAPER) {
+  console.log('Adding fake scraper to tests.')
+  sources['FAKE'] = dummyScraper
+}
+
 /** Tests for crawlFunctions */
 const crawlFunctions = getCrawlFunctions(sources)
 for (const [key, dt, crawl] of crawlFunctions) {
@@ -159,7 +169,7 @@ for (const [key, dt, crawl] of crawlFunctions) {
 
   test(`${testname} return value`, t => {
     const errs = validateCrawlFunction(crawl).join('; ')
-    t.equal(errs, '', errs)
+    t.equal(errs, '')
     t.end()
   })
 
@@ -192,8 +202,8 @@ for (const [key, dt, crawl] of crawlFunctions) {
 /*
 Scrape tests
 
-Scrape should throw specific error if the object sent doesn’t meet validation requirements.
 Scrape should throw specific error if missing key.
+Scrape should throw specific error if the object sent doesn’t meet validation requirements.
 Scrape test doesn’t throw for NotImplementedException
 Scrape test doesn’t throw for DeprecatedException
 Scrape returns data matching minimal json schema specification.
