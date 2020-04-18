@@ -111,3 +111,6 @@ for (const [key, dt, crawl] of crawlFunctions) {
 
 }
 
+if (crawlFunctions.length === 0) {
+  test('Placeholder', t => { t.ok('Need >=1 test, or tape throws.'); t.end() })
+}
