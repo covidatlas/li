@@ -4,13 +4,14 @@ const arc = require('@architect/functions')
 const timeseriesRegenerator = require('./src/scheduled/regen-timeseries/index.js').handler
 
 const args = require('./src/cli/args.js')
+const checkSandbox = require('./src/cli/check-sandbox.js')
 const makeNice = require('./src/cli/make-nice.js')
 
 let { date } = args
 let { crawl, scrape, regenerate, regenTimeseries } = makeNice(args)
 
 ;(async () => {
-  // TODO add warning about sandbox not being started here
+  checkSandbox()
 
   process.env.NODE_ENV = 'testing'
 
