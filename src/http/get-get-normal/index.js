@@ -6,7 +6,7 @@ const got = require('got')
 async function getNormal (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { cookie, rejectUnauthorized, url } = options
+  let { cookies, rejectUnauthorized, url } = options
 
   try {
     const agent = 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_2) ' +
@@ -22,7 +22,10 @@ async function getNormal (req) {
     let headers = {
       'user-agent': agent
     }
-    if (cookie) {
+
+    // Reconstitute cookies
+    if (cookies) {
+      let cookie = Object.entries(cookies).map(([cookie, value]) => `${cookie}=${value}`).join('; ')
       headers.cookie = cookie
     }
 
@@ -57,15 +60,34 @@ async function getNormal (req) {
       // We got a good response, return it
       if (status < 400) {
         // Compress, then base64 encode body in case we transit binaries, max 10MB payload
-        let body = new Buffer.from(response.body)
-        body = brotliCompressSync(body).toString('base64')
-        if (body.length >= 1000 * 1000 * 10) {
+        let responseBody = new Buffer.from(response.body)
+        responseBody = brotliCompressSync(responseBody).toString('base64')
+        if (responseBody.length >= 1000 * 1000 * 10) {
           console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
           return {
             statusCode: 500,
             json: { error: 'maximum_size_exceeded' }
           }
         }
+        // Set up response payload
+        let payload = {
+          body: responseBody
+        }
+
+        // Handle cookies in case a crawler client needs them
+        const responseCookies = response.headers && response.headers['set-cookie']
+        const hasCookies = Array.isArray(responseCookies) && responseCookies.length
+        if (hasCookies) {
+          const cookies = {}
+          for (const cookie of responseCookies) {
+            const nibble = cookie.split(';')[0]
+            const crumbs = nibble.split('=')
+            cookies[crumbs[0]] = crumbs[1]
+          }
+          payload.cookies = cookies
+        }
+
+        const body = JSON.stringify(payload)
         return {
           statusCode: 200,
           body

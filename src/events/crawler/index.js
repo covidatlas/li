@@ -27,16 +27,18 @@ async function crawlSource (event) {
       let { type, url } = crawl
       crawl.url = typeof url === 'string'
                      ? url
-                     : await url(/*client*/)
+                     : await url(crawler.client)
 
       // A crawl may pass back a URL or { url, cookie }; extract and pass along
-      if (crawl.url.cookie) {
-        crawl.cookie = crawl.url.cookie
+      if (crawl.url.cookies) {
+        crawl.cookies = crawl.url.cookies
       }
       if (crawl.url.url) {
-        crawl.url = url
+        crawl.url = crawl.url.url
       }
-      const data = await crawler(crawl)
+
+      const response = await crawler(type, crawl)
+      const data = response.body
       const result = {
         // Caching metadata
         _sourceKey,
@@ -67,4 +69,3 @@ async function crawlSource (event) {
 }
 
 exports.handler = arc.events.subscribe(crawlSource)
-// exports.handler = crawlSource

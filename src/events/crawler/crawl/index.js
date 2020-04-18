@@ -1,12 +1,12 @@
 const { brotliDecompressSync } = require('zlib')
 const got = require('got')
 
-module.exports = async function crawl (params) {
-  const { type, url, rejectUnauthorized, cookie } = params
+async function crawl (type, params) {
+  const { url, rejectUnauthorized, cookies } = params
   const getType = type !== 'headless' ? 'normal' : 'headless'
   const isLocal = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
 
-  let options = JSON.stringify({ type, url, rejectUnauthorized, cookie })
+  let options = JSON.stringify({ type, url, rejectUnauthorized, cookies })
   options = encodeURIComponent(options)
 
   const root = isLocal
@@ -16,12 +16,26 @@ module.exports = async function crawl (params) {
   const result = await got(path)
 
   if (result.statusCode === 200) {
-    let body = new Buffer.from(result.body, 'base64')
-    body = brotliDecompressSync(body)
-    return body
+    let response = JSON.parse(result.body)
+    if (response.body) {
+      response.body = new Buffer.from(response.body, 'base64')
+      response.body = brotliDecompressSync(response.body)
+    }
+    return response
   }
   else {
     const err = result.body && result.body.error || 'Request failed'
     throw Error(err)
   }
 }
+
+// Async client passed to crawl.url functions
+async function client (params) {
+  let response = await crawl('normal', params)
+  // As a convenience, convert the client's body back to a string since we aren't piping to cache
+  if (response.body) response.body = response.body.toString()
+  return response
+}
+
+crawl.client = client
+module.exports = crawl
