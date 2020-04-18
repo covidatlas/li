@@ -5,20 +5,62 @@ const is = require('is')
 const srcShared = join(process.cwd(), 'src', 'shared')
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 
-const sources = {}
-for (const [key, src] of Object.entries(sourceMap())) {
-  // eslint-disable-next-line
-  sources[key] = require(src)
+
+////////////////////////////////////////////////////////////////////
+/** Validation utility methods. */
+
+/** Get all crawl functions (e.g., "crawl.url = () => {...}") as an array of arrays.
+ * Returns [ [source_key, crawl_start_date, crawler_array_entry] ... ]
+ */
+
+function getCrawlFunctions(sourceDictionary) {
+  const crawlFunctions = []
+  for (const [key, source] of Object.entries(sourceDictionary)) {
+    const fns = source.scrapers.map(s => {
+      return { startDate: s.startDate, funcs: s.crawl.filter(c => is.function(c.url)) }
+    })
+    fns.forEach(fn => {
+      fn.funcs.forEach(func => {
+        crawlFunctions.push([key, fn.startDate, func])
+      })
+    })
+  }
+  return crawlFunctions
 }
 
-/** A minimal fake scraper with crawl defined.
+/** Return list of validation failures in array. */
+function validateCrawlFunction(crawl) {
+  const errs = []
+  if (is.string(crawl.url)) return errs
+
+  const ret = crawl.url()
+  if (!is.string(ret) && !is.object(ret)) errs.push('Not string or object')
+  if (is.object(ret)) {
+    const requiredKeys = 'cookie, url'
+    const actualKeys = Object.keys(ret).sort().join(', ')
+    if (actualKeys !== requiredKeys) {
+      const msg = `Should have keys '${requiredKeys}', but got '${actualKeys}'`
+      errs.push(msg)
+    }
+  }
+
+  const actualUrl = is.object(ret) ? ret.url : ret
+  const re = /^https?\:\/\/.*/
+  if (!re.test(actualUrl)) errs.push(`url '${actualUrl}' does not match url pattern`)
+  return errs
+}
+
+////////////////////////////////////////////////////////////////////
+/** Testing the validation utility methods.
  *
- * During dev of these tests, no scrapers with function crawlers
- * existed. This dummy scraper adds some good and bad crawler methods
- * to exercise the tests, so we can ensure everything would fail as
- * expected for bad scrapers.
- *
- * This scraper is checked when ADD_FAKE_SCRAPER is defined in env:
+ * NOTE: The tests in this module were written before many scrapers
+ * had been ported.  In order to verify that the tests _themselves_
+ * were valid, we're using a fake scraper.  There are a set of tests
+ * to validate the validation functions, using the fake scraper.
+ */
+
+/** Fake scraper.  This scraper is checked when ADD_FAKE_SCRAPER is
+ * defined in env:
  * $ ADD_FAKE_SCRAPER=1 npm run test:integration
  */
 const dummyScraper = {
@@ -50,40 +92,82 @@ const dummyScraper = {
   ]
 }
 
-if (process.env.ADD_FAKE_SCRAPER)
-  sources['FAKE'] = dummyScraper
+test('getCrawlFunctions', t => {
+  const testSources = { FAKE: dummyScraper }
+  const actual = getCrawlFunctions(testSources)
+  t.equal(7, actual.length, "7 functions defined in dummy")
+
+  const names = actual.map(f => [f[0], f[1], f[2].name || 'noname'].join('-'))
+  const expected = [
+    'FAKE-2020-04-01-2-OK-f-string',
+    'FAKE-2020-04-02-2-OK-f-string',
+    'FAKE-2020-04-02-2-X-array',
+    'FAKE-2020-04-02-2-X-number',
+    'FAKE-2020-04-02-2-OK-hash',
+    'FAKE-2020-04-02-2-X-no-cookie',
+    'FAKE-2020-04-03-noname'
+  ]
+  t.deepEqual(names, expected, 'expected function names returned')
+  t.end()
+})
+
+test('validateCrawlFunction, valid crawler urls', t => {
+  const testcases = [
+    { name: '1-string', url: 'url' },
+    { name: '2-OK-f-string', url: () => { return 'https://someurl.com' } },
+    { name: '2-string', url: 'url' },
+    { name: '2-OK-f-string', url: () => { return 'https://someurl.com' } },
+    { name: '2-OK-hash', url: () => { return { url: 'https://u.com', cookie: 'c' } } },
+    { url: () => { return 'http://ok.com' } }
+  ]
+  testcases.forEach(testcase => {
+    t.deepEqual(validateCrawlFunction(testcase), [], testcase.name || 'noname')
+  })
+  t.end()
+})
 
 
-/** Crawl functions (e.g., "crawl.url = () => {...}") */
-const crawlFunctions = []
-for (const [key, source] of Object.entries(sources)) {
-  const fns = source.scrapers.map(s => {
-    return { startDate: s.startDate, funcs: s.crawl.filter(c => is.function(c.url)) }
+test('validateCrawlFunction, invalid crawler urls', t => {
+  const testcases = [
+    {
+      crawler: { name: '2-X-array', url: () => ['failure array'] },
+      expected: [ 'Not string or object', "url 'failure array' does not match url pattern" ]
+    },
+    {
+      crawler: { name: '2-X-number', url: () => 1234 },
+      expected: [ 'Not string or object', "url '1234' does not match url pattern" ]
+    },
+    {
+      crawler: { name: '2-X-no-cookie', url: () => { return { url: 'https://u.com' } } },
+      expected: [ "Should have keys 'cookie, url', but got 'url'" ]
+    }
+  ]
+  testcases.forEach(testcase => {
+    const actual = validateCrawlFunction(testcase.crawler).join('; ')
+    const expected = testcase.expected.join('; ')
+    t.equal(actual, expected, testcase.crawler.name || 'noname')
   })
-  fns.forEach(fn => {
-    fn.funcs.forEach(func => {
-      crawlFunctions.push([key, fn.startDate, func])
-    })
-  })
+  t.end()
+})
+
+//////////////////////////////////////////////////////////////
+// Actual tests.
+
+let sources = {}
+for (const [key, src] of Object.entries(sourceMap())) {
+  // eslint-disable-next-line
+  sources[key] = require(src)
 }
 
 /** Tests for crawlFunctions */
+const crawlFunctions = getCrawlFunctions(sources)
 for (const [key, dt, crawl] of crawlFunctions) {
   const s = crawl.name || '(default)'
   const testname = `${key}: ${dt} '${s}' url function`
 
   test(`${testname} return value`, t => {
-    const ret = crawl.url()
-    t.ok(is.string(ret) || is.object(ret), 'Is string or object')
-
-    if (is.object(ret)) {
-      t.ok(ret.url, 'Has url')
-      t.ok(ret.cookie, 'Has cookie')
-      t.equal(Object.keys(ret).length, 2, 'Only 2 keys returned')
-    }
-
-    const actualUrl = is.string(ret) ? ret : ret.url
-    t.ok(/^https?\:\/\/.*/.test(actualUrl), 'return valid URL')
+    const errs = validateCrawlFunction(crawl).join('; ')
+    t.equal(errs, '', errs)
     t.end()
   })
 
@@ -111,6 +195,17 @@ for (const [key, dt, crawl] of crawlFunctions) {
 
 }
 
-if (crawlFunctions.length === 0) {
-  test('Placeholder', t => { t.ok('Need >=1 test, or tape throws.'); t.end() })
-}
+
+
+/*
+Scrape tests
+
+Scrape should throw specific error if the object sent doesn’t meet validation requirements.
+Scrape should throw specific error if missing key.
+Scrape test doesn’t throw for NotImplementedException
+Scrape test doesn’t throw for DeprecatedException
+Scrape returns data matching minimal json schema specification.
+Scrape data numeric fields should be sensible.
+Scrape makes no HTTP calls
+
+*/
