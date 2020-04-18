@@ -60,7 +60,7 @@ data is valid.
 
 ## License
 
-TBD ... This project is licensed under the permissive [BSD 2-clause license](LICENSE).
+**TBD** ... `BSD 2-clause` license, or `Apache 2.0`.  We will need to add and update LICENSE.
 
 The data produced by this project is public domain.
 

@@ -4,20 +4,19 @@
 
 You'll need the following:
 
-* [node](https://nodejs.org/en/download/)
-
-Install them using your favorite method (`homebrew`, etc).
+* [Node.js 12](https://nodejs.org/en/download/)
 
 ## Repo
 
-First, [fork the repository](https://github.com/covidatlas/li.git) so you're ready to contribute back.
+First, [fork the repository](https://github.com/covidatlas/li.git) so
+you're ready to contribute back.
 
 ### 1. Clone, init submodules, and add upstream
 
 Replace `yourusername` below with your Github username:
 
 ```
-git clone git@github.com:yourusername/coronadatascraper.git
+git clone git@github.com:yourusername/li.git
 cd li
 git remote add upstream git@github.com:covidatlas/li.git
 ```
@@ -29,9 +28,8 @@ npm install
 ```
 
 If you get an error message saying you have an incompatible version of
-`node`, you may need to change version.  You can use `n` to change
-node versions: [install](https://www.npmjs.com/package/n) it and run
-`n lts`.
+`node`, you may need to change version.  You can use `n` or `nvm` to change
+node versions.
 
 ### Run the server
 
@@ -45,7 +43,7 @@ The first time you run this will take a minute as it downloads dependencies.  At
 
 Browse to http://localhost:3333/ to see the site.
 
-### Run a sample scraper
+### Run a sample source
 
 TBD
 
@@ -69,10 +67,6 @@ TBD
 
 TBD
 
-### Skipping a scraper
-
-TBD
-
 ### Re-generating old data
 
 TBD
@@ -92,8 +86,3 @@ We use [Tape](https://github.com/substack/tape).
     npm run test
     npm run test:unit
     npm run test:integration    
-
-
-### Building for production
-
-TBD
