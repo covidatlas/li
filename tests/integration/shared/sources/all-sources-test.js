@@ -68,15 +68,15 @@ const dummyScraper = {
     {
       startDate: '2020-04-01',
       crawl: [
-        { name: '1-string', url: 'url' },
-        { name: '2-OK-f-string', url: () => 'https://someurl.com' }
+        { name: 'cases', url: 'url' },
+        { name: 'deaths', url: () => 'https://someurl.com' }
       ],
     },
     {
       startDate: '2020-04-02',
       crawl: [
-        { name: '2-string', url: 'url' },
-        { name: '2-OK-f-string', url: () => 'https://someurl.com' },
+        { name: 'cases', url: 'url' },
+        { name: 'deaths', url: () => 'https://someurl.com' },
       ],
     },
     {
@@ -90,14 +90,14 @@ const dummyScraper = {
 
 test('getCrawlFunctions', t => {
   const actual = getCrawlFunctions({ A: dummyScraper, B: dummyScraper })
-  const names = actual.map(f => [f[0], f[1], f[2].name || 'noname'].join('-'))
+  const names = actual.map(f => [f[0], f[1], f[2].name || 'default'].join('-'))
   const expected = [
-    'A-2020-04-01-2-OK-f-string',
-    'A-2020-04-02-2-OK-f-string',
-    'A-2020-04-03-noname',
-    'B-2020-04-01-2-OK-f-string',
-    'B-2020-04-02-2-OK-f-string',
-    'B-2020-04-03-noname'
+    'A-2020-04-01-deaths',
+    'A-2020-04-02-deaths',
+    'A-2020-04-03-default',
+    'B-2020-04-01-deaths',
+    'B-2020-04-02-deaths',
+    'B-2020-04-03-default'
   ]
   t.deepEqual(names, expected, 'expected function names returned')
   t.end()
