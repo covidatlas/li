@@ -118,7 +118,6 @@ let dummySource = {
       ]
       // No scrape, this is cache-only.
     }
-
   ]
 }
 
@@ -365,8 +364,6 @@ scrapes.filter(h => (h.names.join(',') === 'undefined')).
 
 /*
 Scrape tests
-
-Scrape should throw specific error if missing key.
 Scrape should throw specific error if the object sent doesn’t meet validation requirements.
 Scrape test doesn’t throw for NotImplementedException
 Scrape test doesn’t throw for DeprecatedException
