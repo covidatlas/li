@@ -52,6 +52,35 @@ function validateCrawlUrl(url) {
  * to validate the validation functions, using the fake scraper.
  */
 
+// TODO: move this somewhere, scrapers should use it.
+// DISCUSS: where?
+/** Error thrown when a scraper data key is missing. */
+class MissingScrapeDataError extends Error {
+  constructor(keyname = 'default') {
+    super(`Missing data ${keyname}`)
+    this.name = 'MissingScrapeDataError'
+  }
+}
+
+// TODO: move somewhere.
+// DISCUSS: where?
+/** Throws MissingScrapeDataError if hsh is null, or if any key values
+ * are null. */
+function validateKeys(hsh) {
+  const nullOrUndef = (o) => { return (o === null || o === undefined) }
+  if (nullOrUndef(hsh)) {
+    throw new MissingScrapeDataError()
+  }
+
+  if (is.object(hsh)) {
+    Object.keys(hsh).forEach(k => {
+      if (nullOrUndef(hsh[k])) {
+        throw new MissingScrapeDataError(k)
+      }
+    })
+  }
+}
+
 /** Fake scraper.  This scraper is checked during actual tests (of
  * actual sources) when ADD_FAKE_SCRAPER is defined in env:
  *
@@ -67,6 +96,7 @@ let dummySource = {
       ],
       // eslint-disable-next-line no-unused-vars
       scrape({cases, deaths}, date) {
+        validateKeys({cases, deaths})
         // do stuff.
       }
     },
@@ -77,6 +107,7 @@ let dummySource = {
       ],
       // eslint-disable-next-line no-unused-vars
       scrape($, date) {
+        validateKeys($)
         // do stuff.
       }
     },
@@ -149,13 +180,13 @@ for (const [key, src] of Object.entries(sourceMap())) {
 }
 
 if (process.env.ADD_FAKE_SCRAPER) {
-  console.log('Adding fake scraper to tests.')
+  console.log('Adding fake scraper for tests.')
   sources['FAKE'] = dummySource
 }
 
 if (process.env.ONLY_FAKE_SCRAPER) {
   sources = {}
-  console.log('Using ONLY fake scraper to tests.')
+  console.log('Using ONLY fake scraper for tests.')
   sources['FAKE'] = dummySource
 }
 
@@ -260,7 +291,6 @@ const scrapes = Object.keys(sources).
       flat().
       // Remove any "null scrapes" (i.e., cache-only sources)
       filter(s => s.scrape)
-console.log(scrapes)
 
 function makeObjectWithKeys(keys) {
   return keys.reduce((obj, key) => {
@@ -268,30 +298,34 @@ function makeObjectWithKeys(keys) {
     return obj}, {})
 }
 
-// TODO: move this somewhere, scrapers should use it.
-class MissingScrapeKeyError extends Error {
-  constructor(message) {
-    super(message)
-    this.name = 'MissingScrapeKeyError'
+function shouldFailWithError(t, func, errType, errMessageRegex) {
+  let err = null
+  let errMsg = null
+  try { func() }
+  catch (e) {
+    err = e
+    errMsg = err.message
   }
+  t.ok(err !== null, 'threw an error')
+  t.ok(err instanceof errType, `error type was ${err.constructor.name}`)
+  t.ok(errMessageRegex.test(errMsg), `error msg '${errMsg}' matches ${errMessageRegex}`)
 }
 
+// Test all scrapes that have multiple crawl sources.
 scrapes.filter(h => (h.names.join(',') !== 'undefined')).
   forEach(c => {
     const baseTestName = `${c.key}: ${c.startDate} scrape argument`
-    test(`${baseTestName} missing object key throws MissingScrapeKeyError`, t => {
+    test(`${baseTestName} missing object key throws MissingScrapeDataError`, t => {
       c.names.forEach(n => {
         let arg = makeObjectWithKeys(c.names)
-        // console.log(`PRE-DEL: arg = ${Object.keys(arg)}`)
         delete arg[n]
-        // console.log(`DEL: arg = ${Object.keys(arg)}`)
-        t.throws(() => { c.scrape(arg) }, MissingScrapeKeyError)
+        shouldFailWithError(t, () => { c.scrape(arg) }, MissingScrapeDataError, new RegExp(`${n}`))
+        // t.throws(() => { c.scrape(arg) }, MissingScrapeDataError)
       })
       t.end()
     })
 
-    // Sanity check only during test development, might not be useful for real code.
-    test(`${baseTestName} with all keys does not throw MissingScrapeKeyError`, t => {
+    test(`${baseTestName} with all keys does not throw MissingScrapeDataError`, t => {
       let arg = makeObjectWithKeys(c.names)
       let error = null
       try {
@@ -299,14 +333,39 @@ scrapes.filter(h => (h.names.join(',') !== 'undefined')).
       } catch (err) {
         error = err
       }
-      t.ok(error === null || !(error instanceof MissingScrapeKeyError))
+      t.ok(error === null || !(error instanceof MissingScrapeDataError))
       t.end()
     })
 
   })
 
-// Add tests for single-crawl things, eg
+// // Test all scrapes with single crawl source.
 // scrapes.filter(h => (h.names.join(',') === 'undefined')).
+//   forEach(c => {
+//     const baseTestName = `${c.key}: ${c.startDate} scrape argument`
+//     test(`${baseTestName} null throws MissingScrapeDataError`, t => {
+//       c.names.forEach(n => {
+//         let arg = makeObjectWithKeys(c.names)
+//         delete arg[n]
+//         t.throws(() => { c.scrape(arg) }, MissingScrapeDataError)
+//       })
+//       t.end()
+//     })
+//
+//     test(`${baseTestName} with all keys does not throw MissingScrapeDataError`, t => {
+//       let arg = makeObjectWithKeys(c.names)
+//       let error = null
+//       try {
+//         c.scrape(arg)
+//       } catch (err) {
+//         error = err
+//       }
+//       t.ok(error === null || !(error instanceof MissingScrapeDataError))
+//       t.end()
+//     })
+//
+//   })
+
 
 /*
 Scrape tests
