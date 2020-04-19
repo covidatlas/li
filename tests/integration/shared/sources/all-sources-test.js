@@ -94,13 +94,42 @@ function validateKeys(hsh) {
   }
 }
 
+// ////////////////////////////////////////////////////////////
+// Fake Source
+
 /* eslint-disable no-unused-vars */
 
 /** Fake scraper.  This scraper is checked during actual tests (of
- * actual sources) when ADD_FAKE_SCRAPER is defined in env:
- *
- * $ ADD_FAKE_SCRAPER=1 npm run test:integration
+ * actual sources) when certain env values are set, e.g.:
+ *   ADD_FAKE_SCRAPER=1 npm run test:integration
+ *   ONLY_FAKE_SCRAPER=1 npm run test:integration
  */
+
+/** For this fake source, we assume it's good if every crawl data = 'GOOD'.
+ * (Note this is regardless of the type!) */
+function fakeFormatValidation(obj) {
+  if (is.string(obj)) {
+    if (obj !== 'GOOD')
+      throw new ScrapeDataValidationError()
+    return
+  }
+
+  if (is.object(obj)) {
+    const failed = Object.keys(obj).reduce((acc, key) => {
+      // console.log(` checking ${key}, accumulating onto [${acc}]`)
+      if (obj[key] !== 'GOOD')
+        acc.push(key)
+      return acc
+    }, [])
+    if (failed.length > 0) {
+      throw new ScrapeDataValidationError(failed.join(', '))
+    }
+    return
+  }
+
+  throw new Error('Unhandled case in fakeSource?')
+}
+
 let dummySource = {
   scrapers: [
     {
@@ -111,6 +140,7 @@ let dummySource = {
       ],
       scrape({cases, deaths}, date) {
         validateKeys({cases, deaths})
+        fakeFormatValidation({cases, deaths})
         // ...
       }
     },
@@ -121,6 +151,7 @@ let dummySource = {
       ],
       scrape($, date) {
         validateKeys($)
+        fakeFormatValidation($)
         // ...
       }
     },
@@ -159,6 +190,7 @@ const newScraper = {
   crawl: crawlEntries,
   scrape({ page, headless, csv, tsv, pdf, json, raw }, date) {
     validateKeys({ page, headless, csv, tsv, pdf, json, raw })
+    fakeFormatValidation({ page, headless, csv, tsv, pdf, json, raw })
     // ...
   }
 }
@@ -166,7 +198,12 @@ const newScraper = {
 dummySource.scrapers.push(newScraper)
 // console.log(dummySource)
 
+
 /* eslint-enable no-unused-vars */
+
+// End Fake Source
+// ////////////////////////////////////////////////////////////
+
 
 test('crawlFunctionsFor dummySource', t => {
   const actual = crawlFunctionsFor(dummySource).
@@ -411,7 +448,7 @@ scrapes.filter(h => (h.names.join(',') !== 'undefined')).
       t.end()
     })
 
-    test(`{$baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
+    test(`${baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
       let arg = await makeScrapeArgWithBadData(scraper.crawl)
       shouldFailWithError(t, () => { scraper.scrape(arg) }, ScrapeDataValidationError)
       t.end()
