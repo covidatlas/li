@@ -9,6 +9,8 @@ const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 ////////////////////////////////////////////////////////////////////
 /** Crawl validation utility methods. */
 
+// TODO (testing) Move utilities and dummy to a separate module and export them.
+
 function crawlFunctionsFor(source) {
   const fns = source.scrapers.map(s => {
     return { startDate: s.startDate, crawl: s.crawl.filter(c => is.function(c.url)) }
@@ -17,12 +19,12 @@ function crawlFunctionsFor(source) {
 }
 
 /** Return list of validation failures in array. */
-function validateCrawlFunction(crawl) {
+function validateCrawlUrl(url) {
   const errs = []
 
-  let ret = crawl.url
-  if (is.function(crawl.url))
-    ret =  crawl.url()
+  let ret = url
+  if (is.function(url))
+    ret =  url()
 
   if (!is.string(ret) && !is.object(ret)) errs.push('Not string or object')
   if (is.object(ret)) {
@@ -40,7 +42,6 @@ function validateCrawlFunction(crawl) {
   return errs
 }
 
-/** Return the crawl keys for a scraper for each date. */
 
 ////////////////////////////////////////////////////////////////////
 /** Testing the crawl validation utility methods.
@@ -86,7 +87,7 @@ test('crawlFunctionsFor dummySource', t => {
   t.end()
 })
 
-test('validateCrawlFunction, valid crawler urls', t => {
+test('validateCrawlUrl, valid crawler urls', t => {
   const testcases = [
     { name: 'https', url: 'https://url' },
     { name: 'http', url: 'http://url' },
@@ -94,12 +95,12 @@ test('validateCrawlFunction, valid crawler urls', t => {
     { name: 'ret-object', url: () => { return { url: 'https://u.com', cookie: 'c' } } }
   ]
   testcases.forEach(testcase => {
-    t.deepEqual(validateCrawlFunction(testcase), [], testcase.name || 'noname')
+    t.deepEqual(validateCrawlUrl(testcase.url), [], testcase.name || 'noname')
   })
   t.end()
 })
 
-test('validateCrawlFunction, invalid crawler urls', t => {
+test('validateCrawlUrl, invalid crawler urls', t => {
   const testcases = [
     {
       crawler: { name: 'array', url: () => ['failure array'] },
@@ -115,7 +116,7 @@ test('validateCrawlFunction, invalid crawler urls', t => {
     }
   ]
   testcases.forEach(testcase => {
-    const actual = validateCrawlFunction(testcase.crawler).join('; ')
+    const actual = validateCrawlUrl(testcase.crawler.url).join('; ')
     const expected = testcase.expected.join('; ')
     t.equal(actual, expected, testcase.crawler.name || 'noname')
   })
@@ -142,48 +143,74 @@ if (process.env.ONLY_FAKE_SCRAPER) {
   sources['FAKE'] = dummySource
 }
 
-/** Tests for crawlFunctions */
-for (const [key, source] of Object.entries(sources)) {
-  const crawlFuncs = crawlFunctionsFor(source)
-  crawlFuncs.forEach(dateCrawl => {
-    dateCrawl.crawl.forEach(c => {
-      const s = c.name || '(default)'
-      const testname = `${key}: ${dateCrawl.startDate} '${s}' url function`
-      test(`${testname} return value`, t => {
-        const errs = validateCrawlFunction(c).join('; ')
-        t.equal(errs, '')
-        t.end()
-      })
-    })
-  })
-
-  /** TO DISCUSS: I think this is a valid test, need to sort out how
-   * to get cache count. */
-  /*
-  test.skip(`${testname} cache not touched`, t => {
-    const getCacheCount = (n = 0) => { return 42 + n } // files.
-    const oldCacheCount = getCacheCount()
-    crawl.url()
-    const newCacheCount = getCacheCount(1)
-    t.equal(oldCacheCount, newCacheCount, 'cache not affected')
-    t.end()
-  })
-  */
-
-
-  /* Discarded ideas:
-     Originally I thought that these tests had value, but I'm not sure
-     now.
-
-    - Execute function should fail if no net connection (???)
-      We can't be sure how devs will write methods.
-
-    - Execute function should handle paginated data sources (???)
-      Not sure how pagination will be implemented.
-  */
-
+const scraperDates = source => { return source.scrapers.map(s => s.startDate) }
+const crawlsOnDate = (source, dt) => {
+  return source.scrapers.filter(s => s.startDate === dt)[0].crawl
 }
 
+// Create an array of hashes of "denormalized" crawl data, e.g:
+//   [
+//     {
+//       key: 'gb-eng',
+//       source: { country: 'iso1:GB', ... }
+//       startDate: '2020-03-01',
+//       crawl: { type: 'csv', url: ... }
+//     }, ...
+//   ]
+const crawlMethods = Object.keys(sources).
+      map(k => { return { key: k, source: sources[k] } }).
+      map(h => {
+        // Add all startDates.
+        return scraperDates(h.source).map(d => {
+          return { ...h, startDate: d }
+        })
+      }).
+      flat().
+      map(h => {
+        // Add all crawls for source/startDate.
+        return crawlsOnDate(h.source, h.startDate).map(c => {
+          return { ...h, crawl: c }
+        })
+      }).
+      flat()
+
+
+/** Tests for crawlFunctions */
+crawlMethods.filter(h => is.function(h.crawl.url)).
+  forEach(c => {
+    const s = c.crawl.name || '(default)'
+    const testname = `${c.key}: ${c.startDate} '${s}' url function`
+    test(`${testname} return value`, t => {
+      const errs = validateCrawlUrl(c.crawl.url).join('; ')
+      t.equal(errs, '')
+      t.end()
+    })
+
+    /** TO DISCUSS: I think this is a valid test, need to sort out how
+     * to get cache count. */
+    test.skip(`${testname} cache not touched`, t => {
+      const getCacheCount = (n = 0) => { return 42 + n } // files.
+      const oldCacheCount = getCacheCount()
+      c.url()
+      const newCacheCount = getCacheCount(1)
+      t.equal(oldCacheCount, newCacheCount, 'cache not affected')
+      t.end()
+    })
+
+    /*
+      Discarded ideas:
+      Originally I thought that these tests had value, but I'm not sure
+      now.
+      - Execute function should fail if no net connection (???)
+      We can't be sure how devs will write methods.
+      - Execute function should handle paginated data sources (???)
+      Not sure how pagination will be implemented.
+    */
+  })
+
+
+////////////////////////////////////////////////////////////////////
+/** Scraper validation utility methods. */
 
 
 /*
