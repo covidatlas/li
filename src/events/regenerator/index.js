@@ -18,7 +18,7 @@ async function regenerateSource (event) {
     await fireEvents(source)
   }
   catch (err) {
-    console.error(err)
+    console.log('Regenerator error', event)
     throw Error(err)
   }
 }

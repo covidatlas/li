@@ -20,7 +20,11 @@ const args = require('yargs')
     type: 'string'
   })
   .option('regen-timeseries', {
-    description: 'Run the timeseries regenerator (testing only, you should probably be using --regenerate)',
+    description: 'Run the timeseries regenerator (internal testing only, you should probably be using --regenerate)',
+    type: 'string'
+  })
+  .option('runner', {
+    description: 'Fire the task runner (internal testing only)',
     type: 'string'
   })
   .help()

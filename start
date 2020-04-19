@@ -2,13 +2,14 @@
 const arc = require('@architect/functions')
 
 const timeseriesRegenerator = require('./src/scheduled/regen-timeseries/index.js').handler
+const taskRunner = require('./src/scheduled/runner/index.js').handler
 
 const args = require('./src/cli/args.js')
 const checkSandbox = require('./src/cli/check-sandbox.js')
 const makeNice = require('./src/cli/make-nice.js')
 
 let { date } = args
-let { crawl, scrape, regenerate, regenTimeseries } = makeNice(args)
+let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
 
 ;(async () => {
   checkSandbox()
@@ -46,5 +47,8 @@ let { crawl, scrape, regenerate, regenTimeseries } = makeNice(args)
   }
   if (regenTimeseries) {
     await timeseriesRegenerator()
+  }
+  if (runner) {
+    await taskRunner()
   }
 })()

@@ -19,7 +19,7 @@ regenerator # Regenerates a source from cache
 
 
 @scheduled
-# runner rate(1 hour)           # Regularly invokes crawls and scrapes
+runner rate(1 hour)           # Regularly invokes crawls and scrapes
 regen-timeseries rate(1 hour) # Regularly regenerates timeseries sources
 
 
