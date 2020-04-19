@@ -4,10 +4,16 @@ const maintainers = require('../../_lib/maintainers.js')
 const datetime = require('../../../datetime/index.js')
 const spacetime = require('spacetime')
 
+const getLatestPublishedDay = ({ date, publishHour }) => {
+  const dateAsSpacetime = spacetime(date)
+  if (dateAsSpacetime.hour() < publishHour) { // TODO: This is returning 0, I need it to return the current hour in Aus/Melbourne
+    dateAsSpacetime.subtract(1, 'day')
+  }
+  return dateAsSpacetime
+}
 
 module.exports = {
   country: 'iso1:AU',
-  timeseries: true,
   priority: 1,
   friendly: {
     name: 'Victoria State Government Health and Human Services',
@@ -23,10 +29,8 @@ module.exports = {
           data: 'paragraph',
           url: async () => {
             const date = datetime.cast(null, 'Australia/Melbourne')
-            const dateFormatted = spacetime(date).subtract(1, 'day').format('{date}-{month}-{year}')
-            const url = `https://www.dhhs.vic.gov.au/coronavirus-update-victoria-${dateFormatted}`
-            console.log(url)
-            return url
+            const dateFormatted = getLatestPublishedDay({ date, publishHour: 16 }).format('{date}-{month}-{year}')
+            return `https://www.dhhs.vic.gov.au/coronavirus-update-victoria-${dateFormatted}`
           }
         },
       ],
