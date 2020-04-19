@@ -7,7 +7,7 @@ const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 
 
 ////////////////////////////////////////////////////////////////////
-/** Validation utility methods. */
+/** Crawl validation utility methods. */
 
 function crawlFunctionsFor(source) {
   const fns = source.scrapers.map(s => {
@@ -43,20 +43,20 @@ function validateCrawlFunction(crawl) {
 /** Return the crawl keys for a scraper for each date. */
 
 ////////////////////////////////////////////////////////////////////
-/** Testing the validation utility methods.
+/** Testing the crawl validation utility methods.
  *
- * NOTE: The tests in this module were written before many scrapers
+ * NOTE: The tests in this module were written before many sources
  * had been ported.  In order to verify that the tests _themselves_
  * were valid, we're using a fake scraper.  There are a set of tests
  * to validate the validation functions, using the fake scraper.
  */
 
 /** Fake scraper.  This scraper is checked during actual tests (of
- * actual scrapers) when ADD_FAKE_SCRAPER is defined in env:
+ * actual sources) when ADD_FAKE_SCRAPER is defined in env:
  *
  * $ ADD_FAKE_SCRAPER=1 npm run test:integration
  */
-const dummyScraper = {
+let dummySource = {
   scrapers: [
     {
       startDate: '2020-04-01',
@@ -81,8 +81,8 @@ const dummyScraper = {
   ]
 }
 
-test('crawlFunctionsFor dummyScraper', t => {
-  const actual = crawlFunctionsFor(dummyScraper).
+test('crawlFunctionsFor dummySource', t => {
+  const actual = crawlFunctionsFor(dummySource).
         map(f => {
           const dt = f.startDate
           const s = f.crawl.map(c => c.name || 'default').join(',')
@@ -108,7 +108,6 @@ test('validateCrawlFunction, valid crawler urls', t => {
   t.end()
 })
 
-
 test('validateCrawlFunction, invalid crawler urls', t => {
   const testcases = [
     {
@@ -133,7 +132,7 @@ test('validateCrawlFunction, invalid crawler urls', t => {
 })
 
 //////////////////////////////////////////////////////////////
-// Actual tests.
+// Actual crawl tests.
 
 let sources = {}
 for (const [key, src] of Object.entries(sourceMap())) {
@@ -143,13 +142,13 @@ for (const [key, src] of Object.entries(sourceMap())) {
 
 if (process.env.ADD_FAKE_SCRAPER) {
   console.log('Adding fake scraper to tests.')
-  sources['FAKE'] = dummyScraper
+  sources['FAKE'] = dummySource
 }
 
 if (process.env.ONLY_FAKE_SCRAPER) {
   sources = {}
   console.log('Using ONLY fake scraper to tests.')
-  sources['FAKE'] = dummyScraper
+  sources['FAKE'] = dummySource
 }
 
 /** Tests for crawlFunctions */
