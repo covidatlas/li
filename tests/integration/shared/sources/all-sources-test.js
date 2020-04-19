@@ -9,23 +9,11 @@ const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 ////////////////////////////////////////////////////////////////////
 /** Validation utility methods. */
 
-/** Get all crawl functions (e.g., "crawl.url = () => {...}") as an array of arrays.
- * Returns [ [source_key, crawl_start_date, crawler_array_entry] ... ]
- */
-
-function getCrawlFunctions(sourceDictionary) {
-  const crawlFunctions = []
-  for (const [key, source] of Object.entries(sourceDictionary)) {
-    const fns = source.scrapers.map(s => {
-      return { startDate: s.startDate, funcs: s.crawl.filter(c => is.function(c.url)) }
-    })
-    fns.forEach(fn => {
-      fn.funcs.forEach(func => {
-        crawlFunctions.push([key, fn.startDate, func])
-      })
-    })
-  }
-  return crawlFunctions
+function crawlFunctionsFor(source) {
+  const fns = source.scrapers.map(s => {
+    return { startDate: s.startDate, crawl: s.crawl.filter(c => is.function(c.url)) }
+  })
+  return fns.filter(f => f.crawl.length > 0)
 }
 
 /** Return list of validation failures in array. */
@@ -49,8 +37,6 @@ function validateCrawlFunction(crawl) {
   const actualUrl = is.object(ret) ? ret.url : ret
   const re = /^https?\:\/\/.*/
   if (!re.test(actualUrl)) errs.push(`url '${actualUrl}' does not match url pattern`)
-  console.log(errs)
-  console.log(errs.join(', '))
   return errs
 }
 
@@ -95,18 +81,17 @@ const dummyScraper = {
   ]
 }
 
-test('getCrawlFunctions', t => {
-  const actual = getCrawlFunctions({ A: dummyScraper, B: dummyScraper })
-  const names = actual.map(f => [f[0], f[1], f[2].name || 'default'].join('-'))
+test('crawlFunctionsFor dummyScraper', t => {
+  const actual = crawlFunctionsFor(dummyScraper).
+        map(f => {
+          const dt = f.startDate
+          const s = f.crawl.map(c => c.name || 'default').join(',')
+          return `${dt}-${s}`
+        })
   const expected = [
-    'A-2020-04-01-deaths',
-    'A-2020-04-02-deaths',
-    'A-2020-04-03-default',
-    'B-2020-04-01-deaths',
-    'B-2020-04-02-deaths',
-    'B-2020-04-03-default'
+    '2020-04-01-deaths', '2020-04-02-deaths', '2020-04-03-default'
   ]
-  t.deepEqual(names, expected, 'expected function names returned')
+  t.deepEqual(actual, expected, 'expected function names returned')
   t.end()
 })
 
@@ -161,20 +146,30 @@ if (process.env.ADD_FAKE_SCRAPER) {
   sources['FAKE'] = dummyScraper
 }
 
-/** Tests for crawlFunctions */
-const crawlFunctions = getCrawlFunctions(sources)
-for (const [key, dt, crawl] of crawlFunctions) {
-  const s = crawl.name || '(default)'
-  const testname = `${key}: ${dt} '${s}' url function`
+if (process.env.ONLY_FAKE_SCRAPER) {
+  sources = {}
+  console.log('Using ONLY fake scraper to tests.')
+  sources['FAKE'] = dummyScraper
+}
 
-  test(`${testname} return value`, t => {
-    const errs = validateCrawlFunction(crawl).join('; ')
-    t.equal(errs, '')
-    t.end()
+/** Tests for crawlFunctions */
+for (const [key, source] of Object.entries(sources)) {
+  const crawlFuncs = crawlFunctionsFor(source)
+  crawlFuncs.forEach(dateCrawl => {
+    dateCrawl.crawl.forEach(c => {
+      const s = c.name || '(default)'
+      const testname = `${key}: ${dateCrawl.startDate} '${s}' url function`
+      test(`${testname} return value`, t => {
+        const errs = validateCrawlFunction(c).join('; ')
+        t.equal(errs, '')
+        t.end()
+      })
+    })
   })
 
   /** TO DISCUSS: I think this is a valid test, need to sort out how
    * to get cache count. */
+  /*
   test.skip(`${testname} cache not touched`, t => {
     const getCacheCount = (n = 0) => { return 42 + n } // files.
     const oldCacheCount = getCacheCount()
@@ -183,6 +178,8 @@ for (const [key, dt, crawl] of crawlFunctions) {
     t.equal(oldCacheCount, newCacheCount, 'cache not affected')
     t.end()
   })
+  */
+
 
   /* Discarded ideas:
      Originally I thought that these tests had value, but I'm not sure
