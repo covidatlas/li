@@ -174,7 +174,6 @@ const crawlMethods = Object.keys(sources).
       }).
       flat()
 
-
 /** Tests for crawlFunctions */
 crawlMethods.filter(h => is.function(h.crawl.url)).
   forEach(c => {
@@ -223,5 +222,4 @@ Scrape test doesn’t throw for DeprecatedException
 Scrape returns data matching minimal json schema specification.
 Scrape data numeric fields should be sensible.
 Scrape makes no HTTP calls
-
 */
