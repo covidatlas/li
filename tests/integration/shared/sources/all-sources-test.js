@@ -81,6 +81,8 @@ function validateKeys(hsh) {
   }
 }
 
+/* eslint-disable no-unused-vars */
+
 /** Fake scraper.  This scraper is checked during actual tests (of
  * actual sources) when ADD_FAKE_SCRAPER is defined in env:
  *
@@ -94,10 +96,9 @@ let dummySource = {
         { name: 'cases', url: 'url' },
         { name: 'deaths', url: () => 'https://someurl.com' }
       ],
-      // eslint-disable-next-line no-unused-vars
       scrape({cases, deaths}, date) {
         validateKeys({cases, deaths})
-        // do stuff.
+        // ...
       }
     },
     {
@@ -105,10 +106,9 @@ let dummySource = {
       crawl: [
         { url: () => 'http://ok.com' }
       ],
-      // eslint-disable-next-line no-unused-vars
       scrape($, date) {
         validateKeys($)
-        // do stuff.
+        // ...
       }
     },
     {
@@ -121,6 +121,8 @@ let dummySource = {
 
   ]
 }
+
+/* eslint-enable no-unused-vars */
 
 test('crawlFunctionsFor dummySource', t => {
   const actual = crawlFunctionsFor(dummySource).
