@@ -13,10 +13,14 @@ async function crawl (type, params) {
     ? `http://localhost:${process.env.PORT || 3333}`
     : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
   const path = `${root}/get/${getType}?options=${options}`
-  const result = await got(path)
+  const result = await got(path, {
+    retry: 0,
+    throwHttpErrors: false
+  })
+  const { statusCode, body } = result
 
-  if (result.statusCode === 200) {
-    let response = JSON.parse(result.body)
+  if (statusCode === 200) {
+    let response = JSON.parse(body)
     if (response.body) {
       response.body = new Buffer.from(response.body, 'base64')
       response.body = brotliDecompressSync(response.body)
@@ -24,8 +28,14 @@ async function crawl (type, params) {
     return response
   }
   else {
-    const err = result.body && result.body.error || 'Request failed'
-    throw Error(err)
+    let error = `Crawl returned status code: ${statusCode}\n` +
+                `Type: ${type} (${getType})\n` +
+                `Params: ${JSON.stringify(params, null, 2)}`
+    if (body) {
+      const response = JSON.parse(body)
+      error += `\nGetter error: ${response.error}`
+    }
+    throw Error(error)
   }
 }
 

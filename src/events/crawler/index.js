@@ -63,7 +63,7 @@ async function crawlSource (event) {
     console.timeEnd('Crawl')
   }
   catch (err) {
-    console.log('Crawler error', err)
+    console.log('Crawler error', event)
     throw Error(err)
   }
 }
