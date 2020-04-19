@@ -341,32 +341,26 @@ scrapes.filter(h => (h.names.join(',') !== 'undefined')).
 
   })
 
-// // Test all scrapes with single crawl source.
-// scrapes.filter(h => (h.names.join(',') === 'undefined')).
-//   forEach(c => {
-//     const baseTestName = `${c.key}: ${c.startDate} scrape argument`
-//     test(`${baseTestName} null throws MissingScrapeDataError`, t => {
-//       c.names.forEach(n => {
-//         let arg = makeObjectWithKeys(c.names)
-//         delete arg[n]
-//         t.throws(() => { c.scrape(arg) }, MissingScrapeDataError)
-//       })
-//       t.end()
-//     })
-//
-//     test(`${baseTestName} with all keys does not throw MissingScrapeDataError`, t => {
-//       let arg = makeObjectWithKeys(c.names)
-//       let error = null
-//       try {
-//         c.scrape(arg)
-//       } catch (err) {
-//         error = err
-//       }
-//       t.ok(error === null || !(error instanceof MissingScrapeDataError))
-//       t.end()
-//     })
-//
-//   })
+// Test all scrapes with single crawl source.
+scrapes.filter(h => (h.names.join(',') === 'undefined')).
+  forEach(c => {
+    const baseTestName = `${c.key}: ${c.startDate} scrape argument`
+    test(`${baseTestName} null throws MissingScrapeDataError`, t => {
+      t.throws(() => { c.scrape(null) }, MissingScrapeDataError)
+      t.end()
+    })
+
+    test(`${baseTestName} non-null does not throw MissingScrapeDataError`, t => {
+      let error = null
+      try {
+        c.scrape('some-data')
+      } catch (err) {
+        error = err
+      }
+      t.ok(error === null || !(error instanceof MissingScrapeDataError))
+      t.end()
+    })
+  })
 
 
 /*
