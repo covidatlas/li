@@ -68,13 +68,6 @@ let dummySource = {
     {
       startDate: '2020-04-02',
       crawl: [
-        { name: 'cases', url: 'url' },
-        { name: 'deaths', url: () => 'https://someurl.com' },
-      ],
-    },
-    {
-      startDate: '2020-04-03',
-      crawl: [
         { url: () => 'http://ok.com' }
       ]
     }
@@ -88,9 +81,7 @@ test('crawlFunctionsFor dummySource', t => {
           const s = f.crawl.map(c => c.name || 'default').join(',')
           return `${dt}-${s}`
         })
-  const expected = [
-    '2020-04-01-deaths', '2020-04-02-deaths', '2020-04-03-default'
-  ]
+  const expected = ['2020-04-01-deaths', '2020-04-02-default']
   t.deepEqual(actual, expected, 'expected function names returned')
   t.end()
 })
