@@ -386,9 +386,19 @@ scrapes.filter(h => (h.names.join(',') === 'undefined')).
   })
 
 
+// Scrapes given data that don't match should throw.
+// Scenario A: Completely fictitious
+
+// Scenario B: For each date, get a data set out of the cache.  If
+// there isn't a data set, skip this run.  If there is, loop through
+// each crawl name, and replace the given name with a bad file.
+
+// Crawl and scrape for current day should complete successfully.
+// Run these from the top, in batches.
+// Handle: can't get data (crawl failed) - warning.
+// Crawl succeeded - scrape should succeed.
+
 /*
-Scrape tests
-Scrape should throw specific error if the object sent doesn’t meet validation requirements.
 Scrape test doesn’t throw for NotImplementedException
 Scrape test doesn’t throw for DeprecatedException
 Scrape returns data matching minimal json schema specification.
