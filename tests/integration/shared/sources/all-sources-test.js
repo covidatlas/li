@@ -7,6 +7,7 @@ const srcShared = join(process.cwd(), 'src', 'shared')
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const allowedTypes = require(join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
 const parseCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
+const loadFromCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
 
 
 ////////////////////////////////////////////////////////////////////
@@ -131,6 +132,7 @@ function fakeFormatValidation(obj) {
 }
 
 let fakeSource = {
+  tz: 'America/Los_Angeles',
   scrapers: [
     {
       startDate: '2020-04-01',
@@ -186,6 +188,7 @@ const crawlEntries = allowedTypes.map(t => {
 })
 // console.log(crawlEntries)
 
+// TODO (techdebt) can we create the named arguments for scrape() using allowedTypes?
 const newScraper = {
   startDate: '2020-04-10',
   crawl: crawlEntries,
@@ -198,6 +201,46 @@ const newScraper = {
 
 fakeSource.scrapers.push(newScraper)
 // console.log(fakeSource)
+
+
+/** The fakeSource data isn't actually loaded into cache.  For all
+ * keys in the crawl, return the string 'GOOD' for the
+ * data (regardless of type).
+ */
+function fakeSourceLoadCacheResultFor(date) {
+  const scrapers = fakeSource.scrapers.filter(s => s.startDate <= date)
+  // console.log(scrapers)
+  if (scrapers.length === 0)
+    return null
+  const crawlers = scrapers[scrapers.length - 1].crawl
+  if (crawlers.length === 1)
+    return 'GOOD'
+  const ret = crawlers.map(c => c.name).
+        reduce((acc, s) => { return { ...acc, [s]: 'GOOD' } }, {})
+  // console.log(ret)
+  return ret
+}
+
+test('Sanity check, fakeSourceLoadCacheResultFor', t => {
+  const f = fakeSourceLoadCacheResultFor  // shorthand
+  t.ok(f('2020-03-29') === null, '3/29')
+  t.deepEqual(f('2020-04-01'), { cases: 'GOOD', deaths: 'GOOD' }, '4/1')
+  t.equal(f('2020-04-02'), 'GOOD', '4/2')
+  t.equal(f('2020-04-03'), 'GOOD', '4/3')
+  t.equal(f('2020-04-04'), 'GOOD', '4/4')
+
+  const allTypes = {
+    page: 'GOOD',
+    headless: 'GOOD',
+    csv: 'GOOD',
+    tsv: 'GOOD',
+    pdf: 'GOOD',
+    json: 'GOOD',
+    raw: 'GOOD'
+  }
+  t.deepEqual(f('2020-04-15'), allTypes, '4/15')
+  t.end()
+})
 
 
 /* eslint-enable no-unused-vars */
@@ -379,7 +422,7 @@ const scrapes = Object.keys(sources).
       flat().
       // Remove any "null scrapes" (i.e., cache-only sources)
       filter(s => s.scrape)
-console.log(scrapes)
+// console.log(scrapes)
 
 function makeObjectWithKeys(keys) {
   return keys.reduce((obj, key) => {
@@ -425,6 +468,17 @@ function shouldFailWithError(t, func, errType, errMessageRegex = null) {
   if (errMessageRegex) {
     t.ok(errMessageRegex.test(errMsg), `error msg '${errMsg}' matches ${errMessageRegex}`)
   }
+}
+
+/** For real sources, this actually calls loadFromCache.  For the
+ * fakeSource, use fake responses. */
+function loadFromCacheForTests(source, scraper, date) {
+  // TODO How can we ensure that this is set correctly?
+  process.env.NODE_ENV = 'testing'
+  if (source == fakeSource)
+    return fakeSourceLoadCacheResultFor(date)
+  const params = { source, scraper, date, tz: 'America/Los_Angeles' }
+  return loadFromCache(params)
 }
 
 // Test all scrapes that have multiple crawl sources.
