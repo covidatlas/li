@@ -1,10 +1,12 @@
 const { join } = require('path')
+const fs = require('fs')
 const test = require('tape')
 const is = require('is')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const allowedTypes = require(join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
+const parseCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
 
 
 ////////////////////////////////////////////////////////////////////
@@ -63,6 +65,16 @@ class MissingScrapeDataError extends Error {
   }
 }
 
+// TODO: move this somewhere, scrapers should use it.
+// DISCUSS: where?
+/** Error thrown when scraper data does not pass validation. */
+class ScrapeDataValidationError extends Error {
+  constructor(message = '<no details>') {
+    super(`Data validation error: ${message}`)
+    this.name = 'ScrapeDataValidationError'
+  }
+}
+
 // TODO: move somewhere.
 // DISCUSS: where?
 /** Throws MissingScrapeDataError if hsh is null, or if any key values
@@ -94,8 +106,8 @@ let dummySource = {
     {
       startDate: '2020-04-01',
       crawl: [
-        { name: 'cases', url: 'url' },
-        { name: 'deaths', url: () => 'https://someurl.com' }
+        { name: 'cases', type: 'csv', url: 'url' },
+        { name: 'deaths', type: 'json', url: () => 'https://someurl.com' }
       ],
       scrape({cases, deaths}, date) {
         validateKeys({cases, deaths})
@@ -105,7 +117,7 @@ let dummySource = {
     {
       startDate: '2020-04-02',
       crawl: [
-        { url: () => 'http://ok.com' }
+        { type: 'page', url: () => 'http://ok.com' }
       ],
       scrape($, date) {
         validateKeys($)
@@ -115,9 +127,19 @@ let dummySource = {
     {
       startDate: '2020-04-03',
       crawl: [
-        { url: 'http://ok.com' }
+        { type: 'pdf', url: 'http://ok.com' }
       ]
       // No scrape, this is cache-only.
+    },
+    {
+      startDate: '2020-04-04',
+      crawl: [
+        { type: 'pdf', url: 'http://ok.com' }
+      ],
+      scrape(pdf, date) {
+        validateKeys(pdf)
+        // ...
+      }
     }
   ]
 }
@@ -133,7 +155,7 @@ const crawlEntries = allowedTypes.map(t => {
 // console.log(crawlEntries)
 
 const newScraper = {
-  startDate: '2020-04-04',
+  startDate: '2020-04-10',
   crawl: crawlEntries,
   scrape({ page, headless, csv, tsv, pdf, json, raw }, date) {
     validateKeys({ page, headless, csv, tsv, pdf, json, raw })
@@ -285,20 +307,23 @@ crawlMethods.filter(h => is.function(h.crawl.url)).
 ////////////////////////////////////////////////////////////////////
 /** Scraper validation utility methods. */
 
-// Build array of hashes of crawl names per date, e.g.:
+// Build array of hashes of scraper data per date, e.g.:
 //    [
 //      {
 //        key: 'FAKE',
 //        source: { scrapers: [Array] },
 //        startDate: '2020-04-01',
-//        crawlnames: [ 'cases', 'deaths' ]  <-- has two crawls
-//        scrape:
+//        crawl: [ crawl_1, crawl_2 ],
+//        crawlnames: [ 'cases', 'deaths' ],  <-- has two crawls
+//        scrape: [fn]
 //      },
 //      {
 //        key: 'FAKE',
 //        source: { scrapers: [Array] },
 //        startDate: '2020-04-02',
-//        crawlnames: [ 'undefined' ]   <-- has only one crawl, and hence no name.
+//        crawl: [ crawl_1 ],
+//        crawlnames: [ 'undefined' ],   <-- has only one crawl, and hence no name.
+//        scrape: [fn]
 //      }
 //      ...
 //    ]
@@ -307,15 +332,16 @@ const scrapes = Object.keys(sources).
       map(h => {
         // Add all startDates, and crawl names and scrape function per start date.
         return scraperDates(h.source).map(d => {
-          const names = crawlsOnDate(h.source, d).map(c => c.name || 'undefined')
+          const crawls = crawlsOnDate(h.source, d)
+          const names = crawls.map(c => c.name || 'undefined')
           const s = scrapeOnDate(h.source, d)
-          return { ...h, startDate: d, names: names, scrape: s }
+          return { ...h, startDate: d, names: names, crawl: crawls, scrape: s }
         })
       }).
       flat().
       // Remove any "null scrapes" (i.e., cache-only sources)
       filter(s => s.scrape)
-// console.log(scrapes)
+console.log(scrapes)
 
 function makeObjectWithKeys(keys) {
   return keys.reduce((obj, key) => {
@@ -323,7 +349,28 @@ function makeObjectWithKeys(keys) {
     return obj}, {})
 }
 
-function shouldFailWithError(t, func, errType, errMessageRegex) {
+/** Load an object as if parsed from the cache, using the bad return
+ * values in fixtures/ directory. */
+async function makeScrapeArgWithBadData(crawls) {
+  const cacheHits = crawls.map(c => {
+    const f = join(__dirname, 'fixtures', `bad.${c.type}`)
+    return {
+      data: fs.readFileSync(f),
+      type: c.type,
+      name: c.name
+    }
+  })
+  console.log(parseCache)
+  const parsed = await parseCache(cacheHits)
+  console.log(parsed)
+
+  if (crawls.length === 1)
+    return Object.values(parsed)[0]
+
+  return parsed.reduce((acc, e) => { return { ...acc, ...e } })
+}
+
+function shouldFailWithError(t, func, errType, errMessageRegex = null) {
   let err = null
   let errMsg = null
   try { func() }
@@ -333,34 +380,43 @@ function shouldFailWithError(t, func, errType, errMessageRegex) {
   }
   t.ok(err !== null, 'threw an error')
   t.ok(err instanceof errType, `error type was ${err.constructor.name}`)
-  t.ok(errMessageRegex.test(errMsg), `error msg '${errMsg}' matches ${errMessageRegex}`)
+  if (errMessageRegex) {
+    t.ok(errMessageRegex.test(errMsg), `error msg '${errMsg}' matches ${errMessageRegex}`)
+  }
 }
 
 // Test all scrapes that have multiple crawl sources.
 scrapes.filter(h => (h.names.join(',') !== 'undefined')).
-  forEach(c => {
-    const baseTestName = `${c.key}: ${c.startDate} scrape argument`
+  forEach(scraper => {
+    const baseTestName = `${scraper.key}: ${scraper.startDate} scrape argument`
     test(`${baseTestName} missing object key throws MissingScrapeDataError`, t => {
-      c.names.forEach(n => {
-        let arg = makeObjectWithKeys(c.names)
+      scraper.names.forEach(n => {
+        let arg = makeObjectWithKeys(scraper.names)
         delete arg[n]
-        shouldFailWithError(t, () => { c.scrape(arg) }, MissingScrapeDataError, new RegExp(`${n}`))
-        // t.throws(() => { c.scrape(arg) }, MissingScrapeDataError)
+        shouldFailWithError(t, () => { scraper.scrape(arg) }, MissingScrapeDataError, new RegExp(`${n}`))
       })
       t.end()
     })
 
     test(`${baseTestName} with all keys does not throw MissingScrapeDataError`, t => {
-      let arg = makeObjectWithKeys(c.names)
+      let arg = makeObjectWithKeys(scraper.names)
       let error = null
       try {
-        c.scrape(arg)
+        scraper.scrape(arg)
       } catch (err) {
         error = err
       }
       t.ok(error === null || !(error instanceof MissingScrapeDataError))
       t.end()
     })
+
+    /*
+    test(`{$baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
+      let arg = await makeScrapeArgWithBadData(scraper.crawl)
+      shouldFailWithError(t, () => { scraper.scrape(arg) }, ScrapeDataValidationError)
+      t.end()
+    })
+    */
 
   })
 
@@ -386,7 +442,7 @@ scrapes.filter(h => (h.names.join(',') === 'undefined')).
   })
 
 
-// Scrapes given data that don't match should throw.
+// Scrapes given data that don't validate should throw.
 // Scenario A: Completely fictitious
 
 // Scenario B: For each date, get a data set out of the cache.  If

@@ -1,0 +1,18 @@
+<html>
+  <body>
+    <table>
+      <tr>
+        <th>Animal</th><th>Size</th>
+      </tr>
+      <tr>
+        <td>Lion</td><td>Big</td>
+      </tr>
+      <tr>
+        <td>Dog</td><td>Medium</td>
+      </tr>
+      <tr>
+        <td>Cat</td><td>Small</td>
+      </tr>
+    </table>
+  </body>
+</html>
