@@ -4,6 +4,7 @@ const is = require('is')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
+const allowedTypes = require(join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
 
 
 ////////////////////////////////////////////////////////////////////
@@ -120,6 +121,28 @@ let dummySource = {
     }
   ]
 }
+
+// Load a new scraper with all types to dummySource
+const crawlEntries = allowedTypes.map(t => {
+  return {
+    name: t,
+    type: t,
+    url: `http://get-me-a-${t}.com`
+  }
+})
+// console.log(crawlEntries)
+
+const newScraper = {
+  startDate: '2020-04-04',
+  crawl: crawlEntries,
+  scrape({ page, headless, csv, tsv, pdf, json, raw }, date) {
+    validateKeys({ page, headless, csv, tsv, pdf, json, raw })
+    // ...
+  }
+}
+
+dummySource.scrapers.push(newScraper)
+// console.log(dummySource)
 
 /* eslint-enable no-unused-vars */
 
@@ -292,6 +315,7 @@ const scrapes = Object.keys(sources).
       flat().
       // Remove any "null scrapes" (i.e., cache-only sources)
       filter(s => s.scrape)
+// console.log(scrapes)
 
 function makeObjectWithKeys(keys) {
   return keys.reduce((obj, key) => {
