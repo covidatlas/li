@@ -12,7 +12,7 @@ const parseCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'pars
 ////////////////////////////////////////////////////////////////////
 /** Crawl validation utility methods. */
 
-// TODO (testing) Move utilities and dummy to a separate module and export them.
+// TODO (testing) Move utilities and fake to a separate module and export them.
 
 function crawlFunctionsFor(source) {
   const fns = source.scrapers.map(s => {
@@ -130,7 +130,7 @@ function fakeFormatValidation(obj) {
   throw new Error('Unhandled case in fakeSource?')
 }
 
-let dummySource = {
+let fakeSource = {
   scrapers: [
     {
       startDate: '2020-04-01',
@@ -175,7 +175,7 @@ let dummySource = {
   ]
 }
 
-// Load a new scraper with all types to dummySource
+// Load a new scraper with all types to fakeSource
 const crawlEntries = allowedTypes.map(t => {
   return {
     name: t,
@@ -195,8 +195,8 @@ const newScraper = {
   }
 }
 
-dummySource.scrapers.push(newScraper)
-// console.log(dummySource)
+fakeSource.scrapers.push(newScraper)
+// console.log(fakeSource)
 
 
 /* eslint-enable no-unused-vars */
@@ -205,8 +205,8 @@ dummySource.scrapers.push(newScraper)
 // ////////////////////////////////////////////////////////////
 
 
-test('crawlFunctionsFor dummySource', t => {
-  const actual = crawlFunctionsFor(dummySource).
+test('crawlFunctionsFor fakeSource', t => {
+  const actual = crawlFunctionsFor(fakeSource).
         map(f => {
           const dt = f.startDate
           const s = f.crawl.map(c => c.name || 'default').join(',')
@@ -264,13 +264,13 @@ for (const [key, src] of Object.entries(sourceMap())) {
 
 if (process.env.ADD_FAKE_SCRAPER) {
   console.log('Adding fake scraper for tests.')
-  sources['FAKE'] = dummySource
+  sources['FAKE'] = fakeSource
 }
 
 if (process.env.ONLY_FAKE_SCRAPER) {
   sources = {}
   console.log('Using ONLY fake scraper for tests.')
-  sources['FAKE'] = dummySource
+  sources['FAKE'] = fakeSource
 }
 
 const scraperDates = source => { return source.scrapers.map(s => s.startDate) }
