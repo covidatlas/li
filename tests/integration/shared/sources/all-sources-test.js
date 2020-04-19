@@ -65,13 +65,29 @@ let dummySource = {
         { name: 'cases', url: 'url' },
         { name: 'deaths', url: () => 'https://someurl.com' }
       ],
+      // eslint-disable-next-line no-unused-vars
+      scrape({cases, deaths}, date) {
+        // do stuff.
+      }
     },
     {
       startDate: '2020-04-02',
       crawl: [
         { url: () => 'http://ok.com' }
+      ],
+      // eslint-disable-next-line no-unused-vars
+      scrape($, date) {
+        // do stuff.
+      }
+    },
+    {
+      startDate: '2020-04-03',
+      crawl: [
+        { url: 'http://ok.com' }
       ]
+      // No scrape, this is cache-only.
     }
+
   ]
 }
 
@@ -147,6 +163,9 @@ const scraperDates = source => { return source.scrapers.map(s => s.startDate) }
 const crawlsOnDate = (source, dt) => {
   return source.scrapers.filter(s => s.startDate === dt)[0].crawl
 }
+const scrapeOnDate = (source, dt) => {
+  return source.scrapers.filter(s => s.startDate === dt)[0].scrape
+}
 
 // Create an array of hashes of "denormalized" crawl data, e.g:
 //   [
@@ -178,8 +197,8 @@ const crawlMethods = Object.keys(sources).
 crawlMethods.filter(h => is.function(h.crawl.url)).
   forEach(c => {
     const s = c.crawl.name || '(default)'
-    const testname = `${c.key}: ${c.startDate} '${s}' url function`
-    test(`${testname} return value`, t => {
+    const baseTestName = `${c.key}: ${c.startDate} '${s}' url function`
+    test(`${baseTestName} return value`, t => {
       const errs = validateCrawlUrl(c.crawl.url).join('; ')
       t.equal(errs, '')
       t.end()
@@ -187,7 +206,7 @@ crawlMethods.filter(h => is.function(h.crawl.url)).
 
     /** TO DISCUSS: I think this is a valid test, need to sort out how
      * to get cache count. */
-    test.skip(`${testname} cache not touched`, t => {
+    test.skip(`${baseTestName} cache not touched`, t => {
       const getCacheCount = (n = 0) => { return 42 + n } // files.
       const oldCacheCount = getCacheCount()
       c.url()
@@ -211,6 +230,83 @@ crawlMethods.filter(h => is.function(h.crawl.url)).
 ////////////////////////////////////////////////////////////////////
 /** Scraper validation utility methods. */
 
+// Build array of hashes of crawl names per date, e.g.:
+//    [
+//      {
+//        key: 'FAKE',
+//        source: { scrapers: [Array] },
+//        startDate: '2020-04-01',
+//        crawlnames: [ 'cases', 'deaths' ]  <-- has two crawls
+//        scrape:
+//      },
+//      {
+//        key: 'FAKE',
+//        source: { scrapers: [Array] },
+//        startDate: '2020-04-02',
+//        crawlnames: [ 'undefined' ]   <-- has only one crawl, and hence no name.
+//      }
+//      ...
+//    ]
+const scrapes = Object.keys(sources).
+      map(k => { return { key: k, source: sources[k] } }).
+      map(h => {
+        // Add all startDates, and crawl names and scrape function per start date.
+        return scraperDates(h.source).map(d => {
+          const names = crawlsOnDate(h.source, d).map(c => c.name || 'undefined')
+          const s = scrapeOnDate(h.source, d)
+          return { ...h, startDate: d, names: names, scrape: s }
+        })
+      }).
+      flat().
+      // Remove any "null scrapes" (i.e., cache-only sources)
+      filter(s => s.scrape)
+console.log(scrapes)
+
+function makeObjectWithKeys(keys) {
+  return keys.reduce((obj, key) => {
+    obj[key] = 'some_data'
+    return obj}, {})
+}
+
+// TODO: move this somewhere, scrapers should use it.
+class MissingScrapeKeyError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'MissingScrapeKeyError'
+  }
+}
+
+scrapes.filter(h => (h.names.join(',') !== 'undefined')).
+  forEach(c => {
+    const baseTestName = `${c.key}: ${c.startDate} scrape argument`
+    test(`${baseTestName} missing object key throws MissingScrapeKeyError`, t => {
+      c.names.forEach(n => {
+        let arg = makeObjectWithKeys(c.names)
+        // console.log(`PRE-DEL: arg = ${Object.keys(arg)}`)
+        delete arg[n]
+        // console.log(`DEL: arg = ${Object.keys(arg)}`)
+        t.throws(() => { c.scrape(arg) }, MissingScrapeKeyError)
+      })
+      t.end()
+    })
+
+    // Sanity check only during test development, might not be useful for real code.
+    test(`${baseTestName} with all keys does not throw MissingScrapeKeyError`, t => {
+      let arg = makeObjectWithKeys(c.names)
+      let error = null
+      try {
+        c.scrape(arg)
+      } catch (err) {
+        error = err
+      }
+      t.ok(error === null || !(error instanceof MissingScrapeKeyError))
+      t.end()
+    })
+
+  })
+
+// Add tests for single-crawl things, eg
+// scrapes.filter(h => (h.names.join(',') === 'undefined')).
 
 /*
 Scrape tests
