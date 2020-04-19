@@ -169,6 +169,7 @@ let fakeSource = {
       ],
       scrape(pdf, date) {
         validateKeys(pdf)
+        fakeFormatValidation(pdf)
         // ...
       }
     }
@@ -401,8 +402,11 @@ async function makeScrapeArgWithBadData(crawls) {
   const parsed = await parseCache(cacheHits)
   // console.log(parsed)
 
-  if (crawls.length === 1)
-    return Object.values(parsed)[0]
+  if (crawls.length === 1) {
+    const ret = Object.values(parsed)[0]
+    console.log(`Single crawl, returning: ${ret}`)
+    return ret
+  }
 
   return parsed.reduce((acc, e) => { return { ...acc, ...e } })
 }
@@ -458,23 +462,30 @@ scrapes.filter(h => (h.names.join(',') !== 'undefined')).
 
 // Test all scrapes with single crawl source.
 scrapes.filter(h => (h.names.join(',') === 'undefined')).
-  forEach(c => {
-    const baseTestName = `${c.key}: ${c.startDate} scrape argument`
+  forEach(scraper => {
+    const baseTestName = `${scraper.key}: ${scraper.startDate} scrape argument`
     test(`${baseTestName} null throws MissingScrapeDataError`, t => {
-      t.throws(() => { c.scrape(null) }, MissingScrapeDataError)
+      t.throws(() => { scraper.scrape(null) }, MissingScrapeDataError)
       t.end()
     })
 
     test(`${baseTestName} non-null does not throw MissingScrapeDataError`, t => {
       let error = null
       try {
-        c.scrape('some-data')
+        scraper.scrape('some-data')
       } catch (err) {
         error = err
       }
       t.ok(error === null || !(error instanceof MissingScrapeDataError))
       t.end()
     })
+
+    test(`${baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
+      let arg = await makeScrapeArgWithBadData(scraper.crawl)
+      shouldFailWithError(t, () => { scraper.scrape(arg) }, ScrapeDataValidationError)
+      t.end()
+    })
+
   })
 
 
