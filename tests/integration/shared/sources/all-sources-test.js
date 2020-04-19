@@ -360,9 +360,9 @@ async function makeScrapeArgWithBadData(crawls) {
       name: c.name
     }
   })
-  console.log(parseCache)
+  // console.log(parseCache)
   const parsed = await parseCache(cacheHits)
-  console.log(parsed)
+  // console.log(parsed)
 
   if (crawls.length === 1)
     return Object.values(parsed)[0]
@@ -378,8 +378,9 @@ function shouldFailWithError(t, func, errType, errMessageRegex = null) {
     err = e
     errMsg = err.message
   }
-  t.ok(err !== null, 'threw an error')
-  t.ok(err instanceof errType, `error type was ${err.constructor.name}`)
+  t.ok(err !== null, 'should throw an error')
+  if (err)
+    t.ok(err instanceof errType, `error type was ${err.constructor.name}`)
   if (errMessageRegex) {
     t.ok(errMessageRegex.test(errMsg), `error msg '${errMsg}' matches ${errMessageRegex}`)
   }
@@ -410,13 +411,11 @@ scrapes.filter(h => (h.names.join(',') !== 'undefined')).
       t.end()
     })
 
-    /*
     test(`{$baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
       let arg = await makeScrapeArgWithBadData(scraper.crawl)
       shouldFailWithError(t, () => { scraper.scrape(arg) }, ScrapeDataValidationError)
       t.end()
     })
-    */
 
   })
 
