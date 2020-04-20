@@ -26,8 +26,47 @@ details on exactly what each field in the dataset means.
 
 ## Get started
 
-Check out our [Getting Started](./docs/getting_started.md) guide to help get our project running on your local machine.
+Check out our [Getting Started](./docs/getting_started.md) for a detailed guide to getting our project running on your local machine.
 
+### Quick Start
+
+Start by cloning the repo locally
+```
+git clone https://github.com/covidatlas/li.git
+cd li
+```
+
+Install dependencies
+```
+npm install
+```
+
+Start the sandbox
+```
+npm run
+```
+
+### Running a Crawl
+
+Let's use NYT as an example since it's a big data set.
+```
+./start --crawl nyt
+```
+
+There should now be `.gz` archive(s) of the source in _crawler-cache/nyt/<YYYY-MM-DD>/_ with `<YYYY-MM-DD>` being today's date.
+
+### Running a Scrape
+Assuming we have some data that's been crawled (and saved to cache), we can scrape it:
+```
+./start --scrape nyt
+```
+This will scrape/format today's data and write it to the database.
+
+### Regenerating
+We can run a single command to iterate through each day and re-scrape the data:
+```
+./start --regenerate nyt
+```
 
 ## Contributing
 
