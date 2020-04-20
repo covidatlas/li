@@ -65,6 +65,16 @@ class MissingScrapeDataError extends Error {
     this.name = 'MissingScrapeDataError'
   }
 }
+// TODO: turn these into ... something
+
+/*
+if (failed) {
+  const e = new Error('MissingScrapeDataError')
+  e.message = 'thing'
+  throw e
+}
+// RYAN TO SEND ERROR CODE SAMPLE <-------
+*/
 
 // TODO: move this somewhere, scrapers should use it.
 // DISCUSS: where?
@@ -561,14 +571,42 @@ on the status of prior steps.
 // fake var for demo only
 let _cacheCount = 42
 
+
+// TODO - use a fresh directory?
+// create temp dir, and use reset
+// right now it's hard path out to root dir
+// TODO - create "override cache location"
+//
 function getCacheCountFor(src, dt) {
-  // TODO
-  return _cacheCount;
+  // TODO - create a separate dir
+  return _cacheCount
 }
+
+// TODO: start the sandbox and run the event
+// TODO: _could_ directly run the event, but have to run it directly - could use a payload, but have to get the sig right.
 
 /** TODO: this should return the proper object for scraping. */
 async function doCrawl(src, dt) {
-  // TODO
+  // TODO - start sandbox, fire event
+  // TODO - wait until files are there, and then go nuts and create the final struct
+
+  /*
+event:
+const crawlArg = {
+  Records: [
+    { Sns: { Message: JSON.stringify({source: 'us-fl-hellhole'}) } }
+  ]
+}
+
+pass to crawler index function .handler!!!!
+
+This completes,
+
+loadCache
+parseCache
+
+   */
+
   // Sample data set, multiple sources:
   return { sourceA: { number: 42 }, sourceB: { number: 41 } }
 
@@ -651,6 +689,21 @@ async function masterTest(t, key, src, dt) {
 }
 
 
+// Hit cache first
+// if new source not in cache, hit live
+// second param in load cache, useS3 true = attempt to load out of S3 first
+// if fails, then run normal cache thing hitting the directory
+
+
+// TODO: only run this for changed scrapers
+// TODO: add args for script to run for changed scrapers
+// TODO: for changed scraper: run the crawl
+// TODO: for changed scraper: run scrape
+// TODO: for changed scraper: run scrape arg permutations
+// TODO: remove funky error types - just throw
+// TODO: update the GitHub issue
+
+
 // Run the master test for each source.
 // TODO: parallelize this for speed.  Will require changes in err throws and warnings.
 const today = datetime.now()
@@ -687,4 +740,4 @@ for (const [key, src] of Object.entries(sources)) {
     // TODO - mostly implemented much further above.
   })
 
-})
+}
