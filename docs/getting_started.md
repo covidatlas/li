@@ -8,17 +8,15 @@ You'll need the following:
 
 ## Repo
 
-First, [fork the repository](https://github.com/covidatlas/li.git) so
-you're ready to contribute back.
+First, [fork the repository](https://github.com/covidatlas/li.git) so you're ready to contribute back.
 
 ### 1. Clone, init submodules, and add upstream
 
 Replace `yourusername` below with your Github username:
 
 ```
-git clone git@github.com:yourusername/li.git
+git clone https://github.com/covidatlas/li.git
 cd li
-git remote add upstream git@github.com:covidatlas/li.git
 ```
 
 ### 2. Install dependencies
@@ -27,70 +25,78 @@ git remote add upstream git@github.com:covidatlas/li.git
 npm install
 ```
 
-If you get an error message saying you have an incompatible version of
-`node`, you may need to change version.  You can use `n` or `nvm` to change
-node versions.
+If you get an error message saying you have an incompatible version of `node`, you may need to change versions.  You can use `n` or `nvm` if you don't want to install Node.js 12.x.
 
-### Run the server
+### Start the local dev server
 
-Start the server in one window:
+Start the local dev server in one terminal:
 
 ```
-$ npm run start
+$ npm start
 ```
 
-The first time you run this will take a minute as it downloads dependencies.  At the end you'll see "Sandbox Started in 58873ms ... http://localhost:3333".
-
-Browse to http://localhost:3333/ to see the site.
-
-### Run a sample source - crawl and scrape
-
-In another terminal (with the sandbox running):
+The first time you run this it may take a few moments as it installs additional dependencies.  At the end you'll see "Sandbox Started ... http://localhost:3333".
 
 
-```
-./start --crawl nyt
-./start --scrape nyt
-```
+### Crawling and sraping a source
 
-You'll see the output in the server terminal.
+For most folks, crawl and scrape a source in another terminal window (with the dev server still running) with the following commands
 
-### 3. Run crawl and scrape for all sources
-
-TBD
-
-### 4. Pull from upstream often
-
-This gets you the latest scrapers.
-
-```
-git pull upstream master
-```
-
-## Run sources
-
+On Mac, Linux, etc:
 ```
 ./start --crawl <id>
 ./start --scrape <id>
 ```
 
+On Windows:
+```
+node .\start --crawl <id>
+node .\start --scrape <id>
+```
+
+Source IDs (also known as source keys) are derived from the local path of the source on the filesystem.
+
+Sources are located in: `src/shared/sources/`
+
+The path within that directory determines its key:
+- `us/ut/index.js` is `us-ut`
+- `nyt/index.js` is `nyt`
+- `us/ca/san-francisco-county` is `us-ca-san-francisco-county`
+
+
+### 3. Pull from upstream often
+
+This gets you the latest sources.
+
+```
+git pull upstream master
+```
+
+
+## Run sources
+
+
 
 ### Re-generating old data
 
-TBD
+Coming soon!
+
 
 ### Generating timeseries data
 
-TBD
+Coming soon!
+
 
 ### Command-line options
 
-TBD
+Coming soon!
+
 
 ## Tests
 
-We use [Tape](https://github.com/substack/tape).
-
-    npm run test
-    npm run test:unit
-    npm run test:integration    
+Run tests with the following:
+```
+npm run test
+npm run test:unit
+npm run test:integration
+```
