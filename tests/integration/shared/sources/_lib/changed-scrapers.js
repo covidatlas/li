@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const exec = require('child_process').execSync;
+const exec = require('child_process').execSync
 const srcShared = path.join(process.cwd(), 'src', 'shared')
 const sourceMap = require(path.join(srcShared, 'sources', '_lib', 'source-map.js'))
 
@@ -9,7 +9,7 @@ const sourceMap = require(path.join(srcShared, 'sources', '_lib', 'source-map.js
  */
 
 /** Get the proper baseline git remote and branch to diff against.
-* 
+*
 * Integration tests sometimes only run against changed sources, so we
 * need to know which branch to compare the current branch to.  In
 * GitHub CI, this is origin/master, but your working env might use a
@@ -47,14 +47,14 @@ function getBaseBranch() {
     remote = config.baseRemoteName
     branch = config.baseBranchName
     if (remote == null || branch == null)
-      throw new Error(`missing key baseRemoteName or baseBranchName in ${shortConfig}`)
+      throw new Error(`missing key baseRemoteName or baseBranchName in gitdiff.config`)
   }
   return `${remote}/${branch}`
-}  
+}
 
 function getChangedScrapers() {
   const b = getBaseBranch()
-  const command = 'git diff --name-only ${b}'
+  const command = `git diff --name-only ${b}`
   const result = exec(command)
   const filesChanged = result.toString().split('\n')
   // console.log(filesChanged)
@@ -63,7 +63,7 @@ function getChangedScrapers() {
   // console.log(allSourceFiles)
   const changedSources = allSourceFiles.filter(f => filesChanged.includes(f))
   // console.log(changedSources)
-  return changedSources;
+  return changedSources
 }
 
 module.exports = {
