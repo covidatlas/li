@@ -2,12 +2,57 @@ const { join } = require('path')
 const fs = require('fs')
 const test = require('tape')
 const is = require('is')
+const yargs = require('yargs')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
+const datetime = require(join(srcShared, 'datetime', 'index.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const allowedTypes = require(join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
 const parseCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
 const loadFromCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
+
+
+var originName = 'origin'
+var originBranch = 'master'
+
+// This modules runs tests for sources.  It usually runs against
+// sources that have "changed" relative to some base branch.  In
+// GitHub CI, this is origin/master, but your working env might use a
+// different remote name, and different base branch name.
+if (!process.env.GITHUB_CI) {
+  const configFile = join(__dirname, 'gitdiff.config')
+  const shortConfig = configFile.replace(process.cwd(), '')
+  if (!fs.existsSync(configFile)) {
+    console.log(`
+*************************************************************
+Missing config file
+ 
+${shortConfig}
+ 
+for integration tests, aborting!
+ 
+This file is necessary to indicate the git remote and branch
+that the code should use to do a 'git diff' against.
+ 
+Please copy the file gitdiff.config.example to gitdiff.config
+and change it to match your personal repo settings.
+*************************************************************`)
+    process.exit()
+  }
+
+  const config = JSON.parse(fs.readFileSync(configFile))
+  originName = config.baseRemoteName
+  originBranch = config.baseBranchName
+
+  if (originName == null || originBranch == null)
+    throw new Error(`missing key baseRemoteName or baseBranchName in ${shortConfig}`)
+
+  console.log(originName, originBranch)
+  process.exit()
+}
+
+test.only('dummy', t => { t.end() })
+
 
 
 ////////////////////////////////////////////////////////////////////
@@ -585,6 +630,8 @@ function getCacheCountFor(src, dt) {
 // TODO: start the sandbox and run the event
 // TODO: _could_ directly run the event, but have to run it directly - could use a payload, but have to get the sig right.
 
+// TODO use process.env.LI_CACHE_PATH
+
 /** TODO: this should return the proper object for scraping. */
 async function doCrawl(src, dt) {
   // TODO - start sandbox, fire event
@@ -689,10 +736,31 @@ async function masterTest(t, key, src, dt) {
 }
 
 
-// Hit cache first
-// if new source not in cache, hit live
+// All scrapers with cache:
+// do a scrape
+
+// crawl tests
+// If --crawl-all, run all latest crawls.  Report failures as warnings.
+// If --sources, use just those
+// If --run-changed, use diff of names.  need --origin and --branch set for that
+
+// scrape tests
+// If --use-fake, use just that
+// If --sources, use just those
+// If --run-changed, use diff of names.  need --origin and --branch set for that
+
+// sources = fake || changed || all || <list>
+
+// Hit cache first - local, then S3
+// if new source not in local cache, hit live
 // second param in load cache, useS3 true = attempt to load out of S3 first
-// if fails, then run normal cache thing hitting the directory
+// if fails, then run normal cache thing hitting S3 directory
+// if no cache, then run crawl
+
+
+// New scapers
+// do a crawl  (don't want to use cache, b/c the prior cache may not be valid, eg due to URL changes in the commit)
+// run scrape
 
 
 // TODO: only run this for changed scrapers
@@ -706,7 +774,7 @@ async function masterTest(t, key, src, dt) {
 
 // Run the master test for each source.
 // TODO: parallelize this for speed.  Will require changes in err throws and warnings.
-const today = datetime.now()
+const today = datetime.now
 for (const [key, src] of Object.entries(sources)) {
 
   // If the crawl and scrape are successful for the source, we'll
