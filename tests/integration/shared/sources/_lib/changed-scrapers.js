@@ -54,7 +54,13 @@ function getBaseBranch() {
 
 function getChangedScrapers() {
   const b = getBaseBranch()
-  const command = `git diff --name-only ${b}`
+
+  // Git diff commands are very strange sometimes: the '...' is
+  // necessary.  See https://stackoverflow.com/questions/20808892/
+  // ("Git diff between current branch and master but not including
+  // unmerged master commits")
+  const command = `git diff --name-only ${b}...`
+  
   const result = exec(command)
   const filesChanged = result.toString().split('\n')
   // console.log(filesChanged)
