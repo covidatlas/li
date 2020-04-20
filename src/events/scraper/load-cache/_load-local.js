@@ -3,7 +3,10 @@ const fs = require('fs')
 const { join } = require('path')
 const datetime = require('@architect/shared/datetime/index.js')
 
-const cache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
+let cache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
+if (process.env.LI_CACHE_PATH) {
+  cache = process.env.LI_CACHE_PATH
+}
 const cachePath = key => join(cache, key)
 
 async function getFolders (_sourceKey) {
