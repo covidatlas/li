@@ -100,9 +100,8 @@ function validateKeys(hsh) {
 
 /* eslint-disable no-unused-vars */
 
-/** Fake scraper.  This scraper is checked during actual tests (of
- * actual sources) when certain env values are set, e.g.:
- *   ADD_FAKE_SCRAPER=1 npm run test:integration
+/** Fake scraper.  This scraper is checked during actual tests
+ * when ONLY_FAKE_SCRAPER env value is set:
  *   ONLY_FAKE_SCRAPER=1 npm run test:integration
  */
 
@@ -306,10 +305,11 @@ for (const [key, src] of Object.entries(sourceMap())) {
   sources[key] = require(src)
 }
 
-if (process.env.ADD_FAKE_SCRAPER) {
-  console.log('Adding fake scraper for tests.')
-  sources['FAKE'] = fakeSource
-}
+// Don't do this: we shouldn't be mixing fakes with real things.
+// if (process.env.ADD_FAKE_SCRAPER) {
+//   console.log('Adding fake scraper for tests.')
+//   sources['FAKE'] = fakeSource
+// }
 
 if (process.env.ONLY_FAKE_SCRAPER) {
   sources = {}
@@ -545,19 +545,146 @@ scrapes.filter(h => (h.names.join(',') === 'undefined')).
   })
 
 
-// Scenario B: For each date, get a data set out of the cache.  If
-// there isn't a data set, skip this run.  If there is, loop through
-// each crawl name, and replace the given name with a bad file.
+////////////////////////////////////////////////////////////////////
+/** Master test
 
-// Crawl and scrape for current day should complete successfully.
-// Run these from the top, in batches.
-// Handle: can't get data (crawl failed) - warning.
-// Crawl succeeded - scrape should succeed.
+This set of tests runs live crawls and scrapes for today for all
+sources using live data.
 
-/*
-Scrape test doesn’t throw for NotImplementedException
-Scrape test doesn’t throw for DeprecatedException
-Scrape returns data matching minimal json schema specification.
-Scrape data numeric fields should be sensible.
-Scrape makes no HTTP calls
+Since we can't rely 100% on live sites, nor on scrapes actually being
+up-to-date with the latest changes on live sites, these tests print
+out warnings in some cases, and failures in others.  The tests also
+successively narrow down the set of checks run on sources, depending
+on the status of prior steps.
 */
+
+// fake var for demo only
+let _cacheCount = 42
+
+function getCacheCountFor(src, dt) {
+  // TODO
+  return _cacheCount;
+}
+
+/** TODO: this should return the proper object for scraping. */
+async function doCrawl(src, dt) {
+  // TODO
+  // Sample data set, multiple sources:
+  return { sourceA: { number: 42 }, sourceB: { number: 41 } }
+
+  // Sample data set, single source:
+  // return { cases: 42 }
+
+  _cacheCount += 1
+}
+
+function getScrapeForDate(src, dt) {
+  // TODO - filter and return correct one, or null if not there.
+  return (obj) => { console.log('scraping') }
+}
+
+async function doScrape(scrape, dataToScrape) {
+  // TODO
+  scrape(dataToScrape)
+  // throw errors back up
+}
+
+/**
+ * During the masterTest (of crawl/scrape), we want to highlight
+ * things that we should be aware of, but which aren't necessarily
+ * failures.
+ */
+class TestWarningError extends Error {
+  constructor(message) {
+    super(`Test warning: ${message}`)
+    this.name = 'TestWarningError'
+  }
+}
+
+class CacheOnlyScraperError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'CacheOnlyScraperError'
+  }
+}
+
+// Errors are thrown back up to the calling function.
+async function masterTest(t, key, src, dt) {
+  // Crawl.
+  // If the crawl doesn't work, it could be due to the source being down.
+  // We can't depend on external sites, so report that as a warning only.
+  // Hold on to the dataset returned so we can pass it to scrape.
+  const oldCacheFileCount = getCacheCountFor(src, dt)
+  let dataToScrape = null
+  try {
+    dataToScrape = await doCrawl(src, dt)
+    t.ok(`${key}: crawl completed successfully`)
+  } catch (err) {
+    throw new TestWarningError(`${key}: crawl error: ${err}`)
+  }
+  const newCacheFileCount = getCacheCountFor(src, dt)
+  if (newCacheFileCount === oldCacheFileCount)
+    throw new TestWarningError(`${key}: Cache count didn't change`)
+
+  if (dataToScrape === null)
+    throw new Error(`${key}: null data?  Shouldn't happen if crawl worked!`)
+
+  const scrape = getScrapeForDate(src, dt)
+  if (scrape === null) {
+    // cache-only source, do nothing, ignore later.
+    throw new CacheOnlyScraperError(key)
+  }
+
+  // Scrape.  If the scrape failed, it could be because the source
+  // format has changed.  We can't depend on that, and our tests
+  // should not fail b/c of that, but should report a warning.
+  try {
+    await doScrape(scrape, dataToScrape)
+    t.ok(`${key}: scrape completed successfully`)
+  } catch (err) {
+    throw new TestWarningError(`${key}: scrape error: ${err}`)
+  }
+
+  // If we got here, great.  We need to check if that scrape can
+  // handle bad data.
+  return [scrape, dataToScrape]
+}
+
+
+// Run the master test for each source.
+// TODO: parallelize this for speed.  Will require changes in err throws and warnings.
+const today = datetime.now()
+for (const [key, src] of Object.entries(sources)) {
+
+  // If the crawl and scrape are successful for the source, we'll
+  // exercise the scrape method in further tests.
+  let scrape = null
+  let dataToScrape = null
+
+  test(`crawl and scrape for ${key} for ${today}`, t => {
+    try {
+      [scrape, dataToScrape] = masterTest(t, key, src, today)
+    } catch (err) {
+      // TODO: handle warnings, cache-only scrapers differently
+      t.fail(`${err}`)
+    }
+    finally {
+      t.end()
+    }
+  })
+
+  if (!(scrape && dataToScrape)) {
+    // The crawl and scrape didn't complete successfully, don't bother
+    // with further tests.
+    continue
+  }
+
+  test(`${key} for ${today}: scrape throws if any data key is missing`, t => {
+    // TODO - mostly implemented much further above.
+  })
+
+  test(`${key} for ${today}: scrape throws if any data is invalid`, t => {
+    // TODO - mostly implemented much further above.
+  })
+
+})
