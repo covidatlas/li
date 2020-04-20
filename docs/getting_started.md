@@ -43,11 +43,19 @@ The first time you run this will take a minute as it downloads dependencies.  At
 
 Browse to http://localhost:3333/ to see the site.
 
-### Run a sample source
+### Run a sample source - crawl and scrape
 
-TBD
+In another terminal (with the sandbox running):
 
-### 3. Run the scrapers
+
+```
+./start --crawl nyt
+./start --scrape nyt
+```
+
+You'll see the output in the server terminal.
+
+### 3. Run crawl and scrape for all sources
 
 TBD
 
@@ -59,13 +67,13 @@ This gets you the latest scrapers.
 git pull upstream master
 ```
 
-## Run scrapers
+## Run sources
 
-TBD
+```
+./start --crawl <id>
+./start --scrape <id>
+```
 
-### Run selected scrapers
-
-TBD
 
 ### Re-generating old data
 
