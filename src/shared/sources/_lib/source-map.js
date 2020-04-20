@@ -6,6 +6,7 @@ const { sep } = require('path')
 module.exports = function sourceMap () {
   const scrapers = globJoin(__dirname, '..', '**', '*.js')
   let filePaths = glob(scrapers)
+  // Ensure forward slashes emitted by glob get re-normalized per-platform
   filePaths = filePaths.map(f => f.split('/').join(sep))
 
   // Ignore any directory or file that starts with `_`
