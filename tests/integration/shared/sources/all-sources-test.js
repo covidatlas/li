@@ -69,10 +69,10 @@ class MissingScrapeDataError extends Error {
 // TODO: move this somewhere, scrapers should use it.
 // DISCUSS: where?
 /** Error thrown when scraper data does not pass validation. */
-class ScrapeDataValidationError extends Error {
+class DataLayoutChangedError extends Error {
   constructor(message = '<no details>') {
     super(`Data validation error: ${message}`)
-    this.name = 'ScrapeDataValidationError'
+    this.name = 'DataLayoutChangedError'
   }
 }
 
@@ -111,7 +111,7 @@ function validateKeys(hsh) {
 function fakeFormatValidation(obj) {
   if (is.string(obj)) {
     if (obj !== 'GOOD')
-      throw new ScrapeDataValidationError()
+      throw new DataLayoutChangedError()
     return
   }
 
@@ -123,7 +123,7 @@ function fakeFormatValidation(obj) {
       return acc
     }, [])
     if (failed.length > 0) {
-      throw new ScrapeDataValidationError(failed.join(', '))
+      throw new DataLayoutChangedError(failed.join(', '))
     }
     return
   }
@@ -472,13 +472,15 @@ function shouldFailWithError(t, func, errType, errMessageRegex = null) {
 
 /** For real sources, this actually calls loadFromCache.  For the
  * fakeSource, use fake responses. */
-function loadFromCacheForTests(source, scraper, date) {
+async function loadFromCacheForTests(source, scraper, date) {
   // TODO How can we ensure that this is set correctly?
   process.env.NODE_ENV = 'testing'
   if (source == fakeSource)
     return fakeSourceLoadCacheResultFor(date)
   const params = { source, scraper, date, tz: 'America/Los_Angeles' }
-  return loadFromCache(params)
+  const cache = await loadFromCache(params)
+  const parsed = await parseCache(cache, date)
+  return parsed
 }
 
 // Test all scrapes that have multiple crawl sources.
@@ -506,9 +508,9 @@ scrapes.filter(h => (h.names.join(',') !== 'undefined')).
       t.end()
     })
 
-    test(`${baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
+    test(`${baseTestName} with only bad data throws DataLayoutChangedError`, async t => {
       let arg = await makeScrapeArgWithBadData(scraper.crawl)
-      shouldFailWithError(t, () => { scraper.scrape(arg) }, ScrapeDataValidationError)
+      shouldFailWithError(t, () => { scraper.scrape(arg) }, DataLayoutChangedError)
       t.end()
     })
 
@@ -534,17 +536,14 @@ scrapes.filter(h => (h.names.join(',') === 'undefined')).
       t.end()
     })
 
-    test(`${baseTestName} with only bad data throws ScrapeDataValidationError`, async t => {
+    test(`${baseTestName} with only bad data throws DataLayoutChangedError`, async t => {
       let arg = await makeScrapeArgWithBadData(scraper.crawl)
-      shouldFailWithError(t, () => { scraper.scrape(arg) }, ScrapeDataValidationError)
+      shouldFailWithError(t, () => { scraper.scrape(arg) }, DataLayoutChangedError)
       t.end()
     })
 
   })
 
-
-// Scrapes given data that don't validate should throw.
-// Scenario A: Completely fictitious
 
 // Scenario B: For each date, get a data set out of the cache.  If
 // there isn't a data set, skip this run.  If there is, loop through
