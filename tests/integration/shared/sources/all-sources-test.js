@@ -10,46 +10,11 @@ const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const allowedTypes = require(join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
 const parseCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
 const loadFromCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
+const changedScrapers = require('./_lib/changed-scrapers.js')
 
 
-var originName = 'origin'
-var originBranch = 'master'
-
-// This modules runs tests for sources.  It usually runs against
-// sources that have "changed" relative to some base branch.  In
-// GitHub CI, this is origin/master, but your working env might use a
-// different remote name, and different base branch name.
-if (!process.env.GITHUB_CI) {
-  const configFile = join(__dirname, 'gitdiff.config')
-  const shortConfig = configFile.replace(process.cwd(), '')
-  if (!fs.existsSync(configFile)) {
-    console.log(`
-*************************************************************
-Missing config file
- 
-${shortConfig}
- 
-for integration tests, aborting!
- 
-This file is necessary to indicate the git remote and branch
-that the code should use to do a 'git diff' against.
- 
-Please copy the file gitdiff.config.example to gitdiff.config
-and change it to match your personal repo settings.
-*************************************************************`)
-    process.exit()
-  }
-
-  const config = JSON.parse(fs.readFileSync(configFile))
-  originName = config.baseRemoteName
-  originBranch = config.baseBranchName
-
-  if (originName == null || originBranch == null)
-    throw new Error(`missing key baseRemoteName or baseBranchName in ${shortConfig}`)
-
-  console.log(originName, originBranch)
-  process.exit()
-}
+const changedFiles = changedScrapers.getChangedScrapers()
+console.log(changedFiles)
 
 test.only('dummy', t => { t.end() })
 

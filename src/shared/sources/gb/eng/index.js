@@ -2,6 +2,7 @@ const parse = require('../../_lib/parse.js')
 
 const gssCodeMap = require('../_shared.js')
 
+// TODO (JZ) remove this comment, had to add it for testing.
 module.exports = {
   country: 'iso1:GB',
   state: 'iso2:GB-ENG',
