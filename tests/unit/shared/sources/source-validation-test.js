@@ -16,7 +16,7 @@ test('Scraper validation test', t => {
     try {
       // eslint-disable-next-line
       const source = require(src)
-      assert.ok(typeof source === 'object', 'Source must be an exported CommonJS object')
+      assert.ok(is.object(source), 'Source must be an exported CommonJS object')
 
       const {
         country,

@@ -59,7 +59,7 @@ async function scrapeSource (event) {
     console.timeEnd('Scrape')
   }
   catch (err) {
-    console.error(err)
+    console.log('Scraper error', event)
     throw Error(err)
   }
 }

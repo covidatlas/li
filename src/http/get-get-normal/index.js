@@ -6,7 +6,7 @@ const got = require('got')
 async function getNormal (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { cookie, rejectUnauthorized, url } = options
+  let { cookies, rejectUnauthorized, url } = options
 
   try {
     const agent = 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_2) ' +
@@ -22,72 +22,72 @@ async function getNormal (req) {
     let headers = {
       'user-agent': agent
     }
-    if (cookie) {
+
+    // Reconstitute cookies
+    if (cookies) {
+      let cookie = Object.entries(cookies).map(([cookie, value]) => `${cookie}=${value}`).join('; ')
       headers.cookie = cookie
     }
 
-    let tries = 0
-    while (tries < 5) {
-      tries++
-      if (tries > 1) {
-        await new Promise(r => setTimeout(r, 2000))
-      }
+    const response = await got(url, {
+      headers,
+      timeout,
+      retry: 0,
+      // Throwing deprives us of raw error codes, which we want!
+      throwHttpErrors: false,
+      // Repeating defaults jic
+      isStream: false,
+      encoding: 'utf8'
+    })
 
-      const response = await got(url, {
-        headers,
-        timeout,
-        retry: 0, // Let this function handle retries
-        // Repeating defaults jic
-        isStream: false,
-        encoding: 'utf8'
-      })
+    const status = response.statusCode
+    const ok = `${status}`.startsWith(2)
 
-      // Some sort of internal socket error or other badness, retry
-      if (response === null) {
-        continue
-      }
-
-      const status = response.statusCode
-
-      // Try again if we got an error code which might be recoverable
-      if (status >= 500) {
-        continue
-      }
-
-      // We got a good response, return it
-      if (status < 400) {
-        // Compress, then base64 encode body in case we transit binaries, max 10MB payload
-        let body = new Buffer.from(response.body)
-        body = brotliCompressSync(body).toString('base64')
-        if (body.length >= 1000 * 1000 * 10) {
-          console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
-          return {
-            statusCode: 500,
-            json: { error: 'maximum_size_exceeded' }
-          }
-        }
+    // We presumably got a good response, return it
+    if (ok) {
+      // Compress, then base64 encode body in case we transit binaries, max 10MB payload
+      let responseBody = new Buffer.from(response.body)
+      responseBody = brotliCompressSync(responseBody).toString('base64')
+      if (responseBody.length >= 1000 * 1000 * 10) {
+        console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
         return {
-          statusCode: 200,
-          body
+          statusCode: 500,
+          json: { error: 'maximum_size_exceeded' }
         }
       }
-
-      // 400-499 means retrying is not likely to help
-      if (status < 500) {
-        return {
-          statusCode: status
-        }
+      // Set up response payload
+      let payload = {
+        body: responseBody
       }
 
-      if (tries === 5) {
-        return {
-          statusCode: 500
+      // Handle cookies in case a crawler client needs them
+      const responseCookies = response.headers && response.headers['set-cookie']
+      const hasCookies = Array.isArray(responseCookies) && responseCookies.length
+      if (hasCookies) {
+        const cookies = {}
+        for (const cookie of responseCookies) {
+          const nibble = cookie.split(';')[0]
+          const crumbs = nibble.split('=')
+          cookies[crumbs[0]] = crumbs[1]
         }
+        payload.cookies = cookies
+      }
+
+      const body = JSON.stringify(payload)
+      return {
+        statusCode: 200,
+        body
+      }
+    }
+    else {
+      return {
+        statusCode: status
       }
     }
   }
   catch (err) {
-    console.error('An error occurred', err)
+    console.error('Some manner of strange error occurred:', err)
+    console.log('Params:', JSON.stringify(options, null, 2))
     return {
       statusCode: 500,
       json: { error: err.stack }

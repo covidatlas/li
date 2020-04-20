@@ -1,0 +1,25 @@
+#! /usr/bin/env node
+
+/**
+ * Pauses the Sandbox watcher to ensure pre-commit hooks don't accidentally initiate hydration
+ */
+const fs = require('fs')
+const path = require('path')
+const osPath = require('ospath')
+const pauseFile = path.join(osPath.tmp(), '_pause-architect-sandbox-watcher')
+
+const status = process.env.PAUSE
+
+try {
+  if (status === 'true') {
+    if (!fs.existsSync(pauseFile)) {
+      fs.writeFileSync(pauseFile, '\n')
+    }
+  }
+  if (status === 'false') {
+    if (fs.existsSync(pauseFile)) {
+      fs.unlinkSync(pauseFile)
+    }
+  }
+}
+catch (err) { /* noop */ }

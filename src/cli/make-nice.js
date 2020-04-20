@@ -6,7 +6,7 @@ const getSource = require('../../src/shared/sources/_lib/get-source.js')
  * --[source|crawl|scrape] 'us/ca/san-francisco-county' instead of 'us/ca/san-francisco-county.js'
  */
 module.exports = function makeNice (params) {
-  let { crawl, scrape, regenerate, regenTimeseries } = params
+  let { crawl, scrape, regenerate, regenTimeseries, runner } = params
 
   // Yargs passes empty strings with truthy cli arguments so ok
   const yargy = arg => arg || arg === ''
@@ -23,5 +23,8 @@ module.exports = function makeNice (params) {
   if (regenTimeseries === '') {
     regenTimeseries = true
   }
-  return { crawl, scrape, regenerate, regenTimeseries }
+  if (runner === '') {
+    runner = true
+  }
+  return { crawl, scrape, regenerate, regenTimeseries, runner }
 }

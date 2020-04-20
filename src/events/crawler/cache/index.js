@@ -11,7 +11,7 @@ const writeS3 = require('./_write-s3.js')
  */
 module.exports = async function saveToCache (results) {
 
-  const local = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
+  const local = process.env.NODE_ENV === 'testing'
   const write = local ? writeLocal : writeS3
 
   const extensions = {

@@ -8,6 +8,6 @@ module.exports = async function writeLocal (data, filePath, filename) {
   const compressed = gzipSync(data)
   fs.mkdirSync(localPath, { recursive: true })
   fs.writeFileSync(file, compressed)
-  console.log(`Wrote to cache:`, file)
+  console.log(`Wrote to local cache:`, file)
   return
 }

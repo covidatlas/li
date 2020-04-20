@@ -31,7 +31,6 @@ exports.handler = async function regenerateTimeseries () {
     }
   }
   catch (err) {
-    console.error(err)
     throw Error(err)
   }
 }
