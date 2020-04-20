@@ -4,6 +4,7 @@ const { gzipSync } = require('zlib')
 
 module.exports = async function writeLocal (data, filePath, filename) {
   let cachePath = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
+  // Alter the local cache dir (handy for such things as integration testing)
   if (process.env.LI_CACHE_PATH) {
     cachePath = process.env.LI_CACHE_PATH
   }

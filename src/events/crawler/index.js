@@ -63,6 +63,7 @@ async function crawlSource (event) {
     console.timeEnd('Crawl')
   }
   catch (err) {
+    // TODO write something to the database that says this source is offline
     console.log('Crawler error', event)
     throw Error(err)
   }

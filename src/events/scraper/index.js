@@ -59,6 +59,7 @@ async function scrapeSource (event) {
     console.timeEnd('Scrape')
   }
   catch (err) {
+    // TODO write something to the database that says this source is offline
     console.log('Scraper error', event)
     throw Error(err)
   }

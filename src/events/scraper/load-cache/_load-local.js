@@ -4,6 +4,7 @@ const { join } = require('path')
 const datetime = require('@architect/shared/datetime/index.js')
 
 let cache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
+// Alter the local cache dir (handy for such things as integration testing)
 if (process.env.LI_CACHE_PATH) {
   cache = process.env.LI_CACHE_PATH
 }
