@@ -3,12 +3,16 @@ const fs = require('fs')
 const { join } = require('path')
 const datetime = require('@architect/shared/datetime/index.js')
 
-let cache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
-// Alter the local cache dir (handy for such things as integration testing)
-if (process.env.LI_CACHE_PATH) {
-  cache = process.env.LI_CACHE_PATH
+let defaultcache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
+
+/** Return the default cache path, or LI_CACHE_PATH if set in env. */
+function cachePath(key) {
+  let cache = defaultcache
+  if (process.env.LI_CACHE_PATH) {
+    cache = process.env.LI_CACHE_PATH
+  }
+  return join(cache, key)
 }
-const cachePath = key => join(cache, key)
 
 async function getFolders (_sourceKey) {
   if (!fs.existsSync(cachePath(_sourceKey))) {
