@@ -10,11 +10,11 @@ const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const allowedTypes = require(join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
 const parseCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
 const loadFromCache = require(join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
-const changedScrapers = require('./_lib/changed-scrapers.js')
+const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
 
 
-const changedFiles = changedScrapers.getChangedScrapers()
-console.log(changedFiles)
+const changedKeys = changedSources.getChangedSourceKeys()
+console.log(changedKeys)
 
 test.only('dummy', t => { t.end() })
 
