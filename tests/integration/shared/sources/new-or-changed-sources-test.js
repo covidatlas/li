@@ -19,10 +19,26 @@ let sourceKeys = []
 if (process.env.TEST_ALL) {
   sourceKeys = Object.keys(sourceMap())
 } else if (process.env.TEST_ONLY) {
-  sourceKeys = [process.env.TEST_ONLY]
+  sourceKeys = process.env.TEST_ONLY.split(',')
 } else {
   sourceKeys = changedSources.getChangedSourceKeys()
 }
+
+
+function makeBatches(arr, batchsize) {
+  const ret = []
+  for (let i = 0; i < arr.length; i += batchsize)
+    ret.push(arr.slice(i, i + batchsize))
+  return ret
+}
+
+test.skip('makeBatches helper', t => {
+  t.deepEqual([], makeBatches([], 4), 'a')
+  t.deepEqual([[1,2,3], [4,5,6], [7,8]], makeBatches([1,2,3,4,5,6,7,8], 3), 'b')
+  t.deepEqual([[1,2,3], [4,5,6]], makeBatches([1,2,3,4,5,6], 3), 'c')
+  t.deepEqual([[1], [2], [3]], makeBatches([1,2,3], 1), 'd')
+  t.end()
+})
 
 // TODO: add fake source!
 // Can set fake source to crawl localhost:3000/integrationtest, which contains test assets.
@@ -139,30 +155,103 @@ async function runFullCycle(key, today) {
 
     result.success = true
   } catch(err) {
-    result.error = err
+    console.log(`error: ${err}`)
+    // I tried 'result.error = err' below, but that did not work: the
+    // returned object only contained '"error":{}'.  Changing it to a
+    // string preserved the details.  Not ideal, but not terrible.
+    result.error = `error: ${err}`
   } finally {
-    console.log(`returning result: ${result}`)
     return result
   }
 }
 
-async function runit(asyncruns) {
-  Promise.all(asyncruns).then(values => { 
-    console.log(values)
-  })
-  // console.log(data)
+function getInfoForEveryInnerArgument(keys, today) {
+  const allruns = keys.map(k => runFullCycle(k, today))
+  return Promise.all(allruns)
+    .then((results) => {
+      return results
+    })
 }
 
-const asyncruns = []
-setup()
-for (const key of sourceKeys) {
-  const p = new Promise((resolve, reject) => {
-    resolve(runFullCycle(key, today))
+function mainFunction(batchedKeys, today) {
+  return new Promise(function(resolve, reject) {
+    var results = []
+    var index = 0
+    function next() {
+      if (index < batchedKeys.length) {
+        const currBatch = batchedKeys[index]
+        console.log(`Running batch ${index + 1}: ${currBatch.join(',')}`)
+        getInfoForEveryInnerArgument(currBatch).then(function(data) {
+          results.push(data)
+          next()
+        }, reject)
+        index += 1
+      } else {
+        resolve(results.flat())
+      }
+    }
+    // start first iteration
+    next()
   })
-  asyncruns.push(p)
 }
-Promise.all(asyncruns).then(results => {
-  results.forEach (result => {
+
+
+/** For debugging only. */
+function printResults(results) {
+  console.log("Results (minus data):")
+  results.forEach(r => {
+    console.log('------------------------------')
+    let copy = r
+    delete copy.data
+    console.log(JSON.stringify(copy))
+  })
+}
+
+const batches = makeBatches(sourceKeys, 2)
+
+async function aoeu() {
+  await mainFunction(batches, today).then(result => printResults(result))
+}
+aoeu()
+
+
+
+
+/*
+async function runBatches(sourceKeys, batchsize) {
+  const allresults = []
+  batches = makeBatches(sourceKeys, batchsize)
+  console.log(batches)
+  let index = 0
+  for (const batch of batches) {
+    index += 1
+    console.log(`BATCH NUMBER ${index}`)
+    console.log(batch)
+
+    const asyncruns = []
+    setup()
+    for (const key of batch) {
+      const p = new Promise((resolve, reject) => {
+        resolve(runFullCycle(key, today))
+      })
+      asyncruns.push(p)
+    }
+
+    await Promise.all(asyncruns).then(result => allresults.push(result))
+    console.log(`Got all promises from batch ${index}`)
+    console.log(`Done batch ${index}`)
+  }
+  allresults = allresults.flat()
+  console.log('=======================================================')
+  console.log(`RESULTS: ${allresults}`)
+  return allresults
+}
+
+const allresults = runBatches(sourceKeys, 2)
+console.log(`ALL RESULTS = ${allresults}`)
+
+// Promise.all(asyncruns).then(results => {
+  allresults.forEach (result => {
     test(`${result.key}`, t => {
       t.ok(result.error === null, `null error "${result.error}"`)
       t.ok(result.success, 'completed successfully')
@@ -173,22 +262,7 @@ Promise.all(asyncruns).then(results => {
       t.end()
     })
   })
-})
+// })
 
 teardown()
-
-/*
-tests.push(new Promise((resolve, reject) => {doScrape(key)}))
-Promise.all(tests).then(response => console.log(response))
-
-async function doScrape(key) {
-      const crawlArg = {
-        Records: [
-          { Sns: { Message: JSON.stringify({source: key}) } }
-        ]
-      }
-      console.log(`Calling scrape for ${key}`)
-      await crawlerHandler(crawlArg)
-      console.log(`${key} crawl completed successfully.`)
-}
 */
