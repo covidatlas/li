@@ -5,12 +5,14 @@ const cache = require('./cache')
 
 async function crawlSource (event) {
   try {
-    console.time('Crawl')
     /**
      * Load the requested source
      */
     const source = getSource(event)
     const { scrapers, _sourceKey } = source
+
+    const timeLabel = `Crawl-${_sourceKey}`
+    console.time(timeLabel)
 
     /**
      * Select the current scraper from the source's available scrapers
@@ -60,7 +62,7 @@ async function crawlSource (event) {
      */
     await cache(results)
 
-    console.timeEnd('Crawl')
+    console.timeEnd(timeLabel)
   }
   catch (err) {
     // TODO write something to the database that says this source is offline

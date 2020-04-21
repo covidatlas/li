@@ -11,7 +11,10 @@ const allowedTypes = require(path.join(srcShared, 'sources', '_lib', 'types.js')
 const parseCache = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
 const loadFromCache = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
 const changedSources = require('./_lib/changed-sources.js')
-const crawlerIndex = require(path.join(process.cwd(), 'src', 'events', 'crawler', 'index.js'))
+
+const srcEvents = path.join(process.cwd(), 'src', 'events')
+const crawlerHandler = require(path.join(srcEvents, 'crawler', 'index.js')).handler
+const scraperHandler = require(path.join(srcEvents, 'scraper', 'index.js')).handler
 
 
 const changedFiles = changedSources.getChangedSources()
@@ -56,6 +59,7 @@ const today = datetime.today.utc()
 
 for (const [key, source] of Object.entries(sources)) {
   test(`${key} for ${today}`, async t => {
+    t.plan(2)
     try {
       setup()
 
@@ -64,9 +68,17 @@ for (const [key, source] of Object.entries(sources)) {
           { Sns: { Message: JSON.stringify({source: key}) } }
         ]
       }
-      await crawlerIndex.handler(crawlArg)
-
+      await crawlerHandler(crawlArg)
       t.ok(`${key} crawl completed successfully.`)
+
+      const scrapeArg = {
+        Records: [
+          { Sns: { Message: JSON.stringify({source: key, date: today, silent: true}) } }
+        ]
+      }
+      await scraperHandler(crawlArg)
+      t.ok(`${key} scrape completed successfully.`)
+
     } catch(err) {
       t.fail(err)
     }
