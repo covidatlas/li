@@ -16,13 +16,6 @@ const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
 const changedKeys = changedSources.getChangedSourceKeys()
 console.log(changedKeys)
 
-test.only('a', t => {
-  t.test('inner', tt => {
-    tt.ok('aoeu')
-    tt.end()
-  })
-  t.end()
-})
 
 // test.only('dummy', t => { t.end() })
 

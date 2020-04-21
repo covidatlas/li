@@ -104,7 +104,7 @@ function promiseRunFullCycleFor(keys, today) {
   return Promise.all(allruns)
 }
 
-function mainFunction(batchedKeys, today) {
+function mainFunction(maintest, batchedKeys, today) {
   return new Promise(function(resolve, reject) {
     var allResults = []
     var index = 0
@@ -139,9 +139,9 @@ function printResults(results) {
   return results
 }
 
-function testResults(results) {
+function testResults(maintest, results) {
   results.forEach (result => {
-    test(`${result.key}`, t => {
+    maintest.test(`New or changed scource: ${result.key}`, t => {
       t.ok(result.error === null, `null error "${result.error}"`)
       t.ok(result.success, 'completed successfully')
       t.ok(result.crawled, 'crawled')
@@ -168,11 +168,13 @@ function teardown() {
   }
 }
 
-const today = datetime.today.utc()
-const batches = makeBatches(sourceKeys, 10)
 
 setup()
-mainFunction(batches, today).
-  then(result => testResults(result))
+test('new or changed sources', async maintest => {
+  const today = datetime.today.utc()
+  const batches = makeBatches(sourceKeys, 10)
+  mainFunction(maintest, batches, today).
+    then(result => testResults(maintest, result))
+})
 teardown()
 
