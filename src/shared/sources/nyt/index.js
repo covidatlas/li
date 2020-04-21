@@ -3,6 +3,7 @@ const transform = require('../_lib/transform.js')
 const geography = require('../_lib/geography/index.js')
 const datetime = require('../../datetime/index.js')
 
+// TODO (JZ) remove this comment, had to add it for testing.
 module.exports = {
   country: 'iso1:US',
   timeseries: true,

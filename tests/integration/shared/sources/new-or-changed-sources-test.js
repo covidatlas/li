@@ -11,6 +11,7 @@ const allowedTypes = require(path.join(srcShared, 'sources', '_lib', 'types.js')
 const parseCache = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
 const loadFromCache = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
 const changedSources = require('./_lib/changed-sources.js')
+const crawlerIndex = require(path.join(process.cwd(), 'src', 'events', 'crawler', 'index.js'))
 
 
 const changedFiles = changedSources.getChangedSources()
@@ -52,15 +53,25 @@ for (const [key, filepath] of Object.entries(checkSources)) {
 }
 
 const today = datetime.today.utc()
-console.log(today)
 
 for (const [key, source] of Object.entries(sources)) {
-  test(`${key} for ${today}`, t => {
+  test(`${key} for ${today}`, async t => {
     try {
       setup()
+
+      const crawlArg = {
+        Records: [
+          { Sns: { Message: JSON.stringify({source: key}) } }
+        ]
+      }
+      await crawlerIndex.handler(crawlArg)
+
+      t.ok(`${key} crawl completed successfully.`)
+    } catch(err) {
+      t.fail(err)
     }
     finally {
-      teardown()
+      // teardown()
     }
     t.end()
   })
