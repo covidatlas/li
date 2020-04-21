@@ -63,7 +63,7 @@ const today = datetime.today.utc()
 
 for (const key of Object.keys(sources)) {
   test(`${key} for ${today}`, async t => {
-    t.plan(2)
+    t.plan(3)
     try {
       setup()
 
@@ -80,7 +80,7 @@ for (const key of Object.keys(sources)) {
           { Sns: { Message: JSON.stringify({source: key, date: today, silent: true}) } }
         ]
       }
-      await scraperHandler(scrapeArg)
+      const data = await scraperHandler(scrapeArg)
       t.ok(`${key} scrape completed successfully.`)
 
       // TODO: verify that data was actually written.
@@ -90,7 +90,7 @@ for (const key of Object.keys(sources)) {
       t.fail(err)
     }
     finally {
-      teardown()
+      // teardown()
     }
     t.end()
   })

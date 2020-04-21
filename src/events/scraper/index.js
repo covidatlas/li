@@ -64,6 +64,8 @@ async function scrapeSource (event) {
     // TODO: integration test needs to verify that data was written
 
     console.timeEnd(timeLabel)
+
+    return data
   }
   catch (err) {
     // TODO write something to the database that says this source is offline
