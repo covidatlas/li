@@ -32,7 +32,6 @@ if (process.env.TEST_ALL) {
 
 // TODO: make it all parallel!
 
-const today = datetime.today.utc()
 
 function setup() {
   const d = process.env.LI_CACHE_PATH
@@ -49,17 +48,17 @@ function teardown() {
   }
 }
 
-for (const key of sourceKeys) {
+async function runTest(key, today) {
   test(`${key} for ${today}`, async t => {
     t.plan(3)
     try {
-      setup()
 
       const crawlArg = {
         Records: [
           { Sns: { Message: JSON.stringify({source: key}) } }
         ]
       }
+      console.log(`Calling scrape for ${key}`)
       await crawlerHandler(crawlArg)
       t.ok(`${key} crawl completed successfully.`)
 
@@ -87,8 +86,31 @@ for (const key of sourceKeys) {
       t.fail(err)
     }
     finally {
-      teardown()
     }
     t.end()
   })
 }
+
+setup()
+const today = datetime.today.utc()
+for (const key of sourceKeys) {
+  runTest(key, today)
+}
+teardown()
+
+
+/*
+tests.push(new Promise((resolve, reject) => {doScrape(key)}))
+Promise.all(tests).then(response => console.log(response))
+
+async function doScrape(key) {
+      const crawlArg = {
+        Records: [
+          { Sns: { Message: JSON.stringify({source: key}) } }
+        ]
+      }
+      console.log(`Calling scrape for ${key}`)
+      await crawlerHandler(crawlArg)
+      console.log(`${key} crawl completed successfully.`)
+}
+*/
