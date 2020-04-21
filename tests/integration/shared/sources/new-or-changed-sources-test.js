@@ -168,9 +168,6 @@ async function runFullCycle(key, today) {
 function getInfoForEveryInnerArgument(keys, today) {
   const allruns = keys.map(k => runFullCycle(k, today))
   return Promise.all(allruns)
-    .then((results) => {
-      return results
-    })
 }
 
 function mainFunction(batchedKeys, today) {
