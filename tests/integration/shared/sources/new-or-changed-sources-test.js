@@ -91,7 +91,8 @@ async function runCrawlAndScrape(key, today) {
   return result
 }
 
-/** Runs runCrawlAndScrape in batches, generating subtests under
+/** Runs runCrawlAndScrape successively in batches, but run each item
+ * in one batch run in parallel, generating subtests under
  * maintest. */
 function runBatchedCrawlAndScrape(maintest, batchedKeys, today) {
   return new Promise(resolve => {
@@ -134,13 +135,13 @@ function printResults(results) {
 function testResults(maintest, results) {
   results.forEach (result => {
     maintest.test(`source: ${result.key}`, t => {
+      t.plan(6)
       t.ok(result.error === null, `null error "${result.error}"`)
       t.ok(result.success, 'completed successfully')
       t.ok(result.crawled, 'crawled')
       t.ok(result.scraped, 'scraped')
       t.ok(result.data !== null, 'got data')
       t.ok(result.written, 'wrote')
-      t.end()
     })
   })
   return results
