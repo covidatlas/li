@@ -209,11 +209,7 @@ function printResults(results) {
 
 const batches = makeBatches(sourceKeys, 2)
 
-async function aoeu() {
-  await mainFunction(batches, today).then(result => printResults(result))
-}
-aoeu()
-
+mainFunction(batches, today).then(result => printResults(result))
 
 
 
