@@ -97,12 +97,12 @@ function mainFunction(maintest, batchedKeys, today) {
       if (index < batchedKeys.length) {
         const batch = batchedKeys[index]
         const comment = `Running ${batch.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
-        console.log(comment)
         maintest.comment(comment)
-        promiseRunFullCycleFor(batch, today).then(results => {
-          allResults = allResults.concat(results)
-          next()
-        })
+        promiseRunFullCycleFor(batch, today).
+          then(results => {
+            allResults = allResults.concat(results)
+            next()
+          })
         index += 1
       } else {
         resolve(allResults)
@@ -128,7 +128,7 @@ function printResults(results) {
 
 function testResults(maintest, results) {
   results.forEach (result => {
-    maintest.test(`New or changed scource: ${result.key}`, t => {
+    maintest.test(`source: ${result.key}`, t => {
       t.ok(result.error === null, `null error "${result.error}"`)
       t.ok(result.success, 'completed successfully')
       t.ok(result.crawled, 'crawled')
@@ -138,6 +138,7 @@ function testResults(maintest, results) {
       t.end()
     })
   })
+  return results
 }
 
 function setup() {
@@ -159,8 +160,9 @@ function teardown() {
 setup()
 test('new or changed sources', async maintest => {
   const today = datetime.today.utc()
-  const batches = makeBatches(sourceKeys, 10)
+  const batches = makeBatches(sourceKeys, 2)
   mainFunction(maintest, batches, today).
+    then(result => { console.log(`Got ${result.length} results!`); return result }).
     then(result => testResults(maintest, result))
 })
 teardown()
