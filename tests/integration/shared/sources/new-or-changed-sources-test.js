@@ -205,49 +205,11 @@ function printResults(results) {
     delete copy.data
     console.log(JSON.stringify(copy))
   })
+  return results
 }
 
-const batches = makeBatches(sourceKeys, 2)
-
-mainFunction(batches, today).then(result => printResults(result))
-
-
-
-/*
-async function runBatches(sourceKeys, batchsize) {
-  const allresults = []
-  batches = makeBatches(sourceKeys, batchsize)
-  console.log(batches)
-  let index = 0
-  for (const batch of batches) {
-    index += 1
-    console.log(`BATCH NUMBER ${index}`)
-    console.log(batch)
-
-    const asyncruns = []
-    setup()
-    for (const key of batch) {
-      const p = new Promise((resolve, reject) => {
-        resolve(runFullCycle(key, today))
-      })
-      asyncruns.push(p)
-    }
-
-    await Promise.all(asyncruns).then(result => allresults.push(result))
-    console.log(`Got all promises from batch ${index}`)
-    console.log(`Done batch ${index}`)
-  }
-  allresults = allresults.flat()
-  console.log('=======================================================')
-  console.log(`RESULTS: ${allresults}`)
-  return allresults
-}
-
-const allresults = runBatches(sourceKeys, 2)
-console.log(`ALL RESULTS = ${allresults}`)
-
-// Promise.all(asyncruns).then(results => {
-  allresults.forEach (result => {
+function testResults(results) {
+  results.forEach (result => {
     test(`${result.key}`, t => {
       t.ok(result.error === null, `null error "${result.error}"`)
       t.ok(result.success, 'completed successfully')
@@ -258,7 +220,9 @@ console.log(`ALL RESULTS = ${allresults}`)
       t.end()
     })
   })
-// })
+}
 
-teardown()
-*/
+const batches = makeBatches(sourceKeys, 2)
+
+mainFunction(batches, today).then(result => testResults(result))
+
