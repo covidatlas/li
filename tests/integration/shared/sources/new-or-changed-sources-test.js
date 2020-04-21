@@ -11,23 +11,31 @@ const srcEvents = path.join(process.cwd(), 'src', 'events')
 const crawlerHandler = require(path.join(srcEvents, 'crawler', 'index.js')).handler
 const scraperHandler = require(path.join(srcEvents, 'scraper', 'index.js')).handler
 
+/** Test new or changed scrapers.
+ *
+ * By default, this checks new/changed sources by diffing the current branch
+ * with a baseline branch (see _lib/changed-sources.js).
+ *
+ * You can override this by setting some environment vars:
+ *
+ * TEST_ALL - tests all of the sources
+ * e.g., TEST_ALL=1 npm run test:integration
+ *
+ * TEST_ONLY - a comma-delimited list of sources to test
+ * TEST_ONLY=gb-sct,nl,gb-eng npm run test:integration
+ */
 
 process.env.NODE_ENV = 'testing'
+
+// A fake cache, destroyed and re-created for the test run.
 process.env.LI_CACHE_PATH = path.join(process.cwd(), 'zz-testing-fake-cache')
 
-let sourceKeys = []
-if (process.env.TEST_ALL) {
-  sourceKeys = Object.keys(sourceMap())
-} else if (process.env.TEST_ONLY) {
-  sourceKeys = process.env.TEST_ONLY.split(',')
-} else {
-  sourceKeys = changedSources.getChangedSourceKeys()
-}
 
+//////////////////////////////////////////////////////////////////////
+// Utilities
 
-/** Split an array into batches.
- * e.g.:
- * makeBatches([1,2,3,4,5,6,7,8]) = [[1,2,3], [4,5,6], [7,8]]
+/** Split an array into batches, e.g.:
+ * makeBatches([1,2,3,4,5], 3) = [[1,2,3], [4,5]]
  */
 function makeBatches(arr, batchsize) {
   const ret = []
@@ -36,9 +44,9 @@ function makeBatches(arr, batchsize) {
   return ret
 }
 
-
-async function runFullCycle(key, today) {
-
+/** Runs the full crawl-scrape-save cycle for a given source,
+ * returning a struct indicating which steps succeeded. */
+async function runCrawlAndScrape(key, today) {
   const result = {
     key: key,
     crawled: false,
@@ -50,7 +58,6 @@ async function runFullCycle(key, today) {
   }
 
   try {
-
     const crawlArg = {
       Records: [
         { Sns: { Message: JSON.stringify({source: key}) } }
@@ -84,24 +91,21 @@ async function runFullCycle(key, today) {
   return result
 }
 
-function promiseRunFullCycleFor(keys, today) {
-  const allruns = keys.map(k => runFullCycle(k, today))
-  return Promise.all(allruns)
-}
-
-function mainFunction(maintest, batchedKeys, today) {
+/** Runs runCrawlAndScrape in batches, generating subtests under
+ * maintest. */
+function runBatchedCrawlAndScrape(maintest, batchedKeys, today) {
   return new Promise(resolve => {
     var allResults = []
     var index = 0
-    function next() {
+    function runNextBatch() {
       if (index < batchedKeys.length) {
-        const batch = batchedKeys[index]
-        const comment = `Running ${batch.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
+        const keys = batchedKeys[index]
+        const comment = `Running ${keys.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
         maintest.comment(comment)
-        promiseRunFullCycleFor(batch, today).
+        Promise.all(keys.map(k => runCrawlAndScrape(k, today))).
           then(results => {
             allResults = allResults.concat(results)
-            next()
+            runNextBatch()
           })
         index += 1
       } else {
@@ -109,7 +113,7 @@ function mainFunction(maintest, batchedKeys, today) {
       }
     }
     // start first iteration
-    next()
+    runNextBatch()
   })
 }
 
@@ -126,6 +130,7 @@ function printResults(results) {
   return results
 }
 
+/** Check the results. */
 function testResults(maintest, results) {
   results.forEach (result => {
     maintest.test(`source: ${result.key}`, t => {
@@ -141,7 +146,7 @@ function testResults(maintest, results) {
   return results
 }
 
-function setup() {
+function createTestCacheDir() {
   const d = process.env.LI_CACHE_PATH
   if (fs.existsSync(d)) {
     fs.rmdirSync(d, { recursive: true })
@@ -149,7 +154,7 @@ function setup() {
   fs.mkdirSync(d)
 }
 
-function teardown() {
+function destroyTestCacheDir() {
   const d = process.env.LI_CACHE_PATH
   if (fs.existsSync(d)) {
     fs.rmdirSync(d, { recursive: true })
@@ -157,15 +162,31 @@ function teardown() {
 }
 
 
-setup()
+//////////////////////////////////////////////////////////////////////
+// The tests
+
+let sourceKeys = []
+if (process.env.TEST_ALL) {
+  sourceKeys = Object.keys(sourceMap())
+} else if (process.env.TEST_ONLY) {
+  sourceKeys = process.env.TEST_ONLY.split(',')
+} else {
+  sourceKeys = changedSources.getChangedSourceKeys()
+}
+
+const batchSize = 20  // arbitrary.
+const batches = makeBatches(sourceKeys, batchSize)
+
+createTestCacheDir()
+
 test('new or changed sources', async maintest => {
   const today = datetime.today.utc()
-  const batches = makeBatches(sourceKeys, 2)
-  mainFunction(maintest, batches, today).
+  runBatchedCrawlAndScrape(maintest, batches, today).
     then(result => { console.log(`Got ${result.length} results!`); return result }).
     then(result => testResults(maintest, result))
 })
-teardown()
+
+destroyTestCacheDir()
 
 // TODO (testing) Add fake source that crawls localhost:3000/integrationtest
 // Prior to running test, copy test assets there.
