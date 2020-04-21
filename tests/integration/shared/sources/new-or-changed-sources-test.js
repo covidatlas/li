@@ -40,7 +40,9 @@ const srcMap = sourceMap()
 
 if (process.env.TEST_ALL) {
   sourceKeys = Object.keys(srcMap)
-} else {
+} else if (process.env.TEST_ONLY) {
+  sourceKeys = [process.env.TEST_ONLY]
+}else {
   sourceKeys = Object.entries(srcMap).
     reduce((keys, keyvaluepair) => {
       const [key, filepath] = keyvaluepair
