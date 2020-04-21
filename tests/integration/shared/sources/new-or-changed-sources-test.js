@@ -25,31 +25,16 @@ if (process.env.TEST_ALL) {
 }
 
 
+/** Split an array into batches.
+ * e.g.:
+ * makeBatches([1,2,3,4,5,6,7,8]) = [[1,2,3], [4,5,6], [7,8]]
+ */
 function makeBatches(arr, batchsize) {
   const ret = []
   for (let i = 0; i < arr.length; i += batchsize)
     ret.push(arr.slice(i, i + batchsize))
   return ret
 }
-
-test.skip('makeBatches helper', t => {
-  t.deepEqual([], makeBatches([], 4), 'a')
-  t.deepEqual([[1,2,3], [4,5,6], [7,8]], makeBatches([1,2,3,4,5,6,7,8], 3), 'b')
-  t.deepEqual([[1,2,3], [4,5,6]], makeBatches([1,2,3,4,5,6], 3), 'c')
-  t.deepEqual([[1], [2], [3]], makeBatches([1,2,3], 1), 'd')
-  t.end()
-})
-
-// TODO: add fake source!
-// Can set fake source to crawl localhost:3000/integrationtest, which contains test assets.
-// prior to running test, copy those assets there.
-// The data should then work fine.
-// Always run that fake thing!
-
-// TODO: make it all parallel!
-
-
-
 
 
 async function runFullCycle(key, today) {
@@ -94,9 +79,9 @@ async function runFullCycle(key, today) {
     // returned object only contained '"error":{}'.  Changing it to a
     // string preserved the details.  Not ideal, but not terrible.
     result.error = `error: ${err}`
-  } finally {
-    return result
   }
+
+  return result
 }
 
 function promiseRunFullCycleFor(keys, today) {
@@ -105,13 +90,15 @@ function promiseRunFullCycleFor(keys, today) {
 }
 
 function mainFunction(maintest, batchedKeys, today) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(resolve => {
     var allResults = []
     var index = 0
     function next() {
       if (index < batchedKeys.length) {
         const batch = batchedKeys[index]
-        console.log(`Running batch ${index + 1}: ${batch.join(',')}`)
+        const comment = `Running ${batch.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
+        console.log(comment)
+        maintest.comment(comment)
         promiseRunFullCycleFor(batch, today).then(results => {
           allResults = allResults.concat(results)
           next()
@@ -126,8 +113,8 @@ function mainFunction(maintest, batchedKeys, today) {
   })
 }
 
-
 /** For debugging only. */
+// eslint-disable-next-line no-unused-vars
 function printResults(results) {
   console.log("Results (minus data):")
   results.forEach(r => {
@@ -178,3 +165,6 @@ test('new or changed sources', async maintest => {
 })
 teardown()
 
+// TODO (testing) Add fake source that crawls localhost:3000/integrationtest
+// Prior to running test, copy test assets there.
+// Fake source can scrape data like a real scraper, easy and controlled.
