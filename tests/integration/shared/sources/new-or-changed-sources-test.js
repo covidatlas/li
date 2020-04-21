@@ -12,12 +12,27 @@ const crawlerHandler = require(path.join(srcEvents, 'crawler', 'index.js')).hand
 const scraperHandler = require(path.join(srcEvents, 'scraper', 'index.js')).handler
 
 
-const changedFiles = changedSources.getChangedSources()
-console.log(`Running tests for new or changed scrapers:`)
-changedFiles.map(f => f.replace(process.cwd(), '')).map(f => { console.log(`* ${f}`) })
-
 process.env.NODE_ENV = 'testing'
 process.env.LI_CACHE_PATH = path.join(process.cwd(), 'zz-testing-fake-cache')
+
+let sourceKeys = []
+if (process.env.TEST_ALL) {
+  sourceKeys = Object.keys(sourceMap())
+} else if (process.env.TEST_ONLY) {
+  sourceKeys = [process.env.TEST_ONLY]
+} else {
+  sourceKeys = changedSources.getChangedSourceKeys()
+}
+
+// TODO: add fake source!
+// Can set fake source to crawl localhost:3000/integrationtest, which contains test assets.
+// prior to running test, copy those assets there.
+// The data should then work fine.
+// Always run that fake thing!
+
+// TODO: make it all parallel!
+
+const today = datetime.today.utc()
 
 function setup() {
   const d = process.env.LI_CACHE_PATH
@@ -33,37 +48,6 @@ function teardown() {
     fs.rmdirSync(d, { recursive: true })
   }
 }
-
-let sourceKeys = []
-
-const srcMap = sourceMap()
-
-if (process.env.TEST_ALL) {
-  sourceKeys = Object.keys(srcMap)
-} else if (process.env.TEST_ONLY) {
-  sourceKeys = [process.env.TEST_ONLY]
-}else {
-  sourceKeys = Object.entries(srcMap).
-    reduce((keys, keyvaluepair) => {
-      const [key, filepath] = keyvaluepair
-      const shortpath = filepath.replace(`${process.cwd()}${path.sep}`, '')
-      if (changedFiles.includes(shortpath)) {
-        keys.push(key)
-      }
-      return keys
-    }, [])
-}
-
-// TODO: add fake source!
-// Can set fake source to crawl localhost:3000/integrationtest, which contains test assets.
-// prior to running test, copy those assets there.
-// The data should then work fine.
-// Always run that fake thing!
-
-// TODO: add option to run all
-// TODO: make it all parallel!
-
-const today = datetime.today.utc()
 
 for (const key of sourceKeys) {
   test(`${key} for ${today}`, async t => {

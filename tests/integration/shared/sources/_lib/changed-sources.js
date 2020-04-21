@@ -52,7 +52,8 @@ function getBaseBranch() {
   return `${remote}/${branch}`
 }
 
-function getChangedSources() {
+/** Returns array of keys, e.g. ['nyt'] */
+function getChangedSourceKeys() {
   const b = getBaseBranch()
 
   // Git diff commands are very strange sometimes: the '...' is
@@ -63,15 +64,16 @@ function getChangedSources() {
 
   const result = exec(command)
   const filesChanged = result.toString().split('\n')
-  // console.log(filesChanged)
-  const allSourceFiles = Object.values(sourceMap()).
-        map(s => s.replace(`${process.cwd()}${path.sep}`, ''))
-  // console.log(allSourceFiles)
-  const changedSources = allSourceFiles.filter(f => filesChanged.includes(f))
-  // console.log(changedSources)
-  return changedSources
+
+  const changedKeys = []
+  for (const [key, fname] of Object.entries(sourceMap())) {
+    const s = fname.replace(`${process.cwd()}${path.sep}`, '')
+    if (filesChanged.includes(s))
+      changedKeys.push(key)
+  }
+  return changedKeys
 }
 
 module.exports = {
-  getChangedSources
+  getChangedSourceKeys
 }
