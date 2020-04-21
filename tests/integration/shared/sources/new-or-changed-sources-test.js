@@ -71,14 +71,23 @@ for (const key of sourceKeys) {
       const data = await scraperHandler(scrapeArg)
       t.ok(`${key} scrape completed successfully.`)
 
-      // TODO: verify that data was actually written.
+      // TODO (testing) verify that data matches a particular schema
+      // e.g.
+      //  const scraper = getScraper(key)
+      //  if (scraper.timeseries) {
+      //    checkMatchesTimeseriesSchema(t, data)
+      //  } else {
+      //    checkMatchesDataSchema(t, data)
+      //  }
+
+      // TODO (testing) verify that data was actually written.
       t.ok(`${key} data written successfully.`)
 
     } catch(err) {
       t.fail(err)
     }
     finally {
-      // teardown()
+      teardown()
     }
     t.end()
   })
