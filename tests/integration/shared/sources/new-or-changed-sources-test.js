@@ -34,20 +34,22 @@ function teardown() {
   }
 }
 
-const checkSources = Object.entries(sourceMap()).
-      reduce((useSource, keyvaluepair) => {
-        const [key, filepath] = keyvaluepair
-        const shortpath = filepath.replace(`${process.cwd()}${path.sep}`, '')
-        if (changedFiles.includes(shortpath)) {
-          useSource[key] = filepath
-        }
-        return useSource
-      }, {})
+let sourceKeys = []
 
-let sources = {}
-for (const [key, filepath] of Object.entries(checkSources)) {
-  // eslint-disable-next-line
-  sources[key] = require(filepath)
+const srcMap = sourceMap()
+
+if (process.env.TEST_ALL) {
+  sourceKeys = Object.keys(srcMap)
+} else {
+  sourceKeys = Object.entries(srcMap).
+    reduce((keys, keyvaluepair) => {
+      const [key, filepath] = keyvaluepair
+      const shortpath = filepath.replace(`${process.cwd()}${path.sep}`, '')
+      if (changedFiles.includes(shortpath)) {
+        keys.push(key)
+      }
+      return keys
+    }, [])
 }
 
 // TODO: add fake source!
@@ -61,7 +63,7 @@ for (const [key, filepath] of Object.entries(checkSources)) {
 
 const today = datetime.today.utc()
 
-for (const key of Object.keys(sources)) {
+for (const key of sourceKeys) {
   test(`${key} for ${today}`, async t => {
     t.plan(3)
     try {
