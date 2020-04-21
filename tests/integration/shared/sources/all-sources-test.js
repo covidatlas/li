@@ -14,34 +14,33 @@ const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
 
 
 const changedKeys = changedSources.getChangedSourceKeys()
-console.log(changedKeys)
-
+// console.log(changedKeys)
 
 // test.only('dummy', t => { t.end() })
 
 
-////    
-////    
+////
+////
 ////    ////////////////////////////////////////////////////////////////////
 ////    /** Crawl validation utility methods. */
-////    
+////
 ////    // TODO (testing) Move utilities and fake to a separate module and export them.
-////    
+////
 ////    function crawlFunctionsFor(source) {
 ////      const fns = source.scrapers.map(s => {
 ////        return { startDate: s.startDate, crawl: s.crawl.filter(c => is.function(c.url)) }
 ////      })
 ////      return fns.filter(f => f.crawl.length > 0)
 ////    }
-////    
+////
 ////    /** Return list of validation failures in array. */
 ////    function validateCrawlUrl(url) {
 ////      const errs = []
-////    
+////
 ////      let ret = url
 ////      if (is.function(url))
 ////        ret =  url()
-////    
+////
 ////      if (!is.string(ret) && !is.object(ret)) errs.push('Not string or object')
 ////      if (is.object(ret)) {
 ////        const requiredKeys = 'cookie, url'
@@ -51,14 +50,14 @@ console.log(changedKeys)
 ////          errs.push(msg)
 ////        }
 ////      }
-////    
+////
 ////      const actualUrl = is.object(ret) ? ret.url : ret
 ////      const re = /^https?\:\/\/.*/
 ////      if (!re.test(actualUrl)) errs.push(`url '${actualUrl}' does not match url pattern`)
 ////      return errs
 ////    }
-////    
-////    
+////
+////
 ////    ////////////////////////////////////////////////////////////////////
 ////    /** Testing the crawl validation utility methods.
 ////     *
@@ -67,7 +66,7 @@ console.log(changedKeys)
 ////     * were valid, we're using a fake scraper.  There are a set of tests
 ////     * to validate the validation functions, using the fake scraper.
 ////     */
-////    
+////
 ////    // TODO: move this somewhere, scrapers should use it.
 ////    // DISCUSS: where?
 ////    /** Error thrown when a scraper data key is missing. */
@@ -78,7 +77,7 @@ console.log(changedKeys)
 ////      }
 ////    }
 ////    // TODO: turn these into ... something
-////    
+////
 ////    /*
 ////    if (failed) {
 ////      const e = new Error('MissingScrapeDataError')
@@ -87,7 +86,7 @@ console.log(changedKeys)
 ////    }
 ////    // RYAN TO SEND ERROR CODE SAMPLE <-------
 ////    */
-////    
+////
 ////    // TODO: move this somewhere, scrapers should use it.
 ////    // DISCUSS: where?
 ////    /** Error thrown when scraper data does not pass validation. */
@@ -97,7 +96,7 @@ console.log(changedKeys)
 ////        this.name = 'DataLayoutChangedError'
 ////      }
 ////    }
-////    
+////
 ////    // TODO: move somewhere.
 ////    // DISCUSS: where?
 ////    /** Throws MissingScrapeDataError if hsh is null, or if any key values
@@ -107,7 +106,7 @@ console.log(changedKeys)
 ////      if (nullOrUndef(hsh)) {
 ////        throw new MissingScrapeDataError()
 ////      }
-////    
+////
 ////      if (is.object(hsh)) {
 ////        Object.keys(hsh).forEach(k => {
 ////          if (nullOrUndef(hsh[k])) {
@@ -116,17 +115,17 @@ console.log(changedKeys)
 ////        })
 ////      }
 ////    }
-////    
+////
 ////    // ////////////////////////////////////////////////////////////
 ////    // Fake Source
-////    
+////
 ////    /* eslint-disable no-unused-vars */
-////    
+////
 ////    /** Fake scraper.  This scraper is checked during actual tests
 ////     * when ONLY_FAKE_SCRAPER env value is set:
 ////     *   ONLY_FAKE_SCRAPER=1 npm run test:integration
 ////     */
-////    
+////
 ////    /** For this fake source, we assume it's good if every crawl data = 'GOOD'.
 ////     * (Note this is regardless of the type!) */
 ////    function fakeFormatValidation(obj) {
@@ -135,7 +134,7 @@ console.log(changedKeys)
 ////          throw new DataLayoutChangedError()
 ////        return
 ////      }
-////    
+////
 ////      if (is.object(obj)) {
 ////        const failed = Object.keys(obj).reduce((acc, key) => {
 ////          // console.log(` checking ${key}, accumulating onto [${acc}]`)
@@ -148,10 +147,10 @@ console.log(changedKeys)
 ////        }
 ////        return
 ////      }
-////    
+////
 ////      throw new Error('Unhandled case in fakeSource?')
 ////    }
-////    
+////
 ////    let fakeSource = {
 ////      tz: 'America/Los_Angeles',
 ////      scrapers: [
@@ -198,7 +197,7 @@ console.log(changedKeys)
 ////        }
 ////      ]
 ////    }
-////    
+////
 ////    // Load a new scraper with all types to fakeSource
 ////    const crawlEntries = allowedTypes.map(t => {
 ////      return {
@@ -208,7 +207,7 @@ console.log(changedKeys)
 ////      }
 ////    })
 ////    // console.log(crawlEntries)
-////    
+////
 ////    // TODO (techdebt) can we create the named arguments for scrape() using allowedTypes?
 ////    const newScraper = {
 ////      startDate: '2020-04-10',
@@ -219,11 +218,11 @@ console.log(changedKeys)
 ////        // ...
 ////      }
 ////    }
-////    
+////
 ////    fakeSource.scrapers.push(newScraper)
 ////    // console.log(fakeSource)
-////    
-////    
+////
+////
 ////    /** The fakeSource data isn't actually loaded into cache.  For all
 ////     * keys in the crawl, return the string 'GOOD' for the
 ////     * data (regardless of type).
@@ -241,7 +240,7 @@ console.log(changedKeys)
 ////      // console.log(ret)
 ////      return ret
 ////    }
-////    
+////
 ////    test('Sanity check, fakeSourceLoadCacheResultFor', t => {
 ////      const f = fakeSourceLoadCacheResultFor  // shorthand
 ////      t.ok(f('2020-03-29') === null, '3/29')
@@ -249,7 +248,7 @@ console.log(changedKeys)
 ////      t.equal(f('2020-04-02'), 'GOOD', '4/2')
 ////      t.equal(f('2020-04-03'), 'GOOD', '4/3')
 ////      t.equal(f('2020-04-04'), 'GOOD', '4/4')
-////    
+////
 ////      const allTypes = {
 ////        page: 'GOOD',
 ////        headless: 'GOOD',
@@ -262,14 +261,14 @@ console.log(changedKeys)
 ////      t.deepEqual(f('2020-04-15'), allTypes, '4/15')
 ////      t.end()
 ////    })
-////    
-////    
+////
+////
 ////    /* eslint-enable no-unused-vars */
-////    
+////
 ////    // End Fake Source
 ////    // ////////////////////////////////////////////////////////////
-////    
-////    
+////
+////
 ////    test('crawlFunctionsFor fakeSource', t => {
 ////      const actual = crawlFunctionsFor(fakeSource).
 ////            map(f => {
@@ -281,7 +280,7 @@ console.log(changedKeys)
 ////      t.deepEqual(actual, expected, 'expected function names returned')
 ////      t.end()
 ////    })
-////    
+////
 ////    test('validateCrawlUrl, valid crawler urls', t => {
 ////      const testcases = [
 ////        { name: 'https', url: 'https://url' },
@@ -294,7 +293,7 @@ console.log(changedKeys)
 ////      })
 ////      t.end()
 ////    })
-////    
+////
 ////    test('validateCrawlUrl, invalid crawler urls', t => {
 ////      const testcases = [
 ////        {
@@ -317,28 +316,28 @@ console.log(changedKeys)
 ////      })
 ////      t.end()
 ////    })
-////    
+////
 ////    //////////////////////////////////////////////////////////////
 ////    // Actual crawl tests.
-////    
+////
 ////    let sources = {}
 ////    for (const [key, src] of Object.entries(sourceMap())) {
 ////      // eslint-disable-next-line
 ////      sources[key] = require(src)
 ////    }
-////    
+////
 ////    // Don't do this: we shouldn't be mixing fakes with real things.
 ////    // if (process.env.ADD_FAKE_SCRAPER) {
 ////    //   console.log('Adding fake scraper for tests.')
 ////    //   sources['FAKE'] = fakeSource
 ////    // }
-////    
+////
 ////    if (process.env.ONLY_FAKE_SCRAPER) {
 ////      sources = {}
 ////      console.log('Using ONLY fake scraper for tests.')
 ////      sources['FAKE'] = fakeSource
 ////    }
-////    
+////
 ////    const scraperDates = source => { return source.scrapers.map(s => s.startDate) }
 ////    const crawlsOnDate = (source, dt) => {
 ////      return source.scrapers.filter(s => s.startDate === dt)[0].crawl
@@ -346,7 +345,7 @@ console.log(changedKeys)
 ////    const scrapeOnDate = (source, dt) => {
 ////      return source.scrapers.filter(s => s.startDate === dt)[0].scrape
 ////    }
-////    
+////
 ////    // Create an array of hashes of "denormalized" crawl data, e.g:
 ////    //   [
 ////    //     {
@@ -372,7 +371,7 @@ console.log(changedKeys)
 ////            })
 ////          }).
 ////          flat()
-////    
+////
 ////    /** Tests for crawlFunctions */
 ////    crawlMethods.filter(h => is.function(h.crawl.url)).
 ////      forEach(c => {
@@ -383,7 +382,7 @@ console.log(changedKeys)
 ////          t.equal(errs, '')
 ////          t.end()
 ////        })
-////    
+////
 ////        /** TO DISCUSS: I think this is a valid test, need to sort out how
 ////         * to get cache count. */
 ////        test.skip(`${baseTestName} cache not touched`, t => {
@@ -394,7 +393,7 @@ console.log(changedKeys)
 ////          t.equal(oldCacheCount, newCacheCount, 'cache not affected')
 ////          t.end()
 ////        })
-////    
+////
 ////        /*
 ////          Discarded ideas:
 ////          Originally I thought that these tests had value, but I'm not sure
@@ -405,11 +404,11 @@ console.log(changedKeys)
 ////          Not sure how pagination will be implemented.
 ////        */
 ////      })
-////    
-////    
+////
+////
 ////    ////////////////////////////////////////////////////////////////////
 ////    /** Scraper validation utility methods. */
-////    
+////
 ////    // Build array of hashes of scraper data per date, e.g.:
 ////    //    [
 ////    //      {
@@ -445,13 +444,13 @@ console.log(changedKeys)
 ////          // Remove any "null scrapes" (i.e., cache-only sources)
 ////          filter(s => s.scrape)
 ////    // console.log(scrapes)
-////    
+////
 ////    function makeObjectWithKeys(keys) {
 ////      return keys.reduce((obj, key) => {
 ////        obj[key] = 'some_data'
 ////        return obj}, {})
 ////    }
-////    
+////
 ////    /** Load an object as if parsed from the cache, using the bad return
 ////     * values in fixtures/ directory. */
 ////    async function makeScrapeArgWithBadData(crawls) {
@@ -466,16 +465,16 @@ console.log(changedKeys)
 ////      // console.log(parseCache)
 ////      const parsed = await parseCache(cacheHits)
 ////      // console.log(parsed)
-////    
+////
 ////      if (crawls.length === 1) {
 ////        const ret = Object.values(parsed)[0]
 ////        console.log(`Single crawl, returning: ${ret}`)
 ////        return ret
 ////      }
-////    
+////
 ////      return parsed.reduce((acc, e) => { return { ...acc, ...e } })
 ////    }
-////    
+////
 ////    function shouldFailWithError(t, func, errType, errMessageRegex = null) {
 ////      let err = null
 ////      let errMsg = null
@@ -491,7 +490,7 @@ console.log(changedKeys)
 ////        t.ok(errMessageRegex.test(errMsg), `error msg '${errMsg}' matches ${errMessageRegex}`)
 ////      }
 ////    }
-////    
+////
 ////    /** For real sources, this actually calls loadFromCache.  For the
 ////     * fakeSource, use fake responses. */
 ////    async function loadFromCacheForTests(source, scraper, date) {
@@ -504,7 +503,7 @@ console.log(changedKeys)
 ////      const parsed = await parseCache(cache, date)
 ////      return parsed
 ////    }
-////    
+////
 ////    // Test all scrapes that have multiple crawl sources.
 ////    scrapes.filter(h => (h.names.join(',') !== 'undefined')).
 ////      forEach(scraper => {
@@ -517,7 +516,7 @@ console.log(changedKeys)
 ////          })
 ////          t.end()
 ////        })
-////    
+////
 ////        test(`${baseTestName} with all keys does not throw MissingScrapeDataError`, t => {
 ////          let arg = makeObjectWithKeys(scraper.names)
 ////          let error = null
@@ -529,15 +528,15 @@ console.log(changedKeys)
 ////          t.ok(error === null || !(error instanceof MissingScrapeDataError))
 ////          t.end()
 ////        })
-////    
+////
 ////        test(`${baseTestName} with only bad data throws DataLayoutChangedError`, async t => {
 ////          let arg = await makeScrapeArgWithBadData(scraper.crawl)
 ////          shouldFailWithError(t, () => { scraper.scrape(arg) }, DataLayoutChangedError)
 ////          t.end()
 ////        })
-////    
+////
 ////      })
-////    
+////
 ////    // Test all scrapes with single crawl source.
 ////    scrapes.filter(h => (h.names.join(',') === 'undefined')).
 ////      forEach(scraper => {
@@ -546,7 +545,7 @@ console.log(changedKeys)
 ////          t.throws(() => { scraper.scrape(null) }, MissingScrapeDataError)
 ////          t.end()
 ////        })
-////    
+////
 ////        test(`${baseTestName} non-null does not throw MissingScrapeDataError`, t => {
 ////          let error = null
 ////          try {
@@ -557,12 +556,12 @@ console.log(changedKeys)
 ////          t.ok(error === null || !(error instanceof MissingScrapeDataError))
 ////          t.end()
 ////        })
-////    
+////
 ////        test(`${baseTestName} with only bad data throws DataLayoutChangedError`, async t => {
 ////          let arg = await makeScrapeArgWithBadData(scraper.crawl)
 ////          shouldFailWithError(t, () => { scraper.scrape(arg) }, DataLayoutChangedError)
 ////          t.end()
 ////        })
-////    
+////
 ////      })
-////    
+////
