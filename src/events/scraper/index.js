@@ -11,7 +11,6 @@ const normalizeData = require('./normalize-data/index.js')
 
 async function scrapeSource (event) {
   try {
-    console.time('Scrape')
     let { date } = event
     // Normalize date
     date = date ? datetime.getYYYYMMDD(date) :  datetime.getYYYYMMDD(new Date().toLocaleDateString())
@@ -20,6 +19,10 @@ async function scrapeSource (event) {
      * Load the requested source
      */
     const source = getSource(event)
+
+    const { _sourceKey } = source
+    const timeLabel = `Scrape-${_sourceKey}-${date}`
+    console.time(timeLabel)
 
     /**
      * Get the timezone so we can locale-cast the specified date
@@ -50,13 +53,19 @@ async function scrapeSource (event) {
      * Normalize output
      */
     const data = normalizeData(source, output, date)
-    // TODO ↓ remove me! ↓
-    console.log(`data:`, data)
+    let { silent } = event
+    if (silent !== true) {
+      // TODO ↓ remove me! ↓
+      console.log(`data:`, data)
+    }
 
     // TODO coming soon:
     // await write(data)
+    // TODO: integration test needs to verify that data was written
 
-    console.timeEnd('Scrape')
+    console.timeEnd(timeLabel)
+
+    return data
   }
   catch (err) {
     // TODO write something to the database that says this source is offline
