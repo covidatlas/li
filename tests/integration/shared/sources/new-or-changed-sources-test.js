@@ -91,13 +91,91 @@ async function runTest(key, today) {
   })
 }
 
-setup()
 const today = datetime.today.utc()
+/*
+setup()
 for (const key of sourceKeys) {
   runTest(key, today)
 }
 teardown()
+*/
 
+// ASYNC VERSION
+
+async function runFullCycle(key, today) {
+
+  const result = {
+    key: key,
+    crawled: false,
+    scraped: false,
+    data: null,
+    written: false,
+    success: false,
+    error: null
+  }
+
+  try {
+
+    const crawlArg = {
+      Records: [
+        { Sns: { Message: JSON.stringify({source: key}) } }
+      ]
+    }
+    console.log(`Calling scrape for ${key}`)
+    await crawlerHandler(crawlArg)
+    result.crawled = true
+
+    const scrapeArg = {
+      Records: [
+        { Sns: { Message: JSON.stringify({source: key, date: today, silent: true}) } }
+      ]
+    }
+    const data = await scraperHandler(scrapeArg)
+    result.scraped = true
+    result.data = data
+
+    // TODO (testing) verify that data was actually written.
+    result.written = true
+
+    result.success = true
+  } catch(err) {
+    result.error = err
+  } finally {
+    console.log(`returning result: ${result}`)
+    return result
+  }
+}
+
+async function runit(asyncruns) {
+  Promise.all(asyncruns).then(values => { 
+    console.log(values)
+  })
+  // console.log(data)
+}
+
+const asyncruns = []
+setup()
+for (const key of sourceKeys) {
+  const p = new Promise((resolve, reject) => {
+    resolve(runFullCycle(key, today))
+  })
+  asyncruns.push(p)
+}
+Promise.all(asyncruns).then(results => {
+  results.forEach (result => {
+    test(`${result.key}`, t => {
+      t.ok(result.error === null, `null error "${result.error}"`)
+      t.ok(result.success, 'completed successfully')
+      t.ok(result.crawled, 'crawled')
+      t.ok(result.scraped, 'scraped')
+      t.ok(result.data !== null, 'got data')
+      t.ok(result.written, 'wrote')
+      t.end()
+    })
+  })
+})
+
+teardown()
 
 /*
 tests.push(new Promise((resolve, reject) => {doScrape(key)}))
