@@ -52,7 +52,7 @@ function getBaseBranch() {
   return `${remote}/${branch}`
 }
 
-function getChangedScrapers() {
+function getChangedSources() {
   const b = getBaseBranch()
 
   // Git diff commands are very strange sometimes: the '...' is
@@ -73,5 +73,5 @@ function getChangedScrapers() {
 }
 
 module.exports = {
-  getChangedScrapers
+  getChangedSources
 }
