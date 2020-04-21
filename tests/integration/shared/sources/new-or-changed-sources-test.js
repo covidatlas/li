@@ -56,6 +56,9 @@ for (const [key, filepath] of Object.entries(checkSources)) {
 // The data should then work fine.
 // Always run that fake thing!
 
+// TODO: add option to run all
+// TODO: make it all parallel!
+
 const today = datetime.today.utc()
 
 for (const key of Object.keys(sources)) {
