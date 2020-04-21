@@ -53,13 +53,15 @@ async function scrapeSource (event) {
      * Normalize output
      */
     const data = normalizeData(source, output, date)
-    if (event.silent) {
+    let { silent } = event
+    if (silent !== true) {
       // TODO ↓ remove me! ↓
       console.log(`data:`, data)
     }
 
     // TODO coming soon:
     // await write(data)
+    // TODO: integration test needs to verify that data was written
 
     console.timeEnd(timeLabel)
   }

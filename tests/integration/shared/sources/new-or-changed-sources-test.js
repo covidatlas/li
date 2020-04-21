@@ -1,15 +1,10 @@
 const path = require('path')
 const fs = require('fs')
 const test = require('tape')
-const is = require('is')
-const yargs = require('yargs')
 
 const srcShared = path.join(process.cwd(), 'src', 'shared')
 const datetime = require(path.join(srcShared, 'datetime', 'index.js'))
 const sourceMap = require(path.join(srcShared, 'sources', '_lib', 'source-map.js'))
-const allowedTypes = require(path.join(srcShared, 'sources', '_lib', 'types.js')).allowedTypes
-const parseCache = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'parse-cache', 'index.js'))
-const loadFromCache = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'load-cache', 'index.js'))
 const changedSources = require('./_lib/changed-sources.js')
 
 const srcEvents = path.join(process.cwd(), 'src', 'events')
@@ -55,9 +50,15 @@ for (const [key, filepath] of Object.entries(checkSources)) {
   sources[key] = require(filepath)
 }
 
+// TODO: add fake source!
+// Can set fake source to crawl localhost:3000/integrationtest, which contains test assets.
+// prior to running test, copy those assets there.
+// The data should then work fine.
+// Always run that fake thing!
+
 const today = datetime.today.utc()
 
-for (const [key, source] of Object.entries(sources)) {
+for (const key of Object.keys(sources)) {
   test(`${key} for ${today}`, async t => {
     t.plan(2)
     try {
@@ -76,14 +77,17 @@ for (const [key, source] of Object.entries(sources)) {
           { Sns: { Message: JSON.stringify({source: key, date: today, silent: true}) } }
         ]
       }
-      await scraperHandler(crawlArg)
+      await scraperHandler(scrapeArg)
       t.ok(`${key} scrape completed successfully.`)
+
+      // TODO: verify that data was actually written.
+      t.ok(`${key} data written successfully.`)
 
     } catch(err) {
       t.fail(err)
     }
     finally {
-      // teardown()
+      teardown()
     }
     t.end()
   })
