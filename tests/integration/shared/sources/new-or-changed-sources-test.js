@@ -58,7 +58,7 @@ async function runCrawlAndScrape (key, today) {
   try {
     const crawlArg = {
       Records: [
-        { Sns: { Message: JSON.stringify({source: key}) } }
+        { Sns: { Message: JSON.stringify({ source: key }) } }
       ]
     }
     console.log(`Calling scrape for ${key}`)
@@ -67,7 +67,7 @@ async function runCrawlAndScrape (key, today) {
 
     const scrapeArg = {
       Records: [
-        { Sns: { Message: JSON.stringify({source: key, date: today, silent: true}) } }
+        { Sns: { Message: JSON.stringify({ source: key, date: today, silent: true }) } }
       ]
     }
     const data = await scraperHandler(scrapeArg)

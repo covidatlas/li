@@ -17,7 +17,7 @@ test('Test addEmptyRegions', t => {
       cases: 1
     }
   ]
-  const countyNames = ['a', 'b', 'c']
+  const countyNames = [ 'a', 'b', 'c' ]
   counties = geography.addEmptyRegions(counties, countyNames, 'county')
   t.equal(counties.length, 3, 'addEmptyRegions added correct number of counties')
   t.equal(counties[0].county, 'a', 'region matches')

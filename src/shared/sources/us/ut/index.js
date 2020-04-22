@@ -55,7 +55,7 @@ module.exports = {
         const script = $('script[type="application/json"]').html()
         const { data } = JSON.parse(script).x
 
-        for (const [index, county] of Object.entries(data[0])) {
+        for (const [ index, county ] of Object.entries(data[0])) {
           _ut.maybeAggregateCounties(counties, county, parse.number(data[1][index]) + parse.number(data[2][index]))
         }
 
@@ -93,7 +93,7 @@ module.exports = {
         const script = $('script[type="application/json"]').html()
         const { data } = JSON.parse(script).x
 
-        for (const [index, county] of Object.entries(data[0])) {
+        for (const [ index, county ] of Object.entries(data[0])) {
           _ut.maybeAggregateCounties(counties, county, parse.number(data[1][index]) + parse.number(data[2][index]))
         }
 
@@ -152,7 +152,7 @@ const _ut = {
       return
     }
     if (county === 'TriCounty' || county === 'Tri County') {
-      const aggCounties = ['Uintah County', 'Duchesne County', 'Daggett County']
+      const aggCounties = [ 'Uintah County', 'Duchesne County', 'Daggett County' ]
       aggCounties.forEach(county => {
         counties.push({
           county,
@@ -163,7 +163,7 @@ const _ut = {
       return
     }
     if (county === 'Weber-Morgan') {
-      const aggCounties = ['Weber County', 'Morgan County']
+      const aggCounties = [ 'Weber County', 'Morgan County' ]
       aggCounties.forEach(county => {
         counties.push({
           county,
@@ -174,7 +174,7 @@ const _ut = {
       return
     }
     if (county === 'Southeast Utah') {
-      const aggCounties = ['Carbon County', 'Emery County', 'Grand County']
+      const aggCounties = [ 'Carbon County', 'Emery County', 'Grand County' ]
       aggCounties.forEach(county => {
         counties.push({
           county,
@@ -185,7 +185,7 @@ const _ut = {
       return
     }
     if (county === 'Southwest Utah') {
-      const aggCounties = ['Beaver County', 'Garfield County', 'Iron County', 'Kane County', 'Washington County']
+      const aggCounties = [ 'Beaver County', 'Garfield County', 'Iron County', 'Kane County', 'Washington County' ]
       aggCounties.forEach(county => {
         counties.push({
           county,
@@ -196,7 +196,7 @@ const _ut = {
       return
     }
     if (county === 'Central Utah') {
-      const aggCounties = ['Juab County', 'Millard County', 'Piute County', 'Sanpete County', 'Sevier County', 'Wayne County']
+      const aggCounties = [ 'Juab County', 'Millard County', 'Piute County', 'Sanpete County', 'Sevier County', 'Wayne County' ]
       aggCounties.forEach(county => {
         counties.push({
           county,
@@ -207,7 +207,7 @@ const _ut = {
       return
     }
     if (county === 'Bear River') {
-      const aggCounties = ['Box Elder County', 'Cache County', 'Rich County']
+      const aggCounties = [ 'Box Elder County', 'Cache County', 'Rich County' ]
       aggCounties.forEach(county => {
         counties.push({
           county,

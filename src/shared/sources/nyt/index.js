@@ -69,7 +69,7 @@ module.exports = {
         }
 
         // Roll-up states
-        for (const [state, stateLocations] of Object.entries(locationsByState)) {
+        for (const [ state, stateLocations ] of Object.entries(locationsByState)) {
           locations.push(transform.sumData(stateLocations, { state }))
         }
 

@@ -13,7 +13,7 @@ module.exports = {
     name: 'National Institute for Public Health and the Environment',
     url: 'https://github.com/J535D165/CoronaWatchNL',
   },
-  maintainers: [maintainers.qgolsteyn],
+  maintainers: [ maintainers.qgolsteyn ],
   scrapers: [
     {
       startDate: '2020-02-27', // As of 2020-04-14 this is when their timeseries dataset began

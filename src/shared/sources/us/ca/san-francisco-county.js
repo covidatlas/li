@@ -5,7 +5,7 @@ module.exports = {
   country: 'iso1:US',
   state: 'CA',
   county: 'San Francisco County',
-  maintainers: [maintainers.jbencina],
+  maintainers: [ maintainers.jbencina ],
   friendly: {
     name: 'SF Department of Public Health',
     url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'

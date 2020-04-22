@@ -11,8 +11,8 @@ test('Module exists', t => {
 
 test('Transform functions', t => {
   const list = [
-    ['Saint-Barthélemy', 'saint-barthelemy'],
-    ['La Réunion', 'la reunion']
+    [ 'Saint-Barthélemy', 'saint-barthelemy' ],
+    [ 'La Réunion', 'la reunion' ]
   ]
   t.plan(list.length)
   list.forEach((item, i) => {

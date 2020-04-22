@@ -64,7 +64,7 @@ function getChangedSourceKeys () {
   const filesChanged = result.toString().split('\n')
 
   const changedKeys = []
-  for (const [key, fname] of Object.entries(sourceMap())) {
+  for (const [ key, fname ] of Object.entries(sourceMap())) {
     const s = fname.replace(`${process.cwd()}${path.sep}`, '')
     if (filesChanged.includes(s))
       changedKeys.push(key)

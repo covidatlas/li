@@ -37,7 +37,7 @@ function normalizeString (str) {
  */
 function objectToArray (object) {
   const array = []
-  for (const [county, data] of Object.entries(object)) {
+  for (const [ county, data ] of Object.entries(object)) {
     array.push({
       county,
       ...data
@@ -51,7 +51,7 @@ function objectToArray (object) {
  * Remove "private" object properties
  */
 function removePrivate (data) {
-  for (const [prop, value] of Object.entries(data)) {
+  for (const [ prop, value ] of Object.entries(data)) {
     if (value === '' || prop[0] === '_') {
       delete data[prop]
     }

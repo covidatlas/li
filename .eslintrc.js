@@ -30,6 +30,8 @@ module.exports = {
     semi: [2, 'never'],
     // Style
     'space-before-function-paren': ['error', 'always'],
+    'object-curly-spacing': ['error', 'always'],
+    'array-bracket-spacing': ['error', 'always'],
     // Plugins
     'import/no-unresolved': [2, {commonjs: true, amd: true}]
   },

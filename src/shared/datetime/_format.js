@@ -44,7 +44,7 @@ function getMonthDYYYY (date = today.utc(), sep = '_') {
     'December'
   ]
   const isoDate = parse(date)
-  const [y, m, d] = isoDate.split('-').map(Number)
+  const [ y, m, d ] = isoDate.split('-').map(Number)
   return `${MONTHS[m - 1]}${sep}${d}${sep}${y}`
 }
 

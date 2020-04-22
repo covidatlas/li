@@ -30,26 +30,26 @@ module.exports = function parse (date) {
 
     // YYYY-M-D
     if (looksLike.YYYYMD(str)) {
-      const [y, m, d] = str.split('-').map(Number) // e.g. [2020, 3, 16]
-      return spacetime([y, m - 1, d]).format('iso-short')
+      const [ y, m, d ] = str.split('-').map(Number) // e.g. [2020, 3, 16]
+      return spacetime([ y, m - 1, d ]).format('iso-short')
     }
 
     // M-D-YYYY
     if (looksLike.MDYYYY(str)) {
-      const [m, d, yyyy] = str.split('-').map(Number) // e.g. [3, 16, 2020]
-      return spacetime([yyyy, m - 1, d]).format('iso-short')
+      const [ m, d, yyyy ] = str.split('-').map(Number) // e.g. [3, 16, 2020]
+      return spacetime([ yyyy, m - 1, d ]).format('iso-short')
     }
 
     // M-D-YY
     if (looksLike.MDYY(str)) {
-      const [m, d, yy] = str.split('-').map(Number) // e.g. [3, 16, 20]
+      const [ m, d, yy ] = str.split('-').map(Number) // e.g. [3, 16, 20]
       const yyyy = yy + 2000 // assume current century
-      return spacetime([yyyy, m - 1, d]).format('iso-short')
+      return spacetime([ yyyy, m - 1, d ]).format('iso-short')
     }
 
     // 0: Treat zero as the beginning of unix epoch
     if (s === '0') {
-      return spacetime([1970, 1, 1]).format('iso-short')
+      return spacetime([ 1970, 1, 1 ]).format('iso-short')
     }
 
     // last chance - try using js Date

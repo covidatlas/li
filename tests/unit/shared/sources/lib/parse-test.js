@@ -11,15 +11,15 @@ test('Module exists', t => {
 
 test('Parse numbers', t => {
   const list = [
-    ['', 0],
-    ['0', 0],
-    ['1', 1],
-    ['-1', -1],
-    ['10', 10],
-    ['1.1', 11],
-    ['-1.1', -11],
-    ['25abc', 25],
-    ['as-12asdasd', -12]
+    [ '', 0 ],
+    [ '0', 0 ],
+    [ '1', 1 ],
+    [ '-1', -1 ],
+    [ '10', 10 ],
+    [ '1.1', 11 ],
+    [ '-1.1', -11 ],
+    [ '25abc', 25 ],
+    [ 'as-12asdasd', -12 ]
   ]
   t.plan(list.length)
   list.forEach((item, i) => {
@@ -29,15 +29,15 @@ test('Parse numbers', t => {
 
 test('Parse floats', t => {
   const list = [
-    ['', 0],
-    ['0', 0],
-    ['1', 1],
-    ['-1', -1],
-    ['10', 10],
-    ['1.1', 1.1],
-    ['-1.1', -1.1],
-    ['25abc', 25],
-    ['as-12asdasd', -12]
+    [ '', 0 ],
+    [ '0', 0 ],
+    [ '1', 1 ],
+    [ '-1', -1 ],
+    [ '10', 10 ],
+    [ '1.1', 1.1 ],
+    [ '-1.1', -1.1 ],
+    [ '25abc', 25 ],
+    [ 'as-12asdasd', -12 ]
   ]
   t.plan(list.length)
   list.forEach((item, i) => {
@@ -47,14 +47,14 @@ test('Parse floats', t => {
 
 test('Parse strings', t => {
   const list = [
-    ['', ''],
-    ['should not change', 'should not change'],
-    ['0', '0'],
-    ['****test', 'test'],
-    ['this is some text\nsecond line', 'this is some text second line'],
-    ['this  some test', 'this some test'],
-    ['this is padded text          ', 'this is padded text'],
-    ['        this is padded text', 'this is padded text']
+    [ '', '' ],
+    [ 'should not change', 'should not change' ],
+    [ '0', '0' ],
+    [ '****test', 'test' ],
+    [ 'this is some text\nsecond line', 'this is some text second line' ],
+    [ 'this  some test', 'this some test' ],
+    [ 'this is padded text          ', 'this is padded text' ],
+    [ '        this is padded text', 'this is padded text' ]
   ]
   t.plan(list.length)
   list.forEach((item, i) => {

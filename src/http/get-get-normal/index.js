@@ -25,7 +25,7 @@ async function getNormal (req) {
 
     // Reconstitute cookies
     if (cookies) {
-      let cookie = Object.entries(cookies).map(([cookie, value]) => `${cookie}=${value}`).join('; ')
+      let cookie = Object.entries(cookies).map(([ cookie, value ]) => `${cookie}=${value}`).join('; ')
       headers.cookie = cookie
     }
 

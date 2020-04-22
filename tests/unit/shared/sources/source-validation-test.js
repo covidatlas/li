@@ -12,7 +12,7 @@ test('Scraper validation test', t => {
   const sources = sourceMap()
   t.plan(Object.keys(sources).length)
 
-  for (const [key, src] of Object.entries(sources)) {
+  for (const [ key, src ] of Object.entries(sources)) {
     try {
       // eslint-disable-next-line
       const source = require(src)

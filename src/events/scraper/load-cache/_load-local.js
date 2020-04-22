@@ -38,7 +38,7 @@ async function getFiles (params) {
 
   // Pull contents from as many as three cache dirs
   if (today === -1) today = folders.findIndex(f => f === datetime.getYYYYMMDD())
-  const cacheDirs = [today - 1, today, today + 1]
+  const cacheDirs = [ today - 1, today, today + 1 ]
   for (const cacheDir of cacheDirs) {
     if (folders[cacheDir] !== undefined) {
       const result = fs.readdirSync(join(cachePath(_sourceKey), folders[cacheDir]))

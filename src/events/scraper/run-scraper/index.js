@@ -18,7 +18,7 @@ module.exports = async function runScraper (scraper, parsed, date) {
   }
 
   // Ensure single results are iterable
-  results = results instanceof Array ? results : [results]
+  results = results instanceof Array ? results : [ results ]
 
   return results
 }

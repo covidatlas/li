@@ -34,7 +34,7 @@ async function getHeadless (req) {
     await page.setUserAgent(agent)
     await page.setViewport(defaultViewport)
     if (cookies) {
-      const cookie = Object.entries(cookies).map(([cookie, value]) => `${cookie}=${value}`).join('; ')
+      const cookie = Object.entries(cookies).map(([ cookie, value ]) => `${cookie}=${value}`).join('; ')
       await page.setExtraHTTPHeaders({ cookie })
     }
 
