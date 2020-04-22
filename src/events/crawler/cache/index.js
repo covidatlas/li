@@ -3,6 +3,7 @@ const hash = require('@architect/shared/cache/_hash.js')
 const convert = require('@architect/shared/cache/_convert-timestamp.js')
 const writeLocal = require('./_write-local.js')
 const writeS3 = require('./_write-s3.js')
+const { extensions } = require('@architect/shared/sources/_lib/crawl-types.js')
 
 /**
  * Saves one or more files to cache
@@ -13,16 +14,6 @@ module.exports = async function saveToCache (results) {
 
   const local = process.env.NODE_ENV === 'testing'
   const write = local ? writeLocal : writeS3
-
-  const extensions = {
-    csv: 'csv',
-    headless: 'html',
-    json: 'json',
-    page: 'html',
-    pdf: 'pdf',
-    tsv: 'tsv',
-    raw: 'raw'
-  }
 
   for (const result of results) {
     const { _sourceKey, _name, data, type } = result
