@@ -127,21 +127,6 @@ function printResults (results) {
   return results
 }
 
-/** Check the results. */
-function testResults (maintest, results) {
-  results.forEach (result => {
-    maintest.test(`source: ${result.key}`, t => {
-      t.plan(5)
-      t.ok(result.error === null, `null error "${result.error}"`)
-      t.ok(result.success, 'completed successfully')
-      t.ok(result.crawled, 'crawled')
-      t.ok(result.scraped, 'scraped')
-      t.ok(result.data !== null, 'got data')
-    })
-  })
-  return results
-}
-
 //////////////////////////////////////////////////////////////////////
 // The tests
 
@@ -171,14 +156,34 @@ test('Setup', async t => {
 })
 
 
-test('new or changed sources', async maintest => {
+test('New or changed sources', async t => {
   const today = datetime.today.utc()
-  await runBatchedCrawlAndScrape(maintest, batches, today).
-    then(result => testResults(maintest, result))
-  maintest.end()
+  const testCount = sourceKeys.length
+  if (!testCount) {
+    t.plan(1)
+    t.pass('No tests to run!')
+  }
+  else {
+    t.plan(testCount)
+    // TODO look into how we can clean up the parallelization
+    await runBatchedCrawlAndScrape(t, batches, today)
+      .then(results => {
+        results.forEach(result => {
+          test(`Testing source: ${result.key}`, t => {
+            t.plan(5)
+            t.ok(result.error === null, `null error "${result.error}"`)
+            t.ok(result.success, 'completed successfully')
+            t.ok(result.crawled, 'crawled')
+            t.ok(result.scraped, 'scraped')
+            t.ok(result.data !== null, 'got data')
+          })
+          t.pass(`${result.key} ok`)
+        })
+      })
+  }
 })
 
-test('Setup', async t => {
+test('Teardown', async t => {
   t.plan(2)
   if (fs.existsSync(d)) {
     fs.rmdirSync(d, { recursive: true })
