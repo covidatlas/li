@@ -44,14 +44,11 @@ function makeBatches (arr, batchsize) {
   return ret
 }
 
-/** Runs the full crawl-scrape-save cycle for a given source,
- * returning a struct indicating which steps succeeded. */
-async function runCrawlAndScrape (key, today) {
+/** Runs the crawl for a given source, returning a struct indicating
+ * which steps succeeded. */
+async function runCrawl (key, today) {
   const result = {
     key: key,
-    crawled: false,
-    scraped: false,
-    data: null,
     success: false,
     error: null
   }
@@ -59,22 +56,10 @@ async function runCrawlAndScrape (key, today) {
   try {
     const crawlArg = {
       Records: [
-        { Sns: { Message: JSON.stringify({ source: key }) } }
+        { Sns: { Message: JSON.stringify({ source: key, date: today }) } }
       ]
     }
-    console.log(`Calling scrape for ${key}`)
     await crawlerHandler(crawlArg)
-    result.crawled = true
-
-    const scrapeArg = {
-      Records: [
-        { Sns: { Message: JSON.stringify({ source: key, date: today, silent: true }) } }
-      ]
-    }
-    const data = await scraperHandler(scrapeArg)
-    result.scraped = true
-    result.data = data
-
     result.success = true
   } catch (err) {
     console.log(`error: ${err}`)
@@ -87,10 +72,42 @@ async function runCrawlAndScrape (key, today) {
   return result
 }
 
-/** Runs runCrawlAndScrape successively in batches, but run each item
+
+/** Runs scrape for a given source, returning a struct indicating
+ * which steps succeeded. */
+async function runScrape (key, today) {
+  const result = {
+    key: key,
+    success: false,
+    error: null,
+    data: null
+  }
+
+  try {
+    const scrapeArg = {
+      Records: [
+        { Sns: { Message: JSON.stringify({ source: key, date: today, silent: true }) } }
+      ]
+    }
+    const data = await scraperHandler(scrapeArg)
+    result.data = data
+    result.success = true
+  } catch (err) {
+    console.log(`error: ${err}`)
+    // I tried 'result.error = err' below, but that did not work: the
+    // returned object only contained '"error":{}'.  Changing it to a
+    // string preserved the details.  Not ideal, but not terrible.
+    result.error = `error: ${err}`
+  }
+
+  return result
+}
+
+
+/** Runs operation successively in batches, but run each item
  * in one batch run in parallel, generating subtests under
  * maintest. */
-function runBatchedCrawlAndScrape (maintest, batchedKeys, today) {
+function runBatchedOperation (maintest, batchedKeys, operation, today) {
   return new Promise(resolve => {
     var allResults = []
     var index = 0
@@ -99,7 +116,7 @@ function runBatchedCrawlAndScrape (maintest, batchedKeys, today) {
         const keys = batchedKeys[index]
         const comment = `Running ${keys.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
         maintest.comment(comment)
-        Promise.all(keys.map(k => runCrawlAndScrape(k, today))).
+        Promise.all(keys.map(k => operation(k, today))).
           then(results => {
             allResults.push(results)
             runNextBatch()
@@ -144,55 +161,72 @@ const batches = makeBatches(sourceKeys, batchSize)
 
 const d = process.env.LI_CACHE_PATH
 
-test('Setup', async t => {
-  t.plan(2)
-  if (fs.existsSync(d)) {
-    fs.rmdirSync(d, { recursive: true })
-  }
-  fs.mkdirSync(d)
-  t.ok(fs.existsSync(d), 'Created temp directory')
-  await sandbox.start({ quiet: true })
-  t.pass('Sandbox started')
-})
+if (sourceKeys.length === 0) {
 
+  test('No changed sources', t => {
+    t.plan(1); t.pass('hooray!')
+  })
 
-test('New or changed sources', async t => {
-  const today = datetime.today.utc()
-  const testCount = sourceKeys.length
-  if (!testCount) {
-    t.plan(1)
-    t.pass('No tests to run!')
-  }
-  else {
-    t.plan(testCount)
+} else {
+
+  test('Setup', async t => {
+    t.plan(2)
+    if (fs.existsSync(d)) {
+      fs.rmdirSync(d, { recursive: true })
+    }
+    fs.mkdirSync(d)
+    t.ok(fs.existsSync(d), 'Created temp directory')
+    await sandbox.start({ quiet: true })
+    t.pass('Sandbox started')
+  })
+
+  test('New or changed sources, crawl', async t => {
+    const today = datetime.today.utc()
+    t.plan(sourceKeys.length)
     // TODO look into how we can clean up the parallelization
-    await runBatchedCrawlAndScrape(t, batches, today)
+    await runBatchedOperation(t, batches, runCrawl, today)
       .then(results => {
         results.forEach(result => {
-          test(`Testing source: ${result.key}`, t => {
-            t.plan(5)
-            t.ok(result.error === null, `null error "${result.error}"`)
+          test(`Crawl source: ${result.key}`, t => {
+            t.plan(2)
             t.ok(result.success, 'completed successfully')
-            t.ok(result.crawled, 'crawled')
-            t.ok(result.scraped, 'scraped')
+            t.ok(result.error === null, `null error "${result.error}"`)
+          })
+          t.pass(`${result.key} ok`)
+        })
+      })
+  })
+
+  // Note this test assumes that the cache contains data.
+  test('New or changed sources, scrape', async t => {
+    const today = datetime.today.utc()
+    t.plan(sourceKeys.length)
+    // TODO look into how we can clean up the parallelization
+    await runBatchedOperation(t, batches, runScrape, today)
+      .then(results => {
+        results.forEach(result => {
+          test(`Scrape source: ${result.key}`, t => {
+            t.plan(3)
+            t.ok(result.success, 'completed successfully')
+            t.ok(result.error === null, `null error "${result.error}"`)
             t.ok(result.data !== null, 'got data')
           })
           t.pass(`${result.key} ok`)
         })
       })
-  }
-})
+  })
 
-test('Teardown', async t => {
-  t.plan(2)
-  if (fs.existsSync(d)) {
-    fs.rmdirSync(d, { recursive: true })
-  }
-  t.notOk(fs.existsSync(d), 'Removed temp directory')
-  await sandbox.end()
-  t.pass('Sandbox closed')
-})
+  test('Teardown', async t => {
+    t.plan(2)
+    if (fs.existsSync(d)) {
+      fs.rmdirSync(d, { recursive: true })
+    }
+    t.notOk(fs.existsSync(d), 'Removed temp directory')
+    await sandbox.end()
+    t.pass('Sandbox closed')
+  })
 
-// TODO (testing) Add fake source that crawls localhost:3000/integrationtest
-// Prior to running test, copy test assets there.
-// Fake source can scrape data like a real scraper, easy and controlled.
+  // TODO (testing) Add fake source that crawls localhost:3000/integrationtest
+  // Prior to running test, copy test assets there.
+  // Fake source can scrape data like a real scraper, easy and controlled.
+}
