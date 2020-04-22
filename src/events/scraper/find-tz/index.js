@@ -21,7 +21,8 @@ module.exports = async function calculateScraperTz (source) {
     // eslint-disable-next-line
     const iso2Codes = require('country-levels/iso2.json')
 
-    const stateCode = `US-${state}`
+    // Handle iso2-tagged state params
+    const stateCode = state.startsWith('iso2:') ? state.substr(5) : `US-${state}`
     const stateData = iso2Codes[stateCode]
     assert(stateData, `State data not found for ${state}, ${source._path}`)
     assert(stateData.timezone, `State missing timezone information ${state}`)
