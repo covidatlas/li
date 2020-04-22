@@ -124,8 +124,8 @@ The test in
 
 Since it's impossible for us to accurately guess what the right
 baseline branch would be in your case (`origin/master`?
-`upstream/master`?), you will need to create a `gitdiff.config` in
-`tests/integration/shared/sources`.  See `gitdiff.config.example` in
+`upstream/master`?), you will need to create a `gitdiff.json` in
+`tests/integration/shared/sources`.  See `gitdiff.json.example` in
 that folder for reference.
 
 If this file is missing, the test will stop with a giant warning
@@ -136,7 +136,7 @@ this file isn't required).
 
 This test actually runs a live crawl and scrape for any new or changed
 sources (as defined by a `git diff` against the branch you configured
-in `gitdiff.config`).  You'll need to be connected to the net.
+in `gitdiff.json`).  You'll need to be connected to the net.
 
 ##### Running for selected, or all sources
 

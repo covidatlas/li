@@ -16,27 +16,30 @@ const sourceMap = require(path.join(srcShared, 'sources', '_lib', 'source-map.js
 * different remote name, and different base branch name.
 */
 function readConfigFile () {
-  const configFile = path.join(__dirname, '..', 'gitdiff.config')
+  const configFile = path.join(__dirname, '..', 'gitdiff.json')
   const shortConfig = configFile.replace(process.cwd(), '')
   if (!fs.existsSync(configFile)) {
     console.log(`
 *************************************************************
 Missing config file
- 
+
 ${shortConfig}
- 
+
 for integration tests, aborting!
- 
+
 This file is necessary to indicate the git remote and branch
 that the code should use to do a 'git diff' against.
- 
-Please copy the file gitdiff.config.example to gitdiff.config
+
+Please copy the file gitdiff.json.example to gitdiff.json
 and change it to match your personal repo settings.
 *************************************************************`)
     process.exit(1)
   }
 
-  return JSON.parse(fs.readFileSync(configFile))
+  // eslint-disable-next-line
+  const config = require(configFile)
+
+  return config
 }
 
 function getGitDiffBase () {
@@ -45,7 +48,7 @@ function getGitDiffBase () {
     const config = readConfigFile()
     diffbase = config.gitDiffBase
     if (diffbase == null)
-      throw new Error(`missing key gitDiffBase in gitdiff.config`)
+      throw new Error(`missing key gitDiffBase in gitdiff.json`)
   }
   return diffbase
 }

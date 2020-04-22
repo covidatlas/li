@@ -1,6 +1,7 @@
 const { join } = require('path')
 const fs = require('fs')
 const test = require('tape')
+const sandbox = require('@architect/sandbox')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
 const datetime = require(join(srcShared, 'datetime', 'index.js'))
@@ -75,7 +76,7 @@ async function runCrawlAndScrape (key, today) {
     result.data = data
 
     result.success = true
-  } catch(err) {
+  } catch (err) {
     console.log(`error: ${err}`)
     // I tried 'result.error = err' below, but that did not work: the
     // returned object only contained '"error":{}'.  Changing it to a
@@ -141,22 +142,6 @@ function testResults (maintest, results) {
   return results
 }
 
-function createTestCacheDir () {
-  const d = process.env.LI_CACHE_PATH
-  if (fs.existsSync(d)) {
-    fs.rmdirSync(d, { recursive: true })
-  }
-  fs.mkdirSync(d)
-}
-
-function destroyTestCacheDir () {
-  const d = process.env.LI_CACHE_PATH
-  if (fs.existsSync(d)) {
-    fs.rmdirSync(d, { recursive: true })
-  }
-}
-
-
 //////////////////////////////////////////////////////////////////////
 // The tests
 
@@ -172,16 +157,36 @@ if (process.env.TEST_ALL) {
 const batchSize = 20  // arbitrary.
 const batches = makeBatches(sourceKeys, batchSize)
 
-createTestCacheDir()
+const d = process.env.LI_CACHE_PATH
+
+test('Setup', async t => {
+  t.plan(2)
+  if (fs.existsSync(d)) {
+    fs.rmdirSync(d, { recursive: true })
+  }
+  fs.mkdirSync(d)
+  t.ok(fs.existsSync(d), 'Created temp directory')
+  await sandbox.start({ quiet: true })
+  t.pass('Sandbox started')
+})
+
 
 test('new or changed sources', async maintest => {
   const today = datetime.today.utc()
-  runBatchedCrawlAndScrape(maintest, batches, today).
+  await runBatchedCrawlAndScrape(maintest, batches, today).
     then(result => testResults(maintest, result))
   maintest.end()
 })
 
-destroyTestCacheDir()
+test('Setup', async t => {
+  t.plan(2)
+  if (fs.existsSync(d)) {
+    fs.rmdirSync(d, { recursive: true })
+  }
+  t.notOk(fs.existsSync(d), 'Removed temp directory')
+  await sandbox.end()
+  t.pass('Sandbox closed')
+})
 
 // TODO (testing) Add fake source that crawls localhost:3000/integrationtest
 // Prior to running test, copy test assets there.
