@@ -185,6 +185,7 @@ test('new or changed sources', async maintest => {
   runBatchedCrawlAndScrape(maintest, batches, today).
     then(result => { console.log(`Got ${result.length} results!`); return result }).
     then(result => testResults(maintest, result))
+  maintest.end()
 })
 
 destroyTestCacheDir()
