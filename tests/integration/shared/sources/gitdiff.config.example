@@ -1,4 +1,19 @@
 {
-  "baseRemoteName": "upstream",
-  "baseBranchName": "master"
+  "comments": [
+    " This file tells _lib/changed-sources.js which base branch to diff       ",
+    " the current branch against when determining what sources have changed.  ",
+
+    " Set the value of 'gitDiffBase' to any branch, e.g.:                     ",
+
+    "  gitDiffBase value           diffs your branch against                  ",
+    "  -----------------           -------------------------                  ",
+    "  'master'                    local master                               ",
+    "  'origin/master'             master of your fork                        ",
+    "  'upstream/master'           covid/li master                            ",
+
+    " (Change the values according to your remote names ...                   ",
+    " run 'git remote -v' to list your remotes and names.)                    "
+  ],
+
+  "gitDiffBase": "upstream/master"
 }

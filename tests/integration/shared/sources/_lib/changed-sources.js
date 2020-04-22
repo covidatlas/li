@@ -33,28 +33,26 @@ that the code should use to do a 'git diff' against.
 Please copy the file gitdiff.config.example to gitdiff.config
 and change it to match your personal repo settings.
 *************************************************************`)
-    process.exit()
+    process.exit(1)
   }
 
   return JSON.parse(fs.readFileSync(configFile))
 }
 
-function getBaseBranch() {
-  let remote = 'origin'
-  let branch = 'master'
+function getGitDiffBase() {
+  let diffbase = 'origin/master'
   if (!process.env.CI) {
     const config = readConfigFile()
-    remote = config.baseRemoteName
-    branch = config.baseBranchName
-    if (remote == null || branch == null)
-      throw new Error(`missing key baseRemoteName or baseBranchName in gitdiff.config`)
+    diffbase = config.gitDiffBase
+    if (diffbase == null)
+      throw new Error(`missing key gitDiffBase in gitdiff.config`)
   }
-  return `${remote}/${branch}`
+  return diffbase
 }
 
 /** Returns array of keys, e.g. ['nyt'] */
 function getChangedSourceKeys() {
-  const b = getBaseBranch()
+  const b = getGitDiffBase()
 
   // Git diff commands are very strange sometimes: the '...' is
   // necessary.  See https://stackoverflow.com/questions/20808892/
