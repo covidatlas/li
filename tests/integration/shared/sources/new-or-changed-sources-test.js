@@ -100,12 +100,12 @@ function runBatchedCrawlAndScrape(maintest, batchedKeys, today) {
         maintest.comment(comment)
         Promise.all(keys.map(k => runCrawlAndScrape(k, today))).
           then(results => {
-            allResults = allResults.concat(results)
+            allResults.push(results)
             runNextBatch()
           })
         index += 1
       } else {
-        resolve(allResults)
+        resolve(allResults.flat())
       }
     }
     // start first iteration
