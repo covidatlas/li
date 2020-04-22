@@ -37,8 +37,8 @@ module.exports = {
           url: 'https://www.gov.scot/coronavirus-covid-19/'
         }
       ],
-      scrape($) {
-        function findText(node) {
+      scrape ($) {
+        function findText (node) {
           const immediateChild = node.children[0]
           const isText = immediateChild.type === 'text'
           return isText ? immediateChild.data : findText(immediateChild)
@@ -77,7 +77,7 @@ module.exports = {
           url: 'https://www.gov.scot/coronavirus-covid-19/'
         }
       ],
-      scrape($) {
+      scrape ($) {
         const counties = []
         const $table = $('td:contains("Positive cases")').closest('table')
         $table.find('tr:not(:first-child)').each((i, tr) => {

@@ -3,7 +3,7 @@ const gssCodes = require('./gss-codes.json')
 // GSS code to ISO code in Wikidata: https://w.wiki/MQ3
 
 // eslint-disable-next-line import/prefer-default-export
-module.exports = function gssCodeMap() {
+module.exports = function gssCodeMap () {
   const codeMap = {}
   for (const row of gssCodes) {
     const { isoCode, gss } = row

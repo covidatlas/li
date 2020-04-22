@@ -15,7 +15,7 @@ module.exports = {
           url: 'https://www.arcgis.com/sharing/rest/content/items/b684319181f94875a6879bbc833ca3a6/data'
         }
       ],
-      scrape(data) {
+      scrape (data) {
         const counties = []
 
         const codeMap = gssCodeMap()

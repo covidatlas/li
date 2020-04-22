@@ -15,7 +15,7 @@ const sourceMap = require(path.join(srcShared, 'sources', '_lib', 'source-map.js
 * GitHub CI, this is origin/master, but your working env might use a
 * different remote name, and different base branch name.
 */
-function readConfigFile() {
+function readConfigFile () {
   const configFile = path.join(__dirname, '..', 'gitdiff.config')
   const shortConfig = configFile.replace(process.cwd(), '')
   if (!fs.existsSync(configFile)) {
@@ -39,7 +39,7 @@ and change it to match your personal repo settings.
   return JSON.parse(fs.readFileSync(configFile))
 }
 
-function getGitDiffBase() {
+function getGitDiffBase () {
   let diffbase = 'origin/master'
   if (!process.env.CI) {
     const config = readConfigFile()
@@ -51,7 +51,7 @@ function getGitDiffBase() {
 }
 
 /** Returns array of keys, e.g. ['nyt'] */
-function getChangedSourceKeys() {
+function getChangedSourceKeys () {
   const b = getGitDiffBase()
 
   // Git diff commands are very strange sometimes: the '...' is

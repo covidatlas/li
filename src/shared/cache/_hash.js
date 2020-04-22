@@ -3,7 +3,7 @@ const crypto = require('crypto')
 /**
  * Hash a given thing
  */
-module.exports = function hash(thing, len=64) {
+module.exports = function hash (thing, len=64) {
   return (
     crypto
       .createHash('sha256')

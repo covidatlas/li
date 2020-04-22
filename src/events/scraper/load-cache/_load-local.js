@@ -6,7 +6,7 @@ const datetime = require('@architect/shared/datetime/index.js')
 let defaultcache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
 
 /** Return the default cache path, or LI_CACHE_PATH if set in env. */
-function cachePath(key) {
+function cachePath (key) {
   let cache = defaultcache
   if (process.env.LI_CACHE_PATH) {
     cache = process.env.LI_CACHE_PATH

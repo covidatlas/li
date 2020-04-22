@@ -147,7 +147,7 @@ const _ut = {
     // 'Wayne County'
     // 'Weber County'
   ],
-  maybeAggregateCounties(counties, county, cases) {
+  maybeAggregateCounties (counties, county, cases) {
     if (county === 'State Total') {
       return
     }

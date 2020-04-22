@@ -28,6 +28,8 @@ module.exports = {
     'no-trailing-spaces': 'error',
     // Cleanup on aisle semicolon
     semi: [2, 'never'],
+    // Style
+    'space-before-function-paren': ['error', 'always'],
     // Plugins
     'import/no-unresolved': [2, {commonjs: true, amd: true}]
   },

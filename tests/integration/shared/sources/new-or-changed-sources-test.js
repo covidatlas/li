@@ -36,7 +36,7 @@ process.env.LI_CACHE_PATH = join(process.cwd(), 'zz-testing-fake-cache')
 /** Split an array into batches, e.g.:
  * makeBatches([1,2,3,4,5], 3) = [[1,2,3], [4,5]]
  */
-function makeBatches(arr, batchsize) {
+function makeBatches (arr, batchsize) {
   const ret = []
   for (let i = 0; i < arr.length; i += batchsize)
     ret.push(arr.slice(i, i + batchsize))
@@ -45,7 +45,7 @@ function makeBatches(arr, batchsize) {
 
 /** Runs the full crawl-scrape-save cycle for a given source,
  * returning a struct indicating which steps succeeded. */
-async function runCrawlAndScrape(key, today) {
+async function runCrawlAndScrape (key, today) {
   const result = {
     key: key,
     crawled: false,
@@ -89,11 +89,11 @@ async function runCrawlAndScrape(key, today) {
 /** Runs runCrawlAndScrape successively in batches, but run each item
  * in one batch run in parallel, generating subtests under
  * maintest. */
-function runBatchedCrawlAndScrape(maintest, batchedKeys, today) {
+function runBatchedCrawlAndScrape (maintest, batchedKeys, today) {
   return new Promise(resolve => {
     var allResults = []
     var index = 0
-    function runNextBatch() {
+    function runNextBatch () {
       if (index < batchedKeys.length) {
         const keys = batchedKeys[index]
         const comment = `Running ${keys.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
@@ -115,7 +115,7 @@ function runBatchedCrawlAndScrape(maintest, batchedKeys, today) {
 
 /** For debugging only. */
 // eslint-disable-next-line no-unused-vars
-function printResults(results) {
+function printResults (results) {
   console.log("Results (minus data):")
   results.forEach(r => {
     console.log('------------------------------')
@@ -127,7 +127,7 @@ function printResults(results) {
 }
 
 /** Check the results. */
-function testResults(maintest, results) {
+function testResults (maintest, results) {
   results.forEach (result => {
     maintest.test(`source: ${result.key}`, t => {
       t.plan(5)
@@ -141,7 +141,7 @@ function testResults(maintest, results) {
   return results
 }
 
-function createTestCacheDir() {
+function createTestCacheDir () {
   const d = process.env.LI_CACHE_PATH
   if (fs.existsSync(d)) {
     fs.rmdirSync(d, { recursive: true })
@@ -149,7 +149,7 @@ function createTestCacheDir() {
   fs.mkdirSync(d)
 }
 
-function destroyTestCacheDir() {
+function destroyTestCacheDir () {
   const d = process.env.LI_CACHE_PATH
   if (fs.existsSync(d)) {
     fs.rmdirSync(d, { recursive: true })

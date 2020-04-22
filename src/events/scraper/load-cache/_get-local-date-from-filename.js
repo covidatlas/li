@@ -2,7 +2,7 @@ const path = require('path')
 const convert = require('@architect/shared/cache/_convert-timestamp.js')
 const datetime = require('@architect/shared/datetime/index.js')
 
-module.exports = function getLocalDateFromFilename(filename, tz='America/Los_Angeles') {
+module.exports = function getLocalDateFromFilename (filename, tz='America/Los_Angeles') {
 
   let file = JSON.parse(JSON.stringify(filename)) // Let's not mutate anything inadvertently
 
