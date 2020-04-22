@@ -34,7 +34,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "PAUSE=true ./scripts/pause-sandbox && lint-staged && PAUSE=false ./scripts/pause-sandbox",
-      "pre-push": "npm run test"
+      "pre-push": "npm run test:unit"
     }
   },
   "lint-staged": {
