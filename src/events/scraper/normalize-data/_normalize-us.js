@@ -9,7 +9,7 @@ module.exports = function lookupFIPS (location) {
     /**
      * Normalize states
      */
-    if (state) {
+    if (state && !state.startsWith('iso2:')) {
       location.state = usStates[state] || state
       const iso2State = `US-${location.state}`
 
@@ -33,11 +33,13 @@ module.exports = function lookupFIPS (location) {
       // eslint-disable-next-line
       const fipsCodes = require('country-levels/fips.json')
 
+      const stateCode = state.startsWith('iso2:') ? state.substr(5) : `US-${state}`
+
       const fips = Object.keys(fipsCodes).find(c => {
         const fip = fipsCodes[c]
 
-        // Match the postal code abbreviation ("CA")
-        const stateMatches = fip.state_code_postal === state
+        // Match the ISO2 state code
+        const stateMatches = fip.state_code_iso === stateCode
 
         // Match the normalized county name ("sanfranciscocounty")
         let countyMatches = norm(fip.name) === norm(county)
