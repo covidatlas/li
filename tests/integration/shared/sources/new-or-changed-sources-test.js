@@ -107,16 +107,17 @@ async function runScrape (key, today) {
 /** Runs operation successively in batches, but run each item
  * in one batch run in parallel, generating subtests under
  * maintest. */
-function runBatchedOperation (maintest, batchedKeys, operation, today) {
+function runBatchedOperation (maintest, operations, batchSize) {
+  const batchedOperations = makeBatches(operations, batchSize)
   return new Promise(resolve => {
     var allResults = []
     var index = 0
     function runNextBatch () {
-      if (index < batchedKeys.length) {
-        const keys = batchedKeys[index]
-        const comment = `Running ${keys.join(', ')} (batch ${index + 1} of ${batchedKeys.length})`
+      if (index < batchedOperations.length) {
+        const ops = batchedOperations[index]
+        const comment = `Running ${ops.map(o => o.name).join(', ')} (batch ${index + 1} of ${batchedOperations.length})`
         maintest.comment(comment)
-        Promise.all(keys.map(k => operation(k, today))).
+        Promise.all(ops.map(o => o.execute())).
           then(results => {
             allResults.push(results)
             runNextBatch()
@@ -157,7 +158,6 @@ if (process.env.TEST_ALL) {
 }
 
 const batchSize = 20  // arbitrary.
-const batches = makeBatches(sourceKeys, batchSize)
 
 const d = process.env.LI_CACHE_PATH
 
@@ -180,11 +180,18 @@ if (sourceKeys.length === 0) {
     t.pass('Sandbox started')
   })
 
+  function createCrawlCall (key) {
+    return {
+      name: key,
+      execute: () => { return runCrawl(key) }
+    }
+  }
+
   test('New or changed sources, crawl', async t => {
-    const today = datetime.today.utc()
     t.plan(sourceKeys.length)
+    const crawls = sourceKeys.map(k => createCrawlCall(k))
     // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, batches, runCrawl, today)
+    await runBatchedOperation(t, crawls, batchSize)
       .then(results => {
         results.forEach(result => {
           test(`Crawl source: ${result.key}`, t => {
@@ -197,12 +204,20 @@ if (sourceKeys.length === 0) {
       })
   })
 
+  function createScrapeCall (key, date) {
+    return {
+      name: `${key} for ${date}`,
+      execute: () => { return runScrape (key, date) }
+    }
+  }
+
   // Note this test assumes that the cache contains data.
   test('New or changed sources, scrape', async t => {
     const today = datetime.today.utc()
     t.plan(sourceKeys.length)
+    const scrapes = sourceKeys.map(k => createScrapeCall(k, today))
     // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, batches, runScrape, today)
+    await runBatchedOperation(t, scrapes, batchSize)
       .then(results => {
         results.forEach(result => {
           test(`Scrape source: ${result.key}`, t => {
