@@ -8,6 +8,7 @@ module.exports = {
   },
   extends: 'eslint:recommended',
   plugins: [
+    'filenames',
     'fp',
     'import'
   ],
@@ -25,19 +26,20 @@ module.exports = {
     'no-inner-declarations': 'off',
     'no-redeclare': 'off',
     'no-useless-escape': 'off',
-    // Style specific
-    'no-trailing-spaces': 'error',
+    // Ensure filesystem safe filenames
+    'filenames/match-regex': [ 2, '^[a-z0-9-_]+$', true ],
     // Cleanup on aisle semicolon
     semi: [2, 'never' ],
     // Functional
     'fp/no-class': 'error',
     // Style
+    'no-trailing-spaces': 'error',
     'space-before-function-paren': [ 'error', 'always' ],
     'object-curly-spacing': [ 'error', 'always' ],
     'array-bracket-spacing': [ 'error', 'always' ],
-    'func-style': [ 'error', 'declaration', { "allowArrowFunctions": true } ],
+    'func-style': [ 'error', 'declaration', { allowArrowFunctions: true } ],
     // Plugins
-    'import/no-unresolved': [2, {commonjs: true, amd: true}]
+    'import/no-unresolved': [2, { commonjs: true, amd: true }]
   },
   ignorePatterns: [
     'scratch',
