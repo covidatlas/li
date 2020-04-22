@@ -1,15 +1,14 @@
-const path = require('path')
+const { join } = require('path')
 const fs = require('fs')
 const test = require('tape')
 
-const srcShared = path.join(process.cwd(), 'src', 'shared')
-const datetime = require(path.join(srcShared, 'datetime', 'index.js'))
-const sourceMap = require(path.join(srcShared, 'sources', '_lib', 'source-map.js'))
-const changedSources = require(path.join(__dirname, '_lib', 'changed-sources.js'))
-
-const srcEvents = path.join(process.cwd(), 'src', 'events')
-const crawlerHandler = require(path.join(srcEvents, 'crawler', 'index.js')).handler
-const scraperHandler = require(path.join(srcEvents, 'scraper', 'index.js')).handler
+const srcShared = join(process.cwd(), 'src', 'shared')
+const datetime = require(join(srcShared, 'datetime', 'index.js'))
+const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
+const srcEvents = join(process.cwd(), 'src', 'events')
+const crawlerHandler = require(join(srcEvents, 'crawler', 'index.js')).handler
+const scraperHandler = require(join(srcEvents, 'scraper', 'index.js')).handler
+const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
 
 /** Test new or changed scrapers.
  *
@@ -28,7 +27,7 @@ const scraperHandler = require(path.join(srcEvents, 'scraper', 'index.js')).hand
 process.env.NODE_ENV = 'testing'
 
 // A fake cache, destroyed and re-created for the test run.
-process.env.LI_CACHE_PATH = path.join(process.cwd(), 'zz-testing-fake-cache')
+process.env.LI_CACHE_PATH = join(process.cwd(), 'zz-testing-fake-cache')
 
 
 //////////////////////////////////////////////////////////////////////
@@ -52,7 +51,6 @@ async function runCrawlAndScrape(key, today) {
     crawled: false,
     scraped: false,
     data: null,
-    written: false,
     success: false,
     error: null
   }
@@ -75,9 +73,6 @@ async function runCrawlAndScrape(key, today) {
     const data = await scraperHandler(scrapeArg)
     result.scraped = true
     result.data = data
-
-    // TODO (testing) verify that data was actually written.
-    result.written = true
 
     result.success = true
   } catch(err) {
@@ -135,13 +130,12 @@ function printResults(results) {
 function testResults(maintest, results) {
   results.forEach (result => {
     maintest.test(`source: ${result.key}`, t => {
-      t.plan(6)
+      t.plan(5)
       t.ok(result.error === null, `null error "${result.error}"`)
       t.ok(result.success, 'completed successfully')
       t.ok(result.crawled, 'crawled')
       t.ok(result.scraped, 'scraped')
       t.ok(result.data !== null, 'got data')
-      t.ok(result.written, 'wrote')
     })
   })
   return results
@@ -183,7 +177,6 @@ createTestCacheDir()
 test('new or changed sources', async maintest => {
   const today = datetime.today.utc()
   runBatchedCrawlAndScrape(maintest, batches, today).
-    then(result => { console.log(`Got ${result.length} results!`); return result }).
     then(result => testResults(maintest, result))
   maintest.end()
 })

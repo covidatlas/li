@@ -54,7 +54,7 @@ async function scrapeSource (event) {
      */
     const data = normalizeData(source, output, date)
     let { silent } = event
-    if (silent !== true) {
+    if (!silent) {
       // TODO ↓ remove me! ↓
       console.log(`data:`, data)
     }
