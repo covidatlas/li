@@ -15,6 +15,7 @@
   "devDependencies": {
     "@architect/architect": "^6.3.5",
     "eslint": "^6.8.0",
+    "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "^2.20.2",
     "husky": "^4.2.5",
     "is": "^3.3.0",
