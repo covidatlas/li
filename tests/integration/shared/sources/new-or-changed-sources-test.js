@@ -1,6 +1,7 @@
-const { join } = require('path')
+const { join, sep } = require('path')
 const fs = require('fs')
 const test = require('tape')
+const glob = require('glob')
 const sandbox = require('@architect/sandbox')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
@@ -67,6 +68,17 @@ async function runCrawl (key, today) {
   return result
 }
 
+/** Gets the dates for a given source key.
+ *
+ * For example, if the cache only contained crawler-cache/nyt/2020-04-01,
+ * this would return ['2020-04-01'].
+ */
+function getCacheDatesForSourceKey (key) {
+  const cacheRoot = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
+  const folders = glob.sync(join(cacheRoot, key, '*/'))
+  return folders.map(f => f.split(sep)).
+    map(a => a[a.length - 2])
+}
 
 /** Runs scrape for a given source, returning a struct indicating
  * which steps succeeded. */
@@ -236,6 +248,37 @@ if (sourceKeys.length === 0) {
       })
     delete process.env.LI_CACHE_PATH
     t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
+  })
+
+  // This uses real cache.
+  test('New or changed sources, scrape past cache dates', async t => {
+    // List of date folders for each key, e.g.:
+    // [ { key: 'gb-eng', date: '2020-04-02'}, {... ]
+    const scrapeTests = sourceKeys.map(k => {
+      return getCacheDatesForSourceKey(k).
+        map(dt => { return { key: k, date: dt } })
+    }).flat()
+
+    t.plan(scrapeTests.length + 2)  // +1 cache dir check, +1 final pass
+    t.ok(process.env.LI_CACHE_PATH === undefined, 'using real cache')
+
+    const scrapes = scrapeTests.map(st => createScrapeCall(st.key, st.date))
+
+    // TODO look into how we can clean up the parallelization
+    await runBatchedOperation(t, 'scrape', scrapes, batchSize)
+      .then(results => {
+        results.forEach(result => {
+          test(`Scrape source: ${result.key}, on ${result.date}`, t => {
+            t.plan(3)
+            t.ok(result.success, 'completed successfully')
+            t.ok(result.error === null, `null error "${result.error}"`)
+            t.ok(result.data !== null, 'got data')
+          })
+          t.pass(`${result.key} ok`)
+        })
+      })
+
+    t.pass('ok')
   })
 
   test('Teardown', async t => {
