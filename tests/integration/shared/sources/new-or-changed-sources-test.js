@@ -249,7 +249,7 @@ if (sourceKeys.length === 0) {
   })
 
   // This uses real cache.
-  test.only('New or changed sources, scrape past cache dates', async t => {
+  test('New or changed sources, scrape past cache dates', async t => {
     // List of date folders for each key, e.g.:
     // [ { key: 'gb-eng', date: '2020-04-02'}, {... ]
     const scrapeTests = sourceKeys.map(k => {
