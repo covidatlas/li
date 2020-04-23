@@ -25,11 +25,6 @@ const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
  * TEST_ONLY=gb-sct,nl,gb-eng npm run test:integration
  */
 
-process.env.NODE_ENV = 'testing'
-
-// A fake cache, destroyed and re-created for the test run.
-process.env.LI_CACHE_PATH = join(process.cwd(), 'zz-testing-fake-cache')
-
 
 //////////////////////////////////////////////////////////////////////
 // Utilities
@@ -75,9 +70,10 @@ async function runCrawl (key, today) {
 
 /** Runs scrape for a given source, returning a struct indicating
  * which steps succeeded. */
-async function runScrape (key, today) {
+async function runScrape (key, dt) {
   const result = {
     key: key,
+    date: dt,
     success: false,
     error: null,
     data: null
@@ -86,7 +82,7 @@ async function runScrape (key, today) {
   try {
     const scrapeArg = {
       Records: [
-        { Sns: { Message: JSON.stringify({ source: key, date: today, silent: true }) } }
+        { Sns: { Message: JSON.stringify({ source: key, date: dt, silent: true }) } }
       ]
     }
     const data = await scraperHandler(scrapeArg)
@@ -107,7 +103,7 @@ async function runScrape (key, today) {
 /** Runs operation successively in batches, but run each item
  * in one batch run in parallel, generating subtests under
  * maintest. */
-function runBatchedOperation (maintest, operations, batchSize) {
+function runBatchedOperation (maintest, opname, operations, batchSize) {
   const batchedOperations = makeBatches(operations, batchSize)
   return new Promise(resolve => {
     var allResults = []
@@ -115,7 +111,9 @@ function runBatchedOperation (maintest, operations, batchSize) {
     function runNextBatch () {
       if (index < batchedOperations.length) {
         const ops = batchedOperations[index]
-        const comment = `Running ${ops.map(o => o.name).join(', ')} (batch ${index + 1} of ${batchedOperations.length})`
+        const names = ops.map(o => o.name).join(', ')
+        const batchmsg = `batch ${index + 1} of ${batchedOperations.length}`
+        const comment = `Running ${opname} for ${names} (${batchmsg})`
         maintest.comment(comment)
         Promise.all(ops.map(o => o.execute())).
           then(results => {
@@ -159,7 +157,10 @@ if (process.env.TEST_ALL) {
 
 const batchSize = 20  // arbitrary.
 
-const d = process.env.LI_CACHE_PATH
+process.env.NODE_ENV = 'testing'
+
+// A fake cache, destroyed and re-created for the test run.
+const testingCache = join(process.cwd(), 'zz-testing-fake-cache')
 
 if (sourceKeys.length === 0) {
 
@@ -171,11 +172,11 @@ if (sourceKeys.length === 0) {
 
   test('Setup', async t => {
     t.plan(2)
-    if (fs.existsSync(d)) {
-      fs.rmdirSync(d, { recursive: true })
+    if (fs.existsSync(testingCache)) {
+      fs.rmdirSync(testingCache, { recursive: true })
     }
-    fs.mkdirSync(d)
-    t.ok(fs.existsSync(d), 'Created temp directory')
+    fs.mkdirSync(testingCache)
+    t.ok(fs.existsSync(testingCache), 'Created temp directory')
     await sandbox.start({ quiet: true })
     t.pass('Sandbox started')
   })
@@ -188,10 +189,11 @@ if (sourceKeys.length === 0) {
   }
 
   test('New or changed sources, crawl', async t => {
-    t.plan(sourceKeys.length)
+    process.env.LI_CACHE_PATH = testingCache
+    t.plan(sourceKeys.length + 1)
     const crawls = sourceKeys.map(k => createCrawlCall(k))
     // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, crawls, batchSize)
+    await runBatchedOperation(t, 'crawl', crawls, batchSize)
       .then(results => {
         results.forEach(result => {
           test(`Crawl source: ${result.key}`, t => {
@@ -202,6 +204,8 @@ if (sourceKeys.length === 0) {
           t.pass(`${result.key} ok`)
         })
       })
+    delete process.env.LI_CACHE_PATH
+    t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
   })
 
   function createScrapeCall (key, date) {
@@ -211,16 +215,17 @@ if (sourceKeys.length === 0) {
     }
   }
 
-  // Note this test assumes that the cache contains data.
-  test('New or changed sources, scrape', async t => {
+  // Note: this test assumes that the testingCache contains data!
+  test('New or changed sources, scrape latest date', async t => {
+    process.env.LI_CACHE_PATH = testingCache
     const today = datetime.today.utc()
-    t.plan(sourceKeys.length)
+    t.plan(sourceKeys.length + 1)
     const scrapes = sourceKeys.map(k => createScrapeCall(k, today))
     // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, scrapes, batchSize)
+    await runBatchedOperation(t, 'scrape', scrapes, batchSize)
       .then(results => {
         results.forEach(result => {
-          test(`Scrape source: ${result.key}`, t => {
+          test(`Scrape source: ${result.key}, today`, t => {
             t.plan(3)
             t.ok(result.success, 'completed successfully')
             t.ok(result.error === null, `null error "${result.error}"`)
@@ -229,14 +234,16 @@ if (sourceKeys.length === 0) {
           t.pass(`${result.key} ok`)
         })
       })
+    delete process.env.LI_CACHE_PATH
+    t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
   })
 
   test('Teardown', async t => {
     t.plan(2)
-    if (fs.existsSync(d)) {
-      fs.rmdirSync(d, { recursive: true })
+    if (fs.existsSync(testingCache)) {
+      fs.rmdirSync(testingCache, { recursive: true })
     }
-    t.notOk(fs.existsSync(d), 'Removed temp directory')
+    t.notOk(fs.existsSync(testingCache), 'Removed temp directory')
     await sandbox.end()
     t.pass('Sandbox closed')
   })
