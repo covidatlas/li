@@ -208,12 +208,11 @@ if (sourceKeys.length === 0) {
     await runBatchedOperation(t, 'crawl', crawls, batchSize)
       .then(results => {
         results.forEach(result => {
-          test(`Crawl source: ${result.key}`, t => {
-            t.plan(2)
-            t.ok(result.success, 'completed successfully')
-            t.ok(result.error === null, `null error "${result.error}"`)
+          t.test(`Crawl source: ${result.key}`, innert => {
+            innert.plan(2)
+            innert.ok(result.success, 'completed successfully')
+            innert.ok(result.error === null, `null error "${result.error}"`)
           })
-          t.pass(`${result.key} ok`)
         })
       })
     delete process.env.LI_CACHE_PATH
@@ -237,13 +236,12 @@ if (sourceKeys.length === 0) {
     await runBatchedOperation(t, 'scrape', scrapes, batchSize)
       .then(results => {
         results.forEach(result => {
-          test(`Scrape source: ${result.key}, today`, t => {
-            t.plan(3)
-            t.ok(result.success, 'completed successfully')
-            t.ok(result.error === null, `null error "${result.error}"`)
-            t.ok(result.data !== null, 'got data')
+          t.test(`Scrape source: ${result.key}, today`, innert => {
+            innert.plan(3)
+            innert.ok(result.success, 'completed successfully')
+            innert.ok(result.error === null, `null error "${result.error}"`)
+            innert.ok(result.data !== null, 'got data')
           })
-          t.pass(`${result.key} ok`)
         })
       })
     delete process.env.LI_CACHE_PATH
@@ -251,7 +249,7 @@ if (sourceKeys.length === 0) {
   })
 
   // This uses real cache.
-  test('New or changed sources, scrape past cache dates', async t => {
+  test.only('New or changed sources, scrape past cache dates', async t => {
     // List of date folders for each key, e.g.:
     // [ { key: 'gb-eng', date: '2020-04-02'}, {... ]
     const scrapeTests = sourceKeys.map(k => {
@@ -268,13 +266,12 @@ if (sourceKeys.length === 0) {
     await runBatchedOperation(t, 'scrape', scrapes, batchSize)
       .then(results => {
         results.forEach(result => {
-          test(`Scrape source: ${result.key}, on ${result.date}`, t => {
-            t.plan(3)
-            t.ok(result.success, 'completed successfully')
-            t.ok(result.error === null, `null error "${result.error}"`)
-            t.ok(result.data !== null, 'got data')
+          t.test(`${result.key} scrape on ${result.date}`, innert => {
+            innert.plan(3)
+            innert.ok(result.success, 'completed successfully')
+            innert.ok(result.error === null, `null error "${result.error}"`)
+            innert.ok(result.data !== null, 'got data')
           })
-          t.pass(`${result.key} ok`)
         })
       })
 
