@@ -1,9 +1,7 @@
 const maintainers = require('../../_lib/maintainers.js')
 const geography = require('../../_lib/geography/index.js')
 const transform = require('../../_lib/transform.js')
-
-// Set county to this if you only have state data, but this isn't the entire state
-const UNASSIGNED = '(unassigned)'
+const constants = require('../../_lib/constants.js')
 
 const allCounties = [
   'Arkansas County',
@@ -109,7 +107,7 @@ module.exports = {
         for (const countyData of data.features) {
           const attr = countyData.attributes
           if (attr.county_nam === 'Missing County Info') {
-            attr.county_nam = UNASSIGNED
+            attr.county_nam = constants.UNASSIGNED
           } else {
             attr.county_nam = geography.addCounty(attr.county_nam)
           }
@@ -127,7 +125,7 @@ module.exports = {
         regions = geography.addEmptyRegions(regions, allCounties, 'county')
 
         // TODO remove this once #28 is fixed
-        regions = regions.filter(c => c.county !== UNASSIGNED)
+        regions = regions.filter(c => c.county !== constants.UNASSIGNED)
 
         console.log(regions)
 
