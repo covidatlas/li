@@ -91,7 +91,7 @@ module.exports = {
             deaths
           })
         })
-        counties = geography.addEmptyRegions(counties, this._counties, 'county')
+        counties = geography.addEmptyRegions(counties, allCounties, 'county')
         counties.push(transform.sumData(counties))
         return counties
       }
@@ -129,7 +129,7 @@ module.exports = {
             deaths
           })
         })
-        counties = geography.addEmptyRegions(counties, this._counties, 'county')
+        counties = geography.addEmptyRegions(counties, allCounties, 'county')
         counties.push(transform.sumData(counties))
         return counties
       }
@@ -168,7 +168,7 @@ module.exports = {
             deaths
           })
         })
-        counties = geography.addEmptyRegions(counties, this._counties, 'county')
+        counties = geography.addEmptyRegions(counties, allCounties, 'county')
         counties.push(transform.sumData(counties))
         return counties
       }
