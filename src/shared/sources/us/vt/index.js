@@ -60,7 +60,7 @@ module.exports = {
           if (county.includes('Pending Validation')) {
             county = UNASSIGNED
 
-            // todo: remove this when #28 is fixed
+            // TODO remove this when #28 is fixed
             return
           }
 
