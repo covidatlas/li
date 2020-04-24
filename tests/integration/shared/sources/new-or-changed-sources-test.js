@@ -125,9 +125,8 @@ function runBatchedOperation (maintest, opname, operations, batchSize) {
     function runNextBatch () {
       if (index < batchedOperations.length) {
         const ops = batchedOperations[index]
-        const names = ops.map(o => o.name).join(', ')
         const batchmsg = `batch ${index + 1} of ${batchedOperations.length}`
-        const comment = `Running ${opname} for ${names} (${batchmsg})`
+        const comment = `${opname} (${batchmsg})`
         maintest.comment(comment)
         Promise.all(ops.map(o => o.execute())).
           then(results => {
@@ -160,9 +159,6 @@ function printResults (results) {
 //////////////////////////////////////////////////////////////////////
 // The tests
 
-// If any test failed, refer devs to docs/testing.md.
-let showFailureAdvice = false
-test.onFailure(() => { showFailureAdvice = true })
 
 let sourceKeys = []
 if (process.env.TEST_ALL) {
@@ -173,6 +169,18 @@ if (process.env.TEST_ALL) {
   sourceKeys = changedSources.getChangedSourceKeys()
 }
 
+if (sourceKeys.length === 0) {
+  test('No changed sources', t => {
+    t.plan(1); t.pass('hooray!')
+  })
+  // This return will exit this test module.
+  return
+}
+
+// If any test failed, refer devs to docs/testing.md.
+let showFailureAdvice = false
+test.onFailure(() => { showFailureAdvice = true })
+
 const batchSize = 20  // arbitrary.
 
 process.env.NODE_ENV = 'testing'
@@ -180,128 +188,120 @@ process.env.NODE_ENV = 'testing'
 // A fake cache, destroyed and re-created for the test run.
 const testingCache = join(process.cwd(), 'zz-testing-fake-cache')
 
-if (sourceKeys.length === 0) {
-
-  test('No changed sources', t => {
-    t.plan(1); t.pass('hooray!')
-  })
-
-} else {
-
-  test('Setup', async t => {
-    t.plan(2)
-    if (fs.existsSync(testingCache)) {
-      fs.rmdirSync(testingCache, { recursive: true })
-    }
-    fs.mkdirSync(testingCache)
-    t.ok(fs.existsSync(testingCache), 'Created temp directory')
-
-    // By default sandbox is started with port 3333, so specifying the
-    // port here lets the tests run their own sandbox without
-    // colliding with the existing port.
-    await sandbox.start({ port: 5555, quiet: true })
-    t.pass('Sandbox started')
-  })
-
-  function createCrawlCall (key) {
-    return {
-      name: key,
-      execute: () => { return runCrawl(key) }
-    }
+test('Setup', async t => {
+  t.plan(2)
+  if (fs.existsSync(testingCache)) {
+    fs.rmdirSync(testingCache, { recursive: true })
   }
+  fs.mkdirSync(testingCache)
+  t.ok(fs.existsSync(testingCache), 'Created temp directory')
 
-  test('Live crawl, new or changed sources', async t => {
-    process.env.LI_CACHE_PATH = testingCache
-    t.plan(sourceKeys.length + 1)
-    const crawls = sourceKeys.map(k => createCrawlCall(k))
-    // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, 'crawl', crawls, batchSize)
-      .then(results => {
-        results.forEach(result => {
-          t.test(`Live crawl: ${result.key}`, innert => {
-            innert.plan(2)
-            innert.ok(result.success, 'completed successfully')
-            innert.ok(result.error === null, `null error "${result.error}"`)
-          })
-        })
-      })
-    delete process.env.LI_CACHE_PATH
-    t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
-  })
+  // By default sandbox is started with port 3333, so specifying the
+  // port here lets the tests run their own sandbox without
+  // colliding with the existing port.
+  await sandbox.start({ port: 5555, quiet: true })
+  t.pass('Sandbox started')
+})
 
-  function createScrapeCall (key, date) {
-    return {
-      name: `${key} for ${date}`,
-      execute: () => { return runScrape (key, date) }
-    }
+function createCrawlCall (key) {
+  return {
+    name: key,
+    execute: () => { return runCrawl(key) }
   }
-
-  // Note: this test assumes that the testingCache contains data!
-  test('Live scrape, new or changed sources', async t => {
-    process.env.LI_CACHE_PATH = testingCache
-    const today = datetime.today.utc()
-    t.plan(sourceKeys.length + 1)
-    const scrapes = sourceKeys.map(k => createScrapeCall(k, today))
-    // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, 'scrape', scrapes, batchSize)
-      .then(results => {
-        results.forEach(result => {
-          t.test(`Live scrape: ${result.key}, today`, innert => {
-            innert.plan(3)
-            innert.ok(result.success, 'completed successfully')
-            innert.ok(result.error === null, `null error "${result.error}"`)
-            innert.ok(result.data !== null, 'got data')
-          })
-        })
-      })
-    delete process.env.LI_CACHE_PATH
-    t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
-  })
-
-  // This uses real cache.
-  test('Historical scrape, new or changed sources', async t => {
-    // List of date folders for each key, e.g.:
-    // [ { key: 'gb-eng', date: '2020-04-02'}, {... ]
-    const scrapeTests = sourceKeys.map(k => {
-      return getCacheDatesForSourceKey(k).
-        map(dt => { return { key: k, date: dt } })
-    }).flat()
-
-    t.plan(scrapeTests.length + 2)  // +1 cache dir check, +1 final pass
-    t.ok(process.env.LI_CACHE_PATH === undefined, 'using real cache')
-
-    const scrapes = scrapeTests.map(st => createScrapeCall(st.key, st.date))
-
-    // TODO look into how we can clean up the parallelization
-    await runBatchedOperation(t, 'scrape', scrapes, batchSize)
-      .then(results => {
-        results.forEach(result => {
-          t.test(`Historical scrape: ${result.key} scrape on ${result.date}`, innert => {
-            innert.plan(3)
-            innert.ok(result.success, 'completed successfully')
-            innert.ok(result.error === null, `null error "${result.error}"`)
-            innert.ok(result.data !== null, 'got data')
-          })
-        })
-      })
-
-    t.pass('ok')
-  })
-
-  test('Teardown', async t => {
-    t.plan(2)
-    if (fs.existsSync(testingCache)) {
-      fs.rmdirSync(testingCache, { recursive: true })
-    }
-    t.notOk(fs.existsSync(testingCache), 'Removed temp directory')
-    await sandbox.end()
-    t.pass('Sandbox closed')
-  })
-
-  // TODO (testing) Add fake source that crawls localhost:3000/integrationtest
-  // Prior to running test, copy test assets there.
-  // Fake source can scrape data like a real scraper, easy and controlled.
 }
+
+test('Live crawl, new or changed sources', async t => {
+  process.env.LI_CACHE_PATH = testingCache
+  t.plan(sourceKeys.length + 1)
+  const crawls = sourceKeys.map(k => createCrawlCall(k))
+  // TODO look into how we can clean up the parallelization
+  await runBatchedOperation(t, 'Live crawl', crawls, batchSize)
+    .then(results => {
+      results.forEach(result => {
+        t.test(`Live crawl: ${result.key}`, innert => {
+          innert.plan(2)
+          innert.ok(result.success, 'completed successfully')
+          innert.ok(result.error === null, `null error "${result.error}"`)
+        })
+      })
+    })
+  delete process.env.LI_CACHE_PATH
+  t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
+})
+
+function createScrapeCall (key, date) {
+  return {
+    name: `${key} for ${date}`,
+    execute: () => { return runScrape (key, date) }
+  }
+}
+
+// Note: this test assumes that the testingCache contains data!
+test('Live scrape, new or changed sources', async t => {
+  process.env.LI_CACHE_PATH = testingCache
+  const today = datetime.today.utc()
+  t.plan(sourceKeys.length + 1)
+  const scrapes = sourceKeys.map(k => createScrapeCall(k, today))
+  // TODO look into how we can clean up the parallelization
+  await runBatchedOperation(t, 'Live scrape', scrapes, batchSize)
+    .then(results => {
+      results.forEach(result => {
+        t.test(`Live scrape: ${result.key}, today`, innert => {
+          innert.plan(3)
+          innert.ok(result.success, 'completed successfully')
+          innert.ok(result.error === null, `null error "${result.error}"`)
+          innert.ok(result.data !== null, 'got data')
+        })
+      })
+    })
+  delete process.env.LI_CACHE_PATH
+  t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
+})
+
+// This uses real cache.
+test('Historical scrape, new or changed sources', async t => {
+  // List of date folders for each key, e.g.:
+  // [ { key: 'gb-eng', date: '2020-04-02'}, {... ]
+  const scrapeTests = sourceKeys.map(k => {
+    return getCacheDatesForSourceKey(k).
+      map(dt => { return { key: k, date: dt } })
+  }).flat()
+
+  t.plan(scrapeTests.length + 2)  // +1 cache dir check, +1 final pass
+  t.ok(process.env.LI_CACHE_PATH === undefined, 'using real cache')
+
+  const scrapes = scrapeTests.map(st => createScrapeCall(st.key, st.date))
+
+  // TODO look into how we can clean up the parallelization
+  await runBatchedOperation(t, 'Historical scrape', scrapes, batchSize)
+    .then(results => {
+      results.forEach(result => {
+        t.test(`Historical scrape: ${result.key} scrape on ${result.date}`, innert => {
+          innert.plan(3)
+          innert.ok(result.success, 'completed successfully')
+          innert.ok(result.error === null, `null error "${result.error}"`)
+          innert.ok(result.data !== null, 'got data')
+        })
+      })
+    })
+
+  t.pass('ok')
+})
+
+test('Teardown', async t => {
+  t.plan(2)
+  if (fs.existsSync(testingCache)) {
+    fs.rmdirSync(testingCache, { recursive: true })
+  }
+  t.notOk(fs.existsSync(testingCache), 'Removed temp directory')
+  await sandbox.end()
+  t.pass('Sandbox closed')
+})
+
+// TODO (testing) Add fake source that crawls localhost:3000/integrationtest
+// Prior to running test, copy test assets there.
+// Fake source can scrape data like a real scraper, easy and controlled.
+
 
 // If any test failed, refer devs to docs/testing.md.
 test('New or changed sources test summary', t => {
