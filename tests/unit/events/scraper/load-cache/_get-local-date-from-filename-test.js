@@ -24,7 +24,7 @@ test('Bad cache filename throws', t => {
 
 
 // TODO (cache-validation): this test belongs somewhere, but not here.
-test('filenames with bad keys throws', t => {
+test('Filenames with bad keys throws', t => {
   const badnames = [ '', 'has space', 'UpperCase', '123' ]
   t.plan(badnames.length)
   badnames.forEach(n => {
@@ -35,22 +35,11 @@ test('filenames with bad keys throws', t => {
 })
 
 // TODO (cache-validation): this test belongs somewhere, but not here.
-test('filename missing extension throws', t => {
-  const badexts = [ '', 'html', 'UpperCase', '123' ]
-  t.plan(badexts.length)
-  badexts.forEach(n => {
-    const s = `2020-04-11t21_00_00.000z-default-117bb.{n}`
-    const f = join('folder', 'subfolder', s)
-    t.throws(() => getLocalDateFromFilename(f, 'utc'), `${n} ext throws`)
-  })
-})
-
-// TODO (cache-validation): this test belongs somewhere, but not here.
-test('missing or bad sha throws', t => {
+test('Missing or bad sha throws', t => {
   const badshas = [ '', '12 34', 'UPPER', '123' ]
   t.plan(badshas.length)
   badshas.forEach(n => {
-    const s = `2020-04-11t21_00_00.000z-default-{n}.html.gz`
+    const s = `2020-04-11t21_00_00.000z-default-${n}.html.gz`
     const f = join('folder', 'subfolder', s)
     t.throws(() => getLocalDateFromFilename(f, 'utc'), `${n} sha throws`)
   })
