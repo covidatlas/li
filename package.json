@@ -4,6 +4,7 @@
   "scripts": {
     "start": "arc sandbox",
     "lint": "eslint . --ignore-pattern node_modules --fix",
+    "list-sources": "node src/shared/sources/_lib/list-sources.js",
     "todos": "node tools/list-dev-todos.js",
     "test": "tape tests/**/*-test.js | tap-spec",
     "test:unit": "tape tests/unit/**/*-test.js | tap-spec",
