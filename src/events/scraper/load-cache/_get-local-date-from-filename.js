@@ -10,7 +10,7 @@ module.exports = function getLocalDateFromFilename (filename, tz='America/Los_An
   // Extract the file from the path
   file = path.basename(file)
 
-  // Throw now if it's invalid
+  // Throw if we find a bad filename
   validate(file)
 
   /**
