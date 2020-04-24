@@ -160,6 +160,10 @@ function printResults (results) {
 //////////////////////////////////////////////////////////////////////
 // The tests
 
+// If any test failed, refer devs to docs/testing.md.
+let showFailureAdvice = false
+test.onFailure(() => { showFailureAdvice = true })
+
 let sourceKeys = []
 if (process.env.TEST_ALL) {
   sourceKeys = Object.keys(sourceMap())
@@ -206,7 +210,7 @@ if (sourceKeys.length === 0) {
     }
   }
 
-  test('New or changed sources, crawl', async t => {
+  test('Live crawl, new or changed sources', async t => {
     process.env.LI_CACHE_PATH = testingCache
     t.plan(sourceKeys.length + 1)
     const crawls = sourceKeys.map(k => createCrawlCall(k))
@@ -214,7 +218,7 @@ if (sourceKeys.length === 0) {
     await runBatchedOperation(t, 'crawl', crawls, batchSize)
       .then(results => {
         results.forEach(result => {
-          t.test(`Crawl source: ${result.key}`, innert => {
+          t.test(`Live crawl: ${result.key}`, innert => {
             innert.plan(2)
             innert.ok(result.success, 'completed successfully')
             innert.ok(result.error === null, `null error "${result.error}"`)
@@ -233,7 +237,7 @@ if (sourceKeys.length === 0) {
   }
 
   // Note: this test assumes that the testingCache contains data!
-  test('New or changed sources, scrape latest date', async t => {
+  test('Live scrape, new or changed sources', async t => {
     process.env.LI_CACHE_PATH = testingCache
     const today = datetime.today.utc()
     t.plan(sourceKeys.length + 1)
@@ -242,7 +246,7 @@ if (sourceKeys.length === 0) {
     await runBatchedOperation(t, 'scrape', scrapes, batchSize)
       .then(results => {
         results.forEach(result => {
-          t.test(`Scrape source: ${result.key}, today`, innert => {
+          t.test(`Live scrape: ${result.key}, today`, innert => {
             innert.plan(3)
             innert.ok(result.success, 'completed successfully')
             innert.ok(result.error === null, `null error "${result.error}"`)
@@ -255,7 +259,7 @@ if (sourceKeys.length === 0) {
   })
 
   // This uses real cache.
-  test('New or changed sources, scrape past cache dates', async t => {
+  test('Historical scrape, new or changed sources', async t => {
     // List of date folders for each key, e.g.:
     // [ { key: 'gb-eng', date: '2020-04-02'}, {... ]
     const scrapeTests = sourceKeys.map(k => {
@@ -272,7 +276,7 @@ if (sourceKeys.length === 0) {
     await runBatchedOperation(t, 'scrape', scrapes, batchSize)
       .then(results => {
         results.forEach(result => {
-          t.test(`${result.key} scrape on ${result.date}`, innert => {
+          t.test(`Historical scrape: ${result.key} scrape on ${result.date}`, innert => {
             innert.plan(3)
             innert.ok(result.success, 'completed successfully')
             innert.ok(result.error === null, `null error "${result.error}"`)
@@ -298,3 +302,13 @@ if (sourceKeys.length === 0) {
   // Prior to running test, copy test assets there.
   // Fake source can scrape data like a real scraper, easy and controlled.
 }
+
+// If any test failed, refer devs to docs/testing.md.
+test('New or changed sources test summary', t => {
+  t.plan(1)
+  if (showFailureAdvice) {
+    t.fail('Some integration tests failed.  See docs/testing.md for how to handle them')
+  } else {
+    t.ok(true, 'All tests passed')
+  }
+})

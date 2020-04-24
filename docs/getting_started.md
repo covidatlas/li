@@ -123,60 +123,17 @@ Coming soon!
 
 ## Tests
 
+We have unit tests and integration tests in the `tests` folder.
+
 Run tests with the following:
-```
-npm run test
-npm run test:unit
-npm run test:integration
-```
+
+| Command | Runs |
+| --- | --- |
+| `npm run test` | Unit and integration tests |
+| `npm run test:unit` | Only unit tests (super fast!) |
+| `npm run test:integration` | Only integration tests |
 
 Unit and integration tests are kept separate because the former are
 blazingly fast, while the latter may take some time.
 
-### Unit tests
-
-Run unit tests with `npm run test:unit`
-
-### Integration tests and configuration
-
-Integration tests are in `tests/integration`.
-
-You can run them with `npm run test:integration`
-
-#### `new-or-changed-sources-test.js`
-
-##### Configuration
-
-The test in
-`tests/integration/shared/sources/new-or-changed-sources-test.js` run
-`git diff` for your current branch against some baseline branch.
-
-Since it's impossible for us to accurately guess what the right
-baseline branch would be in your case (`origin/master`?
-`upstream/master`?), you will need to create a `gitdiff.json` in
-`tests/integration/shared/sources`.  See `gitdiff.json.example` in
-that folder for reference.
-
-If this file is missing, the test will stop with a giant warning
-message.  (In CI, we just use `origin/master` as the base branch, and
-this file isn't required).
-
-##### About this test
-
-This test actually runs a live crawl and scrape for any new or changed
-sources (as defined by a `git diff` against the branch you configured
-in `gitdiff.json`).  You'll need to be connected to the net.
-
-##### Running for selected, or all sources
-
-You can tailor the above test by setting some environment variables, e.g.:
-
-```
-# To run _all_ of the sources:
-TEST_ALL=1 npm run test:integration
-
-# To run selected sources:
-TEST_ONLY=gb-sct,nl,gb-eng npm run test:integration
-```
-
-The tests are batched for reasonable execution time.
+For more info, see [Testing](./docs/testing.md).
