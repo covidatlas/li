@@ -5,7 +5,7 @@ const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
  * Takes a cached filename, returns date boundaries
  */
 module.exports = function getDateBounds (files, tz) {
-  if (files.length === 0) {
+  if (!files || files.length === 0) {
     throw new Error('No files provided')
   }
 
