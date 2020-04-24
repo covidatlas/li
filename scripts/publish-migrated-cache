@@ -9,6 +9,9 @@ const crypto = require('crypto')
 aws.config.setPromisesDependency(null)
 const s3 = new aws.S3()
 
+// ↓ Set this to true if you actually want to mutate S3!
+const testing = false
+
 console.time('Ran in')
 
 // Load up cached file list
@@ -58,46 +61,54 @@ let ignored = 0
 let uploaded = 0
 let destroyed = 0
 
-go()
+if (!testing) {
+  console.log(`Live cache mutation begins in 3 seconds!`)
+  setTimeout(() => {
+    go()
+  }, 3000)
+}
+else go()
 async function go () {
   for (const file of migratedCacheFiles) {
     counter++
     const Key = file.replace(cacheDir, '').substr(1)
 
-    // Look for junk to clear
-    const deletes = [ 'arcgis', 'arcorgid', 'tempindex', 'tmpindex', 'tmpcsrf' ]
-    const parts = Key.split('000z-')
-    const destroy = deletes.some(s => parts[1].toLowerCase().startsWith(s))
-    if (destroy) {
-      await del({ Bucket, Key })
-      destroyed++
-      console.log(`Destroyed unnecessary file: ${Key}`)
-      continue
-    }
-
-    // Check to see if it already exists
-    const exists = await head({ Bucket, Key })
-    if (exists) ignored++
-
-    // Upload it
-    else {
-      const Body = fs.readFileSync(file)
-      const params = {
-        ACL: 'public-read',
-        Bucket,
-        Key,
-        Body
+    if (!testing && Key.startsWith('us-va')) {
+      // Look for junk to clear
+      const deletes = [ 'arcgis', 'arcorgid', 'tempindex', 'tmpindex', 'tmpcsrf' ]
+      const parts = Key.split('000z-')
+      const destroy = deletes.some(s => parts[1].toLowerCase().startsWith(s))
+      if (destroy) {
+        await del({ Bucket, Key })
+        destroyed++
+        console.log(`Destroyed unnecessary file: ${Key}`)
+        continue
       }
 
-      const result = await put(params)
-      const { ETag } = result
-      const checksum = hash(Body)
-      if (ETag.replace(/"/g, '') === checksum) {
-        console.log(`Uploaded new file: ${Key}`)
+      // Check to see if it already exists
+      const exists = await head({ Bucket, Key })
+      if (exists) ignored++
+
+      // Upload it
+      else {
+        const Body = fs.readFileSync(file)
+        const params = {
+          ACL: 'public-read',
+          Bucket,
+          Key,
+          Body
+        }
+
+        const result = await put(params)
+        const { ETag } = result
+        const checksum = hash(Body)
+        if (ETag.replace(/"/g, '') === checksum) {
+          console.log(`Uploaded new file: ${Key}`)
+        }
+        // S3 chunk checksumming may occur if a file is extremely large, it's probably no biggie
+        else console.warn(`⚠️  File uploaded, but checksums do not match: ${Key}`)
+        uploaded++
       }
-      // S3 chunk checksumming may occur if a file is extremely large, it's probably no biggie
-      else console.warn(`⚠️  File uploaded, but checksums do not match: ${Key}`)
-      uploaded++
     }
   }
 
