@@ -2,13 +2,13 @@ const aws = require('aws-sdk')
 const { join } = require('path')
 const { gzipSync } = require('zlib')
 
-module.exports = async function writeS3 (data, filePath, filename) {
+module.exports = async function writeS3 (data, filepath, filename) {
   aws.config.setPromisesDependency(null)
 
   const s3 = new aws.S3()
 
   const Bucket = `li-cache-${process.env.NODE_ENV}`
-  const Key = join(filePath, `${filename}.gz`)
+  const Key = join(filepath, `${filename}.gz`)
   const Body = gzipSync(data)
 
   const params = {
