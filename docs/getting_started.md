@@ -15,8 +15,9 @@ First, [fork the repository](https://github.com/covidatlas/li.git) so you're rea
 Replace `yourusername` below with your Github username:
 
 ```
-git clone https://github.com/covidatlas/li.git
+git clone https://github.com/yourusername/li.git
 cd li
+git remote add upstream https://github.com/covidatlas/li.git
 ```
 
 ### 2. Install dependencies
