@@ -1,12 +1,12 @@
 const args = require('yargs')
   .option('crawl', {
     alias: 'c',
-    description: 'Crawl the source (keyed on path name)',
+    description: 'Crawl the specified Source ID',
     type: 'string'
   })
   .option('scrape', {
     alias: 's',
-    description: 'Scrape the source (keyed on path name)',
+    description: 'Scrape the specified Source ID',
     type: 'string'
   })
   .option('date', {

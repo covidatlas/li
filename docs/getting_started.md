@@ -39,7 +39,7 @@ $ npm start
 The first time you run this it may take a few moments as it installs additional dependencies.  At the end you'll see "Sandbox Started ... http://localhost:3333".
 
 
-### Crawling and sraping a source
+### Crawling and scraping a source
 
 For most folks, crawl and scrape a source in another terminal window (with the dev server still running) with the following commands
 
@@ -55,6 +55,8 @@ node .\start --crawl <id>
 node .\start --scrape <id>
 ```
 
+#### Source IDs
+
 Source IDs (also known as source keys) are derived from the local path of the source on the filesystem.
 
 Sources are located in: `src/shared/sources/`
@@ -63,6 +65,32 @@ The path within that directory determines its key:
 - `us/ut/index.js` is `us-ut`
 - `nyt/index.js` is `nyt`
 - `us/ca/san-francisco-county` is `us-ca-san-francisco-county`
+
+To see a list of available source IDs, use `npm run list-sources`:
+
+```
+$ npm run list-sources
+
+Source ID                   shared/sources/
+---------                   ---------------
+gb-eng                      gb/eng/index.js
+gb-sct                      gb/sct/index.js
+...
+```
+
+
+#### Scraping a particular date
+
+On Mac, Linux, etc:
+```
+./start --scrape <id> --date 2020-03-19
+```
+
+On Windows:
+```
+node .\start --scrape <id> --date 2020-03-19
+```
+
 
 
 ### 3. Pull from upstream often
