@@ -58,8 +58,8 @@ module.exports = {
             } else {
               locationObj.county = row.county //geography.getCounty(row.county, row.state)
 
-              if (locationObj.county === '(unassigned)') {
-                // Skip unassigned locations from NYT, otherwise they mess up rollup totals
+              if (locationObj.county === 'Unknown') {
+                // Skip unknown locations from NYT, otherwise they mess up rollup totals
                 continue
               }
             }

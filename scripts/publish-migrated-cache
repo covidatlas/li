@@ -1,0 +1,109 @@
+#! /usr/bin/env node
+
+const aws = require('aws-sdk')
+const fs = require('fs')
+const { join } = require('path')
+const glob = require('glob').sync
+const globJoin = require('../src/shared/utils/glob-join.js')
+const crypto = require('crypto')
+aws.config.setPromisesDependency(null)
+const s3 = new aws.S3()
+
+console.time('Ran in')
+
+// Load up cached file list
+const cacheDir = join(process.cwd(), 'migrated-cache')
+const pattern = globJoin(cacheDir, '**')
+const migratedCacheFiles = glob(pattern, { nodir: true })
+console.log(`Found ${migratedCacheFiles.length} cache files`)
+
+// Default to staging
+process.env.NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : 'staging'
+const Bucket = `li-cache-${process.env.NODE_ENV}`
+
+// Checks to see if file is already there
+async function head (params) {
+  try {
+    const head = s3.headObject(params)
+    return await head.promise()
+  }
+  catch (err) {
+    if (err.name === 'NotFound') return false
+    else throw Error(err)
+  }
+}
+
+// Puts file on S3
+async function put (params) {
+  const put = s3.putObject(params)
+  return await put.promise()
+}
+
+// Destroys file on S3
+async function del (params) {
+  const deleteObj = s3.deleteObject(params)
+  return await deleteObj.promise()
+}
+
+// Checksum file bodies
+function hash (data) {
+  return crypto
+    .createHash('md5')
+    .update(data)
+    .digest('hex')
+}
+
+let counter = 0
+let ignored = 0
+let uploaded = 0
+let destroyed = 0
+
+go()
+async function go () {
+  for (const file of migratedCacheFiles) {
+    counter++
+    const Key = file.replace(cacheDir, '').substr(1)
+
+    // Look for junk to clear
+    const deletes = [ 'arcgis', 'arcorgid', 'tempindex', 'tmpindex', 'tmpcsrf' ]
+    const parts = Key.split('000z-')
+    const destroy = deletes.some(s => parts[1].toLowerCase().startsWith(s))
+    if (destroy) {
+      await del({ Bucket, Key })
+      destroyed++
+      console.log(`Destroyed unnecessary file: ${Key}`)
+      continue
+    }
+
+    // Check to see if it already exists
+    const exists = await head({ Bucket, Key })
+    if (exists) ignored++
+
+    // Upload it
+    else {
+      const Body = fs.readFileSync(file)
+      const params = {
+        ACL: 'public-read',
+        Bucket,
+        Key,
+        Body
+      }
+
+      const result = await put(params)
+      const { ETag } = result
+      const checksum = hash(Body)
+      if (ETag.replace(/"/g, '') === checksum) {
+        console.log(`Uploaded new file: ${Key}`)
+      }
+      // S3 chunk checksumming may occur if a file is extremely large, it's probably no biggie
+      else console.warn(`⚠️  File uploaded, but checksums do not match: ${Key}`)
+      uploaded++
+    }
+  }
+
+  console.log(`Looked at ... ${counter} files`)
+  console.log(`Ignored ..... ${ignored} files`)
+  console.log(`Uploaded .... ${uploaded} files`)
+  console.log(`Destroyed ... ${destroyed} files`)
+  console.timeEnd('Ran in')
+}

@@ -24,6 +24,7 @@ module.exports = function getSource (params) {
     return src
   }
   catch (err) {
-    throw Error(`Source could not be loaded ${source}: ${err}`)
+    console.error(`❌ Failed to load ${source}: \n`, err)
+    throw Error(`Failed to load ${source}`)
   }
 }

@@ -1,7 +1,7 @@
 const { gunzipSync } = require('zlib')
 const fs = require('fs')
 const { join } = require('path')
-const datetime = require('@architect/shared/datetime/index.js')
+const getDatedFolders = require('./_get-dated-folders.js')
 
 let defaultcache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
 
@@ -23,22 +23,11 @@ async function getFolders (_sourceKey) {
 }
 
 async function getFiles (params) {
-  const {
-    _sourceKey,
-    date,
-    folders,
-    timeseries,
-    tz
-  } = params
+  const { _sourceKey, folders } = params
 
   // Gather yesterday (UTC+), today, and tomorrow (UTC-)
   let files = []
-  let d = timeseries ? datetime.today.at(tz) : date
-  let today = folders.findIndex(f => f === d)
-
-  // Pull contents from as many as three cache dirs
-  if (today === -1) today = folders.findIndex(f => f === datetime.getYYYYMMDD())
-  const cacheDirs = [ today - 1, today, today + 1 ]
+  const cacheDirs = getDatedFolders(params)
   for (const cacheDir of cacheDirs) {
     if (folders[cacheDir] !== undefined) {
       const result = fs.readdirSync(join(cachePath(_sourceKey), folders[cacheDir]))

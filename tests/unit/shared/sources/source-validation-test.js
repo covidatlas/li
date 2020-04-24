@@ -6,6 +6,7 @@ const is = require('is')
 const srcShared = join(process.cwd(), 'src', 'shared')
 const datetime = require(join(srcShared, 'datetime', 'index.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
+const { allowed } = require(join(srcShared, 'sources', '_lib', 'crawl-types.js'))
 
 let warnings = []
 test('Scraper validation test', t => {
@@ -65,8 +66,7 @@ test('Scraper validation test', t => {
           const { type, data, url } = crawler
 
           // Crawl type
-          const types = /(^page$)|(^headless$)|(^csv$)|(^tsv$)|(^pdf$)|(^json$)|(^raw$)/
-          assert.ok(types.test(type), 'Crawler type must be one of: page, headless, csv, tsv, pdf, json, raw')
+          assert.ok(allowed.some(a => a === type), 'Crawler type must be one of: page, headless, csv, tsv, pdf, json, raw')
 
           // Crawl data format type (for ranking I guess?)
           assert.ok(is.string(data) || !data, 'Crawler data must be a string')
