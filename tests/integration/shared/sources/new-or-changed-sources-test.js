@@ -6,6 +6,7 @@ const sandbox = require('@architect/sandbox')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
 const datetime = require(join(srcShared, 'datetime', 'index.js'))
+const globJoin = require(join(srcShared, 'utils', 'glob-join.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const srcEvents = join(process.cwd(), 'src', 'events')
 const crawlerHandler = require(join(srcEvents, 'crawler', 'index.js')).handler
@@ -75,9 +76,10 @@ async function runCrawl (key, today) {
  */
 function getCacheDatesForSourceKey (key) {
   const cacheRoot = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
-  const folders = glob.sync(join(cacheRoot, key, '*/'))
-  return folders.map(f => f.split(sep)).
-    map(a => a[a.length - 2])
+  const folders = glob.sync(globJoin(cacheRoot, key, '*'))
+  const re = new RegExp(`^.*crawler-cache${sep}${key}${sep}`)
+  const ret = folders.map(f => f.replace(re, ''))
+  return ret
 }
 
 /** Runs scrape for a given source, returning a struct indicating
