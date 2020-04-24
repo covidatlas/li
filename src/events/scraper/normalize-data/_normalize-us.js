@@ -1,7 +1,14 @@
 const usStates = require('@architect/shared/sources/_lib/geography/us-states.json')
+const constants = require('@architect/shared/sources/_lib/constants.js')
 
 // Ensure county name consistency once isolated to a state
 const norm = str => str.replace(/ /g, '').toLowerCase()
+
+// Check if the passed string is unassigned or some variation thereof
+const isUnassigned = county => {
+  county = norm(county)
+  return county === constants.UNASSIGNED || county === 'unknown' || county === 'unassigned'
+}
 
 module.exports = function lookupFIPS (location) {
   const { country, state, county } = location
@@ -58,9 +65,8 @@ module.exports = function lookupFIPS (location) {
       })
 
       // These are cases where an impacted individual may not belong to a specific county, but is still counted
-      // 'unassigned' county is special / reserved
-      if (norm(county) === 'unknown') {
-        location.county = 'unassigned'
+      if (isUnassigned(county)) {
+        location.county = constants.UNASSIGNED
         return location
       }
 
