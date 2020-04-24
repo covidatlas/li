@@ -3,9 +3,7 @@ const maintainers = require('../../_lib/maintainers.js')
 const datetime = require('../../../datetime/index.js')
 const geography = require('../../_lib/geography/index.js')
 const transform = require('../../_lib/transform.js')
-
-// Set county to this if you only have state data, but this isn't the entire state
-const UNASSIGNED = '(unassigned)'
+const constants = require('../../_lib/constants.js')
 
 const allCounties = [
   'Kitsap County',
@@ -82,7 +80,7 @@ module.exports = {
           const deaths = parse.number($tr.find('> *:last-child').text())
           let county = geography.addCounty(parse.string($tr.find('> *:first-child').text()))
           if (county === 'Unassigned County') {
-            county = UNASSIGNED
+            county = constants.UNASSIGNED
           }
           if (index < 1 || index > $trs.get().length - 2) {
             return
@@ -120,7 +118,7 @@ module.exports = {
 
           let county = geography.addCounty(parse.string($tr.find('> *:first-child').text()))
           if (county === 'Unassigned County') {
-            county = UNASSIGNED
+            county = constants.UNASSIGNED
           }
           if (index < 1 || index > $trs.get().length - 2) {
             return
@@ -159,7 +157,7 @@ module.exports = {
 
           let county = geography.addCounty(parse.string($tr.find('> *:first-child').text()))
           if (county === 'Unassigned County') {
-            county = UNASSIGNED
+            county = constants.UNASSIGNED
           }
           if (county === 'Total County') {
             return
