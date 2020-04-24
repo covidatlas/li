@@ -21,7 +21,7 @@ async function scrapeSource (event) {
     const source = getSource(event)
 
     const { _sourceKey } = source
-    const timeLabel = `Scrape-${_sourceKey}-${date}`
+    const timeLabel = `Scrape: ${_sourceKey} / ${date}`
     console.time(timeLabel)
 
     /**
