@@ -1,9 +1,7 @@
 const maintainers = require('../../_lib/maintainers.js')
 const geography = require('../../_lib/geography/index.js')
 const transform = require('../../_lib/transform.js')
-
-// Set county to this if you only have state data, but this isn't the entire state
-const UNASSIGNED = '(unassigned)'
+const constants = require('../../_lib/constants.js')
 
 const allCounties = [
   'Orleans County',
@@ -58,7 +56,7 @@ module.exports = {
           let county = geography.addCounty(item.attributes.Label)
 
           if (county.includes('Pending Validation')) {
-            county = UNASSIGNED
+            county = constants.UNASSIGNED
 
             // TODO remove this when #28 is fixed
             return
