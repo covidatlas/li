@@ -52,8 +52,9 @@ Note you can ignore the `git diff` by setting some environment variables, e.g.:
 
 #### Possible errors
 
-Some of these errors may be preventable, others not ... we will have
-to determine the best way to manage them going forward.
+`new-or-changed-sources-test.js` may fail occasionally.  Some of these
+errors may be preventable, others not ... we will have to determine
+the best way to manage them going forward.
 
 ##### Live crawl errors
 
@@ -69,8 +70,8 @@ to determine the best way to manage them going forward.
 
 This can be tricky.  Some possible issues and resolutions:
 
-| Issue | Possible resolution |
-| --- | --- |
-| Unexpected cache file (e.g, a json file containing `{ "error": "not authorized" }` ) | The cached file should probably be removed from the cache. |
-| A redirect message of some sort (e.g., an html files saying `Sorry, we've moved!') | The crawl url should change, and the cache re-populated. |
-| A cached file with a changed layout (e.g., the April 4th scraper expects data in a certain layout, but the source changed the data on April 3rd) | A new scrape function should be written with a new startDate. |
+| Issue | Example | Possible resolution |
+| --- | --- | --- |
+| Unexpected cache file | Json file with `{ "error": "denied" }` | The cached file should probably be removed from the cache. |
+| A redirect message of some sort | Html file with `Sorry, we've moved!' | The crawl url should change, and the cache re-populated. |
+| A cached file with a changed layout | e.g., the April 4th scraper expects data in one layout, but the source changed the data on April 3rd | A new scrape function should be written with a new startDate. |
