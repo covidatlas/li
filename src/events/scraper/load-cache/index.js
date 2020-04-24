@@ -44,7 +44,7 @@ async function loadCache (params, useS3) {
       tz
     })
 
-    if (!timeseries) {
+    if (!timeseries && files.length) {
       /**
        * If date is earlier than we have cached, bail
        */
@@ -103,7 +103,7 @@ async function loadCache (params, useS3) {
   }
 
   if (tries < 2) {
-    return loadCache (params, true)
+    return loadCache(params, true)
   }
   else throw Error('Could not load cache; cache not available locally or in S3')
 }
