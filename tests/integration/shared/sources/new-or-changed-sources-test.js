@@ -189,7 +189,11 @@ if (sourceKeys.length === 0) {
     }
     fs.mkdirSync(testingCache)
     t.ok(fs.existsSync(testingCache), 'Created temp directory')
-    await sandbox.start({ quiet: true })
+
+    // By default sandbox is started with port 3333, so specifying the
+    // port here lets the tests run their own sandbox without
+    // colliding with the existing port.
+    await sandbox.start({ port: 5555, quiet: true })
     t.pass('Sandbox started')
   })
 

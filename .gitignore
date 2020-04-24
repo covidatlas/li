@@ -1,5 +1,6 @@
 .DS_Store
 crawler-cache/
+migrated-cache/
 node_modules/
 sam.json
 sam.yaml
