@@ -1,5 +1,3 @@
-const buildFragmentMatcher = lowerLabel => definition => lowerLabel.includes(Object.values(definition)[0])
-
 /**
  * Get a key from an array of objects that contains the label for
  * @param {object} options - The options for getKey.
@@ -9,7 +7,7 @@ const buildFragmentMatcher = lowerLabel => definition => lowerLabel.includes(Obj
  */
 const getKey = ({ label, labelFragmentsByKey }) => {
   const lowerLabel = label.toLowerCase()
-  const definitionIndex = labelFragmentsByKey.findIndex(buildFragmentMatcher(lowerLabel))
+  const definitionIndex = labelFragmentsByKey.findIndex(definition => lowerLabel.includes(Object.values(definition)[0]))
   if (definitionIndex === -1) {
     throw new Error(`There is an unexpected label: ${lowerLabel}`)
   }
