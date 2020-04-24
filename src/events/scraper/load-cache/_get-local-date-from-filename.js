@@ -19,6 +19,9 @@ module.exports = function getLocalDateFromFilename (filename, tz='America/Los_An
    */
   file = file.substr(0, 24)
 
+  if (!/\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz]/.test(file))
+    throw new Error(`Bad cache filename ${filename}`)
+
   // Pull out the timestamp
   const ts = convert.filenameToZ8601(file)
 
