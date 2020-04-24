@@ -2,9 +2,6 @@ const parse = require('../../_lib/parse.js')
 const transform = require('../../_lib/transform.js')
 const geography = require('../../_lib/geography/index.js')
 
-// Set county to this if you only have state data, but this isn't the entire state
-// const UNASSIGNED = '(unassigned)';
-
 module.exports = {
   state: 'UT',
   country: 'iso1:US',

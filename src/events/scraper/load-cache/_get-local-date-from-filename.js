@@ -9,11 +9,8 @@ module.exports = function getLocalDateFromFilename (filename, tz='America/Los_An
   // Extract the file from the path
   file = path.basename(file)
 
-  // Strip out the extension
-  file = file.replace(path.extname(file), '')
-
   /**
-   * Strip out the key and contents sha
+   * Extract only the date, ignore the rest
    * | ....... 24 chars ....... |
    * | 2020-01-01t01_23_45.678z |
    */
@@ -22,7 +19,7 @@ module.exports = function getLocalDateFromFilename (filename, tz='America/Los_An
   if (!/\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz]/.test(file))
     throw new Error(`Bad cache filename ${filename}`)
 
-  // Pull out the timestamp
+  // Un-filename the timestamp
   const ts = convert.filenameToZ8601(file)
 
   // Re-cast it from UTC to the source's timezone
