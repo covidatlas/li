@@ -12,8 +12,12 @@ module.exports = function getLocalDateFromFilename (filename, tz='America/Los_An
   // Strip out the extension
   file = file.replace(path.extname(file), '')
 
-  // Strip out the contents sha
-  file = file.substr(0, file.length - 6)
+  /**
+   * Strip out the key and contents sha
+   * | ....... 24 chars ....... |
+   * | 2020-01-01t01_23_45.678z |
+   */
+  file = file.substr(0, 24)
 
   // Pull out the timestamp
   const ts = convert.filenameToZ8601(file)
