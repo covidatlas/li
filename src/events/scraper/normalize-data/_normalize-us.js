@@ -6,8 +6,11 @@ const norm = str => str.replace(/ /g, '').toLowerCase()
 
 // Check if the passed string is unassigned or some variation thereof
 const isUnassigned = county => {
-  county = norm(county)
-  return county === constants.UNASSIGNED || county === 'unknown' || county === 'unassigned'
+  const check = norm(county)
+  const unassigned = check === constants.UNASSIGNED ||
+                     check === 'unassigned' ||
+                     check === 'unknown'
+  return unassigned
 }
 
 module.exports = function lookupFIPS (location) {
@@ -64,6 +67,7 @@ module.exports = function lookupFIPS (location) {
         return stateMatches && countyMatches
       })
 
+      // Unassigned is a special / reserved case
       // These are cases where an impacted individual may not belong to a specific county, but is still counted
       if (isUnassigned(county)) {
         location.county = constants.UNASSIGNED
