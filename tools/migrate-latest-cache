@@ -1,0 +1,10 @@
+# Assumes we've got Li and CDS installed in the same parent dir
+echo "Dropping into CDS"
+cd ../coronadatascraper/coronadatascraper-cache
+
+echo "Pulling down the cache"
+git pull origin master
+
+echo "Migrating latest CDS cache to Li"
+cd ..
+node tools/generate-v1-cache.js --dest ../li/migrated-cache/ --date latest
