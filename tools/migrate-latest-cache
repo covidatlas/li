@@ -1,10 +1,14 @@
 # Assumes we've got Li and CDS installed in the same parent dir
-echo "Dropping into CDS"
+printf "\nDropping into CDS"
 cd ../coronadatascraper/coronadatascraper-cache
 
-echo "Pulling down the cache"
+printf "\nPulling down the cache"
 git pull origin master
 
-echo "Migrating latest CDS cache to Li"
+printf "\nMigrating latest CDS cache to Li"
 cd ..
 node tools/generate-v1-cache.js --dest ../li/migrated-cache/ --date latest
+
+printf "\nPublishing to S3"
+cd ../li
+LATEST=true npm run migrate:publish

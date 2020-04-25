@@ -4,12 +4,14 @@ const aws = require('aws-sdk')
 const fs = require('fs')
 const { join } = require('path')
 const glob = require('glob').sync
+const datetime = require('../src/shared/datetime/index.js')
 const globJoin = require('../src/shared/utils/glob-join.js')
 const crypto = require('crypto')
+
 aws.config.setPromisesDependency(null)
 const s3 = new aws.S3()
 
-// ↓ Set this to true if you actually want to mutate S3!
+// ↓ Set this to true to dry-run / debug, or false if you actually want to mutate S3!
 const testing = false
 
 console.time('Ran in')
@@ -17,8 +19,19 @@ console.time('Ran in')
 // Load up cached file list
 const cacheDir = join(process.cwd(), 'migrated-cache')
 const pattern = globJoin(cacheDir, '**')
-const migratedCacheFiles = glob(pattern, { nodir: true })
+let migratedCacheFiles = glob(pattern, { nodir: true })
 console.log(`Found ${migratedCacheFiles.length} cache files`)
+
+// Filter by latest day (if specified)
+if (process.env.LATEST) {
+  let latest = datetime.today.at('America/Los_Angeles')
+  latest = datetime.getYYYYMMDD(latest)
+  migratedCacheFiles = migratedCacheFiles.filter(file => {
+    const path = file.replace(cacheDir, '').substr(1)
+    return path.split('/')[1] === latest
+  })
+  console.log(`Using ${migratedCacheFiles.length} latest cache files`)
+}
 
 // Default to staging
 process.env.NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : 'staging'
@@ -73,7 +86,7 @@ async function go () {
     counter++
     const Key = file.replace(cacheDir, '').substr(1)
 
-    if (!testing && Key.startsWith('us-va')) {
+    if (!testing) {
       // Look for junk to clear
       const deletes = [ 'arcgis', 'arcorgid', 'tempindex', 'tmpindex', 'tmpcsrf' ]
       const parts = Key.split('000z-')
