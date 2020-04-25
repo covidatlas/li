@@ -10,7 +10,8 @@
     "test:unit": "tape tests/unit/**/*-test.js | tap-spec",
     "test:integration": "tape tests/integration/**/*-test.js | tap-spec",
     "migrate": "AWS_PROFILE=covidatlas ./tools/publish-migrated-cache",
-    "migrate:latest": "./tools/migrate-latest-cache"
+    "migrate:latest": "./tools/migrate-latest-cache",
+    "migration:status": "node tools/report-migration-status.js"
   },
   "humans": [
     "This is a serverless monorepo",
