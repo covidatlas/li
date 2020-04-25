@@ -1,3 +1,4 @@
+const assert = require('assert')
 const assertTotalsAreReasonable = require('../../utils/assert-totals-are-reasonable.js')
 const getKey = require('../../utils/get-key.js')
 const maintainers = require('../_lib/maintainers.js')
@@ -20,9 +21,9 @@ const countryLevelMap = {
  * @param {string} name - Name of the state.
  * @returns {string} - an iso2 ID.
  */
-const getIsoFromName = (name) => countryLevelMap[name]
+const getIso2FromName = (name) => countryLevelMap[name]
 
-const labelFragmentsByKey = [{ state: 'location' }, { cases: 'confirmed cases' }]
+const labelFragmentsByKey = [ { state: 'location' }, { cases: 'confirmed cases' } ]
 
 module.exports = {
   aggregate: 'state',
@@ -32,7 +33,7 @@ module.exports = {
     name: 'Australian Government Department of Health',
     url: 'https://www.health.gov.au/'
   },
-  maintainers: [maintainers.camjc],
+  maintainers: [ maintainers.camjc ],
   scrapers: [
     {
       startDate: '2020-02-23',
@@ -44,7 +45,7 @@ module.exports = {
             'https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers'
         }
       ],
-      scrape($) {
+      scrape ($) {
         const $table = $('.health-table__responsive > table')
 
         const $headings = $table.find('tr th')
@@ -54,20 +55,25 @@ module.exports = {
           dataKeysByColumnIndex[index] = getKey({ label: $heading.text(), labelFragmentsByKey })
         })
 
-        const $trs = $table.find(`tbody > tr:not(:contains("confirmed cases")):not(:contains("Total"))`)
+        const $trs = $table.find(`tbody > tr:not(:first-child):not(:last-child)`)
+        const statesCount = 8
+        assert.equal($trs.length, statesCount, 'Wrong number of TRs found')
 
         const states = []
         $trs.each((rowIndex, tr) => {
-          const data = {}
           const $tds = $(tr).find('td')
+          assert.equal($tds.length, dataKeysByColumnIndex.length, 'A row is missing column/s')
+
+          const stateData = {}
           $tds.each((columnIndex, td) => {
             const key = dataKeysByColumnIndex[columnIndex]
-            data[key] = $(td).text()
+            const value = $(td).text()
+            stateData[key] = value
           })
 
           states.push({
-            state: getIsoFromName(parse.string(data.state)),
-            cases: parse.number(data.cases)
+            state: getIso2FromName(parse.string(stateData.state)),
+            cases: parse.number(stateData.cases)
           })
         })
 
