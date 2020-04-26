@@ -38,13 +38,13 @@ module.exports = {
         })
 
         // Create new array with just the state data (no headings, comments, totals)
-        const dataRows = normalizedTable.slice(1, -2)
+        const stateDataRows = normalizedTable.slice(1, -2)
 
         const statesCount = 8
-        assert.equal(dataRows.length, statesCount, 'Wrong number of rows found')
+        assert.equal(stateDataRows.length, statesCount, 'Wrong number of rows found')
 
         const states = []
-        dataRows.forEach((row) => {
+        stateDataRows.forEach((row) => {
           const stateData = {}
           row.forEach((value, columnIndex) => {
             const key = dataKeysByColumnIndex[columnIndex]
