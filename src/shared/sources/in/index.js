@@ -1,13 +1,9 @@
 const assert = require('assert')
-const assertTotalsAreReasonable = require('../../utils/assert-totals-are-reasonable.js')
-const buildGetIso2FromName = require('../../utils/build-get-iso2-from-name.js')
-const getKey = require('../../utils/get-key.js')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:IN'
-const getIso2FromName = buildGetIso2FromName({ country })
 
 const labelFragmentsByKey = [
   { state: 'name of state' },
@@ -36,51 +32,42 @@ module.exports = {
             'https://www.mohfw.gov.in/'
         }
       ],
-      scrape ($) {
-        const $table = $('#state-data')
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+        const getIso2FromName = buildGetIso2FromName({ country })
+        const normalizedTable = normalizeTable({ $, tableSelector: '#state-data' })
 
-        const $headings = $table.find('thead tr th')
+        const headingRowIndex = 0
         const dataKeysByColumnIndex = []
-        $headings.each((index, heading) => {
-          const $heading = $(heading)
-          dataKeysByColumnIndex[index] = getKey({ label: $heading.text(), labelFragmentsByKey })
+        normalizedTable[headingRowIndex].forEach((heading, index) => {
+          dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
         })
 
-        const $trs = $table.find(`tbody > tr`)
+        const dataRows = normalizedTable.slice(1, 33)
+
+        const statesCount = 32
+        assert.equal(dataRows.length, statesCount, 'Wrong number of rows found')
 
         const states = []
-        $trs.filter(
-          // Remove summary rows
-          (_rowIndex, tr) =>
-            !$(tr)
-              .find('td')
-              .first()
-              .attr('colspan')
-        ).each((rowIndex, tr) => {
-          const $tds = $(tr).find('td')
-          assert.equal($tds.length, dataKeysByColumnIndex.length, 'A row is missing column/s')
-
+        dataRows.forEach((row) => {
           const stateData = {}
-          $tds.each((columnIndex, td) => {
+          row.forEach((value, columnIndex) => {
             const key = dataKeysByColumnIndex[columnIndex]
-            const value = $(td).text()
             stateData[key] = value
           })
 
           states.push({
             state: getIso2FromName(stateData.state.replace('Telengana', 'Telangana')),
-            cases: parse.number(stateData.cases)
+            cases: parse.number(stateData.cases),
+            deaths: parse.number(stateData.deaths),
+            recovered: parse.number(stateData.recovered)
           })
         })
 
         const summedData = transform.sumData(states)
         states.push(summedData)
 
-        const accountForTotalRowColSpan = -1
-        const nthChildForCases = 1 + dataKeysByColumnIndex.findIndex(key => key === 'cases') + accountForTotalRowColSpan
-        const casesFromTotalRow = parse.number(
-          $table.find(`tbody > tr:contains("Total") > td:nth-child(${nthChildForCases})`).text()
-        )
+        const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
+        const casesFromTotalRow = parse.number(normalizedTable.find(row => row.some(column => column === 'Total number of confirmed cases in India'))[indexForCases])
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states
       }
