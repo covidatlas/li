@@ -21,6 +21,7 @@ crawler     # Crawls our sources
 scraper     # Operates the scrapers
 locations   # Update location data
 regenerator # Regenerates a source from cache
+status      # Status updater
 
 
 @scheduled
@@ -46,6 +47,15 @@ invokes
   # lastRan
   # contentHash
 
+# Monitors source status
+status
+  source *String
+  event **String
+
+# Running log of source status changes
+status-logs
+  source *String
+  ts **String
 
 @indexes
 locations
