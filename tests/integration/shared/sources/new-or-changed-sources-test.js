@@ -196,6 +196,9 @@ test('Setup', async t => {
   fs.mkdirSync(testingCache)
   t.ok(fs.existsSync(testingCache), 'Created temp directory')
 
+  // If this isn't set local auth breaks.
+  process.env.CRAWL_TOKEN = 'testing'
+
   // By default sandbox is started with port 3333, so specifying the
   // port here lets the tests run their own sandbox without
   // colliding with the existing port.
@@ -294,6 +297,7 @@ test('Teardown', async t => {
     fs.rmdirSync(testingCache, { recursive: true })
   }
   t.notOk(fs.existsSync(testingCache), 'Removed temp directory')
+  delete process.env.CRAWL_TOKEN
   await sandbox.end()
   t.pass('Sandbox closed')
 })
