@@ -5,7 +5,7 @@
     "country-levels": "https://github.com/hyperknot/country-levels/releases/download/v1.7.1/export_q7.tgz",
     "csv-parse": "^4.8.8",
     "pdf2json": "^1.2.0",
-    "slug": "^2.1.1",
+    "slugify": "^1.4.0",
     "spacetime": "^6.4.3"
   }
 }

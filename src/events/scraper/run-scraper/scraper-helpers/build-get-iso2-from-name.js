@@ -1,10 +1,10 @@
 const assert = require('assert')
-const slug = require('slug')
+const slugify = require('slugify')
 const iso2 = require('country-levels/iso2.json')
 
 const UNASSIGNED = '(unassigned)'
 
-const slugOptions = { lower: true }
+const slugifyOptions = { lower: true }
 /**
  * @param {object} options - Options for the resultant function.
  * @param {string} options.country - The iso1 country code to match within (iso1:AU)
@@ -16,8 +16,8 @@ const buildGetIso2FromName = ({ country }) => {
     if (name === UNASSIGNED) {
       return name
     }
-    const slugName = slug(name, slugOptions)
-    const foundItems = iso2WithinIso1.filter((canonicalItem) => slug(canonicalItem.name, slugOptions).includes(slugName))
+    const slugName = slugify(name, slugifyOptions)
+    const foundItems = iso2WithinIso1.filter((canonicalItem) => slugify(canonicalItem.name, slugifyOptions).includes(slugName))
     assert.equal(foundItems.length, 1, `no single match found for ${name} in ${country}`)
     return foundItems[0].countrylevel_id
   }
