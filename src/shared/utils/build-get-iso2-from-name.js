@@ -17,7 +17,6 @@ const buildGetIso2FromName = ({ country }) => {
       return name
     }
     const slugName = slug(name, slugOptions)
-    console.log(slugName)
     const foundItems = iso2WithinIso1.filter((canonicalItem) => slug(canonicalItem.name, slugOptions).includes(slugName))
     assert.equal(foundItems.length, 1, `no single match found for ${name} in ${country}`)
     return foundItems[0].countrylevel_id
