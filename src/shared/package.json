@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "country-levels": "https://github.com/hyperknot/country-levels/releases/download/v2.1.0/export_json.tgz",
     "glob": "^7.1.6",
+    "slug": "^2.1.1",
     "spacetime": "^6.4.3"
   }
 }
