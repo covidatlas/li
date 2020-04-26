@@ -7,10 +7,167 @@ const srcShared = join(process.cwd(), 'src', 'shared')
 const datetime = require(join(srcShared, 'datetime', 'index.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const { allowed } = require(join(srcShared, 'sources', '_lib', 'crawl-types.js'))
+const validSource = require(join(process.cwd(), 'docs', 'sample-sources', 'valid.js'))
+const invalidSource = require(join(process.cwd(), 'docs', 'sample-sources', 'invalid.js'))
+
+/** Validate the source.
+ * Returns { warnings: [], errors: [] }
+ */
+function validateSource (source) {
+  const result = { warnings: [], errors: [] }
+
+  /** Add to errors if check is falsey. */
+  function requirement (meetsRequirement, msg) {
+    if (!meetsRequirement)
+      result.errors.push(msg)
+  }
+
+  /** Add to warnings if needsWarning. */
+  function warning (needsWarning, msg) {
+    if (needsWarning)
+      result.warnings.push(msg)
+  }
+
+  const {
+    country,
+    state,
+    county,
+    scrapers,
+    friendly,
+    tz,
+    priority,
+    endDate
+  } = source
+
+  // Country
+  requirement(country, 'Source must contain a country string')
+  requirement(country.startsWith('iso1:') && country.length === 7, `Country must be a properly formatted ISO key (e.g. 'iso1:US')`)
+
+  // State
+  // TODO enforce ISO?
+  if (state) requirement(is.string(state), 'State must be a string')
+
+  // County
+  if (county) requirement(is.string(county), 'County must be a string')
+
+  // Timezone
+  if (tz) requirement(is.string(tz), 'Timezone must be a string')
+
+  // Scrapers
+  requirement(is.array(scrapers), 'Scrapers must be an array')
+  requirement(scrapers.length, 'Scrapers must have at least one scraper')
+
+  // Now look inside each scraper
+  for (const scraper of scrapers) {
+    const { startDate, crawl, scrape } = scraper
+
+    const datedError = s => {
+      return `${startDate || '(missing startDate)'}: ${s}`
+    }
+
+    // Start date
+    requirement(is.string(startDate), 'Scraper must contain a startDate')
+    if (startDate)
+      requirement(datetime.looksLike.YYYYMMDD(startDate), datedError('startDate must be ISO formatted (YYYY-MM-DD)'))
+
+    // Crawl
+    requirement(is.array(crawl), 'Scraper must contain a crawl array')
+    requirement(crawl.length, 'Crawl array must have at least one crawler')
+
+    // Ok, now let's go into the crawler(s)
+    let crawlerNames = {}
+    for (const crawler of crawl) {
+      const { type, data, url } = crawler
+
+      // Crawl type
+      requirement(allowed.some(a => a === type), datedError(`Invalid crawler type '${type}'; must be one of: page, headless, csv, tsv, pdf, json, raw`))
+
+      // Crawl data format type (for ranking I guess?)
+      requirement(is.string(data) || !data, datedError('Crawler data must be a string'))
+
+      // Crawl URL
+      requirement(is.string(url) || is.function(url), datedError('Crawler url must be a string or function'))
+
+      // Crawl name keys
+      if (crawl.length === 1) {
+        requirement(!crawler.name, datedError('Single crawler must not have a name key'))
+      }
+      else {
+        requirement(crawler.name, 'Multiple crawlers must have a name')
+        requirement(crawler.name !== 'default', datedError(`Crawler name cannot be 'default'`))
+        requirement(/^[a-z]+$/.test(crawler.name), datedError(`Crawler name must be lowercase letters only`))
+        requirement(crawler.name.length <= 20, datedError(`Crawler name must be 20 chars or less`))
+        requirement(!crawlerNames[crawler.name], datedError(`Duplicate crawler name '${crawler.name}'; names must be unique`))
+        crawlerNames[crawler.name] = true
+      }
+    }
+
+    // Scrape (optional, allows crawl-only sources that need scrapers for later)
+    if (scrape) {
+      requirement(is.function(scrape), datedError('Scrape must be a function'))
+      requirement(scrape.constructor.name !== 'AsyncFunction', datedError(`Async scraper; scrapers should only contain synchronous logic.`))
+    }
+
+    warning(!scrape, datedError(`Missing scrape method; please add scrape logic ASAP!`))
+  }
+
+  // Friendly
+  if (friendly) {
+    requirement(is.object(friendly), 'Friendly must be an object')
+    requirement(is.string(friendly.name) || !friendly.name, 'Friendly name must be a string')
+    requirement(is.string(friendly.url) || !friendly.url, 'Friendly url must be a string')
+  }
+
+  // Priority
+  if (priority) requirement(is.number(priority), 'Priority must be a number')
+
+  // End date
+  if (endDate) requirement(datetime.looksLike.YYYYMMDD(endDate), 'endDate must be ISO formatted (YYYY-MM-DD)')
+
+  // Optional and legacy fields
+  const { url, type, data, maintainers } = source
+  warning(url, `Source contains a 'url' param; please move this into a crawler.`)
+  warning(type, `Source contains a 'type' param; please move this into a crawler.`)
+  warning(data, `Source contains a 'data' param; please move this into a crawler.`)
+  warning(!maintainers, `Missing maintainers, please list one or more!`)
+
+  return result
+}
+
+test('Documentation sample, valid source', t => {
+  t.plan(2)
+  const result = validateSource(validSource)
+  t.equal(result.warnings.join('; '), '', 'no warnings')
+  t.equal(result.errors.join('; '), '',  'no errors')
+})
+
+test('Documentation sample, invalid source', t => {
+  t.plan(2)
+
+  const result = validateSource(invalidSource)
+
+  const expectedWarnings = [
+    '2020-03-03: Missing scrape method; please add scrape logic ASAP!',
+    'Missing maintainers, please list one or more!'
+  ]
+  t.deepEqual(result.warnings.sort(), expectedWarnings.sort(), 'warnings')
+
+  const expectedErrors = [
+    '(missing startDate): Async scraper; scrapers should only contain synchronous logic.',
+    'Country must be a properly formatted ISO key (e.g. \'iso1:US\')',
+    '2020-03-02: Duplicate crawler name \'cases\'; names must be unique',
+    '2020-03-01: Invalid crawler type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
+    'Scraper must contain a startDate',
+    '2020-03-03: Single crawler must not have a name key',
+    '(missing startDate): Single crawler must not have a name key'
+  ]
+  t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'errors')
+})
 
 let warnings = []
 test('Scraper validation test', t => {
   const sources = sourceMap()
+
   t.plan(Object.keys(sources).length)
 
   for (const [ key, src ] of Object.entries(sources)) {
@@ -19,114 +176,20 @@ test('Scraper validation test', t => {
       const source = require(src)
       assert.ok(is.object(source), 'Source must be an exported CommonJS object')
 
-      const {
-        country,
-        state,
-        county,
-        scrapers,
-        friendly,
-        tz,
-        priority,
-        endDate
-      } = source
-
-      // Country
-      assert.ok(country, 'Source must contain a country string')
-      assert.ok(country.startsWith('iso1:') && country.length === 7, `Country must be a properly formatted ISO key (e.g. 'iso1:US')`)
-
-      // State
-      // TODO enforce ISO?
-      if (state) assert.ok(is.string(state), 'State must be a string')
-
-      // County
-      if (county) assert.ok(is.string(county), 'County must be a string')
-
-      // Timezone
-      if (tz) assert.ok(is.string(tz), 'Timezone must be a string')
-
-      // Scrapers
-      assert.ok(is.array(scrapers), 'Scrapers must be an array')
-      assert.ok(scrapers.length, 'Scrapers must have at least one scraper')
-
-      // Now look inside each scraper
-      for (const scraper of scrapers) {
-        const { startDate, crawl, scrape } = scraper
-
-        // Start date
-        assert.ok(is.string(startDate), 'Scraper must contain a startDate')
-        assert.ok(datetime.looksLike.YYYYMMDD(startDate), 'startDate must be ISO formatted (YYYY-MM-DD)')
-
-        // Crawl
-        assert.ok(is.array(crawl), 'Scraper must contain a crawl array')
-        assert.ok(crawl.length, 'Crawl array must have at least one crawler')
-
-        // Ok, now let's go into the crawler(s)
-        let crawlerNames = {}
-        for (const crawler of crawl) {
-          const { type, data, url } = crawler
-
-          // Crawl type
-          assert.ok(allowed.some(a => a === type), 'Crawler type must be one of: page, headless, csv, tsv, pdf, json, raw')
-
-          // Crawl data format type (for ranking I guess?)
-          assert.ok(is.string(data) || !data, 'Crawler data must be a string')
-
-          // Crawl URL
-          assert.ok(is.string(url) || is.function(url), 'Crawler url must be a string or function')
-
-          // Crawl name keys
-          if (crawl.length === 1) {
-            assert.ok(!crawler.name, 'Single crawlers must not have a name key')
-          }
-          else {
-            assert.ok(crawler.name, 'Multiple crawlers must have a name')
-            assert.ok(crawler.name !== 'default', `Crawler name cannot be 'default'`)
-            assert.ok(/^[a-z]+$/.test(crawler.name), `Crawler name must be lowercase letters only`)
-            assert.ok(crawler.name.length <= 20, `Crawler name must be 20 chars or less`)
-            assert.ok(!crawlerNames[crawler.name], 'Crawler names must be unique')
-            crawlerNames[crawler.name] = true
-          }
-        }
-
-        // Scrape (optional, allows crawl-only sources that need scrapers for later)
-        if (scrape) {
-          assert.ok(is.function(scrape), 'Scrape must be a function')
-          if (scrape.constructor.name === 'AsyncFunction') {
-            warnings.push(`Source contains an async scraper; scrapers should only contain synchronous logic. See: ${key}`)
-          }
-        }
-        else {
-          warnings.push(`Source contains a crawl-only scraper; please add scraper logic ASAP! See: ${key}`)
-        }
+      const result = validateSource(source)
+      result.warnings.forEach(w => warnings.push(w))
+      if (result.errors.length === 0) {
+        t.pass(`${key} looks good!`)
       }
-
-      // Friendly
-      if (friendly) {
-        assert.ok(is.object(friendly), 'Friendly must be an object')
-        assert.ok(is.string(friendly.name) || !friendly.name, 'Friendly name must be a string')
-        assert.ok(is.string(friendly.url) || !friendly.url, 'Friendly url must be a string')
+      else {
+        t.fail(`${key}: ${result.errors.join('; ')}`)
       }
-
-      // Priority
-      if (priority) assert.ok(is.number(priority), 'Priority must be a number')
-
-      // End date
-      if (endDate) assert.ok(datetime.looksLike.YYYYMMDD(endDate), 'endDate must be ISO formatted (YYYY-MM-DD)')
-
-      // Optional and legacy fields
-      const { url, type, data, maintainers } = source
-      if (url) warnings.push(`Source contains a 'url' param; please move this into a crawler. See: ${key}`)
-      if (type) warnings.push(`Source contains a 'type' param; please move this into a crawler. See: ${key}`)
-      if (data) warnings.push(`Source contains a 'data' param; please move this into a crawler. See: ${key}`)
-      if (!maintainers) warnings.push(`Source does not list any maintainers, please list one or more! See: ${key}`)
-
-      t.pass(`${key} looks good!`)
     }
     catch (err) {
       t.fail(err)
-      console.log('Source:', src)
     }
   }
+
   if (warnings.length) {
     setTimeout(() => {
       console.warn('')

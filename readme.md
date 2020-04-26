@@ -38,16 +38,21 @@ You can contribute to this project in two big ways:
 
 Check the Issues for any task we need to get done. If you are new to open source, look for the label [`Good first issue`](https://github.com/covidatlas/li/labels/good%20first%20issue)
 
-<!--
+
 ### Contribute a source
 
-Contributions for any place in the world are welcome. See the [community-curated list of verified data sources](https://docs.google.com/spreadsheets/d/1T2cSvWvUvurnOuNFj2AMPGLpuR2yVs3-jdd_urfWU4c/edit#gid=0) to find a new data source to add, and be sure to update the "Scraped?" column when you do.
+Contributions for any place in the world are welcome. See the
+[community-curated list of verified data
+sources](https://docs.google.com/spreadsheets/d/1T2cSvWvUvurnOuNFj2AMPGLpuR2yVs3-jdd_urfWU4c/edit#gid=0)
+to find a new data source to add, and be sure to update the "Scraped?"
+column when you do.
 
-TBD ... To help you contribute a new source, please read the [Sources and Scrapers](./docs/sources.md) guide before you start!
+To help you contribute a new source, please read the
+[Sources](./docs/sources.md) guide before you start!
 
-Send a pull request with your scraper, and be sure to run the scraper first with the instructions specified in the guide to make sure the data is valid.
--->
-
+Send a pull request with your scraper, and be sure to run the scraper
+first with the instructions specified in the guide to make sure the
+data is valid.
 
 ## License
 
