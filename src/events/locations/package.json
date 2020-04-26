@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@architect/functions": "^3.8.1",
+    "country-levels": "https://github.com/hyperknot/country-levels/releases/download/v1.7.1/export_q7.tgz",
+    "slugify": "^1.4.0"
+  }
+}

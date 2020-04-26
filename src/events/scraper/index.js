@@ -57,7 +57,15 @@ async function scrapeSource (event) {
     /**
      * Write to the database
      */
-    await write(data)
+    const locationIDs = await write(data)
+
+    /**
+     * Fire locations update
+     */
+    await arc.events.publish({
+      name: 'locations',
+      payload: { locationIDs }
+    })
 
     console.timeEnd(timeLabel)
     return data

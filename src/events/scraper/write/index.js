@@ -3,16 +3,16 @@ const arc = require('@architect/functions')
 module.exports = async function writeData (data) {
   const db = await arc.tables()
 
-  let locations = []
+  let locationIDs = []
   const now = new Date().toISOString()
   for (const item of data) {
     item.updated = now
     await db['case-data'].put(item)
-    locations.push(item.locationID)
+    locationIDs.push(item.locationID)
   }
 
-  // Normalize and aggregate the locations just updated
-  locations = Array.from(new Set(locations))
+  // Normalize and aggregate the locationIDs just updated
+  locationIDs = Array.from(new Set(locationIDs))
 
-  return locations
+  return locationIDs
 }
