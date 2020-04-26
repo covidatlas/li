@@ -41,6 +41,7 @@ module.exports = {
           dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
         })
 
+        // Create new array with just the state data (no headings, comments, totals)
         const dataRows = normalizedTable.slice(1, -1)
 
         const statesCount = 8
