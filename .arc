@@ -11,6 +11,10 @@ region us-west-1
 get /get/normal
 get /get/headless
 
+# API (api.covidatlas.com)
+get /locations
+get /locations/:location
+
 
 @events
 crawler     # Crawls our sources
@@ -32,7 +36,7 @@ locations
 # Per-location case data
 case-data
   locationID *String
-  source **String
+  dateSource **String
 
 # Keeps track of regenerate invocations
 invokes
@@ -42,6 +46,10 @@ invokes
   # lastRan
   # contentHash
 
+
 @indexes
 locations
+  locationID *String
+
+case-data
   locationID *String

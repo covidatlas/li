@@ -1,6 +1,7 @@
 const normalizeUS = require('./_normalize-us.js')
 
 module.exports = function normalizeData (source, output, date) {
+  const { _sourceKey } = source
 
   // '#' is reserved for compound key generation, ensure it didn't somehow leak in
   function validate (str) {
@@ -40,8 +41,9 @@ module.exports = function normalizeData (source, output, date) {
     // Add secondary keys
     return Object.assign(location, {
       locationID,
+      dateSource: `${date}#${_sourceKey}`,
       date,
-      source: source._sourceKey,
+      source: _sourceKey,
       priority: source.priority || 0 // Backfill to 0 for sorting later
     })
   })
