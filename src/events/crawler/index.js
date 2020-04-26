@@ -11,7 +11,7 @@ async function crawlSource (event) {
     const source = getSource(event)
     const { scrapers, _sourceKey } = source
 
-    const timeLabel = `Crawl-${_sourceKey}`
+    const timeLabel = `Crawl ${_sourceKey}`
     console.time(timeLabel)
 
     /**
