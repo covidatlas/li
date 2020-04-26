@@ -1,5 +1,6 @@
 const assert = require('assert')
 const assertTotalsAreReasonable = require('../../utils/assert-totals-are-reasonable.js')
+const buildGetIso2FromName = require('../../utils/build-get-iso2-from-name.js')
 const getKey = require('../../utils/get-key.js')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
@@ -8,32 +9,7 @@ const transform = require('../_lib/transform.js')
 const UNASSIGNED = '(unassigned)'
 
 const country = 'iso1:KR'
-const countryLevelMap = {
-  Busan: 'iso2:KR-26',
-  'Chungcheongbuk-do': 'iso2:KR-43',
-  'Chungcheongnam-do': 'iso2:KR-44',
-  Daegu: 'iso2:KR-27',
-  Daejeon: 'iso2:KR-30',
-  'Gangwon-do': 'iso2:KR-42',
-  Gwangju: 'iso2:KR-29',
-  'Gyeonggi-do': 'iso2:KR-41',
-  'Gyeongsangbuk-do': 'iso2:KR-47',
-  'Gyeongsangnam-do': 'iso2:KR-48',
-  Incheon: 'iso2:KR-28',
-  Jeju: 'iso2:KR-49',
-  'Jeollabuk-do': 'iso2:KR-45',
-  'Jeollanam-do': 'iso2:KR-46',
-  Sejong: 'iso2:KR-50',
-  Seoul: 'iso2:KR-11',
-  Ulsan: 'iso2:KR-31',
-  Lazaretto: UNASSIGNED // Maritime quarantine
-}
-
-/**
- * @param {string} name - Name of the state.
- * @returns {string} - an iso2 ID.
- */
-const getIso2FromName = (name) => countryLevelMap[name]
+const getIso2FromName = buildGetIso2FromName({ country })
 
 const labelFragmentsByKey = [
   { discard: 'daily change' },
@@ -95,7 +71,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName(parse.string(stateData.state)),
+            state: getIso2FromName(stateData.state.replace('Lazaretto', UNASSIGNED)),
             cases: parse.number(stateData.cases.replace('-', 0))
           })
         })
