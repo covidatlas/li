@@ -1,14 +1,9 @@
 const assert = require('assert')
-const assertTotalsAreReasonable = require('../../utils/assert-totals-are-reasonable.js')
-const buildGetIso2FromName = require('../../utils/build-get-iso2-from-name.js')
-const getKey = require('../../utils/get-key.js')
 const maintainers = require('../_lib/maintainers.js')
-const normalizeTable = require('../../utils/normalize-table.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:IN'
-const getIso2FromName = buildGetIso2FromName({ country })
 
 const labelFragmentsByKey = [
   { state: 'name of state' },
@@ -37,7 +32,8 @@ module.exports = {
             'https://www.mohfw.gov.in/'
         }
       ],
-      scrape ($) {
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+        const getIso2FromName = buildGetIso2FromName({ country })
         const normalizedTable = normalizeTable({ $, tableSelector: '#state-data' })
 
         const headingRowIndex = 0
@@ -46,7 +42,7 @@ module.exports = {
           dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
         })
 
-        const dataRows = normalizedTable.slice(1, -4)
+        const dataRows = normalizedTable.slice(1, 33)
 
         const statesCount = 32
         assert.equal(dataRows.length, statesCount, 'Wrong number of rows found')

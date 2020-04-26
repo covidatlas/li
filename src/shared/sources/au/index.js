@@ -1,15 +1,9 @@
 const assert = require('assert')
-const assertTotalsAreReasonable = require('../../utils/assert-totals-are-reasonable.js')
-const buildGetIso2FromName = require('../../utils/build-get-iso2-from-name.js')
-const getKey = require('../../utils/get-key.js')
-const normalizeTable = require('../../utils/normalize-table.js')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:AU'
-
-const getIso2FromName = buildGetIso2FromName({ country })
 
 const labelFragmentsByKey = [ { state: 'location' }, { cases: 'confirmed cases' } ]
 
@@ -33,7 +27,8 @@ module.exports = {
             'https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers'
         }
       ],
-      scrape ($) {
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+        const getIso2FromName = buildGetIso2FromName({ country })
         const normalizedTable = normalizeTable({ $, tableSelector: '.health-table__responsive > table' })
 
         const headingRowIndex = 0
