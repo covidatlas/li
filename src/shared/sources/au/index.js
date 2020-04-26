@@ -1,27 +1,14 @@
 const assert = require('assert')
 const assertTotalsAreReasonable = require('../../utils/assert-totals-are-reasonable.js')
+const buildGetIso2FromName = require('../../utils/build-get-iso2-from-name.js')
 const getKey = require('../../utils/get-key.js')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:AU'
-const countryLevelMap = {
-  'Australian Capital Territory': 'iso2:AU-ACT',
-  'New South Wales': 'iso2:AU-NSW',
-  'Northern Territory': 'iso2:AU-NT',
-  Queensland: 'iso2:AU-QLD',
-  'South Australia': 'iso2:AU-SA',
-  Tasmania: 'iso2:AU-TAS',
-  Victoria: 'iso2:AU-VIC',
-  'Western Australia': 'iso2:AU-WA'
-}
 
-/**
- * @param {string} name - Name of the state.
- * @returns {string} - an iso2 ID.
- */
-const getIso2FromName = (name) => countryLevelMap[name]
+const getIso2FromName = buildGetIso2FromName({ country })
 
 const labelFragmentsByKey = [ { state: 'location' }, { cases: 'confirmed cases' } ]
 
@@ -72,7 +59,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName(parse.string(stateData.state)),
+            state: getIso2FromName(stateData.state),
             cases: parse.number(stateData.cases)
           })
         })
