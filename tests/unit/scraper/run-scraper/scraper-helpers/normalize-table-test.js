@@ -2,7 +2,7 @@ const { join } = require('path')
 const test = require('tape')
 const cheerio = require('cheerio')
 
-const sut = join(process.cwd(), 'src', 'shared', 'utils', 'normalize-table.js')
+const sut = join(process.cwd(), 'src', 'events', 'scraper', 'run-scraper', 'scraper-helpers', 'normalize-table.js')
 const normalizeTable = require(sut)
 
 test('one row without spans', t => {
