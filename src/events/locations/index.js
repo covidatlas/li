@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
-// const datetime = require('@architect/shared/datetime/index.js')
 
+const getLocationNames = require('./get-location-names/index.js')
+const annotateLocations = require('./annotate/index.js')
 const upsertLocations = require('./upsert/index.js')
 
 async function updateLocations (event) {
@@ -9,9 +10,19 @@ async function updateLocations (event) {
     console.time('Update locations')
 
     /**
+     * Get the normalized names of each locationID
+     */
+    const locationNames = getLocationNames(locationIDs)
+
+    /**
+     * Annotate and normalize data
+     */
+    const locations = annotateLocations(locationNames)
+
+    /**
      * Upsert location data
      */
-    await upsertLocations(locationIDs)
+    await upsertLocations(locations)
 
     console.timeEnd('Update locations')
   }
