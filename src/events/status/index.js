@@ -30,6 +30,9 @@ async function updateStatus (params) {
     }
     else newStatus.consecutive = 1
 
+    // Write before we start to do stuff
+    await log(newStatus, data)
+
     /**
      * Handle the warnings and such
      */
@@ -50,11 +53,6 @@ async function updateStatus (params) {
     if (lastStatus.status === 'failed' && status === 'success') {
       // TODO Fire alerts that source recovered
     }
-
-    /**
-     * Wrap it up
-     */
-    await log(newStatus, data)
 
     console.timeEnd(timeLabel)
   }
