@@ -1,6 +1,8 @@
 const assert = require('assert')
 
 /**
+ * Assert that a scraped total is roughly equal to a calculated total
+ * (summing all the states should be close to the country)
  * Sometimes folks don’t sum numbers properly, so give them 10% slack.
  * @param {object} options - Options for the assertion.
  * @param {number} options.computed - The summed value.

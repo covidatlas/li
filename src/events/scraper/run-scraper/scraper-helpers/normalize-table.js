@@ -1,7 +1,15 @@
 const assert = require('assert')
 
 /**
+ * Extract a HTML <table> into an array of arrays of text.
+ * This removes the need to use cheerio directly to manipulate inside the scraper.
+ * It also normalises for rowspan and colspan, where the text is copied across each index in the span.
+ *
+ * Similar to cheerio-tableparser, but doesn't mirror the data structure,
+ * has defaults that are appropriate for this project,
+ * and throws where it can't yield a consistent data structure.
  * @param {{$: any, tableSelector: string}} options
+ * @returns {string[][]} Array of arrays of strings, so you can iterate over rows, then columns.
  */
 const normalizeTable = ({ $, tableSelector }) => {
   const output = []

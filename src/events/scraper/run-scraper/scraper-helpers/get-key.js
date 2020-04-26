@@ -1,5 +1,5 @@
 /**
- * Get a key from an array of objects that contains the label for
+ * Convert a heading from a data source into the corresponding schema item ('Cases Confirmed' -> 'cases')
  * @param {object} options - The options for getKey.
  * @param {string} options.label - The label we are trying to match (a scraped heading).
  * @param {{ state: string?, cases: string?, deaths: string?, tested: string?, discard: string?}[]} options.labelFragmentsByKey - An array of objects, where key is in our schema, and value is a partial match against whatever is in the heading from the scrape.
