@@ -8,6 +8,7 @@ const loadCache = require('./load-cache/index.js')
 const parseCache = require('./parse-cache/index.js')
 const runScraper = require('./run-scraper/index.js')
 const normalizeData = require('./normalize-data/index.js')
+const write = require('./write/index.js')
 
 async function scrapeSource (event) {
   try {
@@ -19,9 +20,8 @@ async function scrapeSource (event) {
      * Load the requested source
      */
     const source = getSource(event)
-
     const { _sourceKey } = source
-    const timeLabel = `Scrape-${_sourceKey}-${date}`
+    const timeLabel = `Scrape: ${_sourceKey} / ${date}`
     console.time(timeLabel)
 
     /**
@@ -53,24 +53,46 @@ async function scrapeSource (event) {
      * Normalize output
      */
     const data = normalizeData(source, output, date)
-    let { silent } = event
-    if (!silent) {
-      // TODO ↓ remove me! ↓
-      console.log(`data:`, data)
-    }
 
-    // TODO coming soon:
-    // await write(data)
-    // TODO: integration test needs to verify that data was written
+    /**
+     * Write to the database
+     */
+    const locationIDs = await write(data)
+
+    // Fire locations update
+    await arc.events.publish({
+      name: 'locations',
+      payload: { locationIDs }
+    })
+
+    // Alert status to a successful crawl
+    await arc.events.publish({
+      name: 'status',
+      payload: {
+        source: event.source,
+        event: 'scraper',
+        status: 'success'
+      }
+    })
 
     console.timeEnd(timeLabel)
-
     return data
   }
   catch (err) {
-    // TODO write something to the database that says this source is offline
-    console.error(`❌ Failed to scrape ${event.source}: \n`, err)
-    throw Error(`Failed to scrape ${event.source}`)
+    // Cache loading date bounds errors are valid, but do not need to update status
+    if (!err.message.startsWith('DATE_BOUNDS_ERROR')) {
+      // Alert status to a crawl failure
+      arc.events.publish({
+        name: 'status',
+        payload: {
+          source: event.source,
+          event: 'scraper',
+          status: 'failed'
+        }
+      })
+    }
+    console.error(`Failed to scrape ${event.source}`)
+    throw Error(err)
   }
 }
 

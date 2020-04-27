@@ -5,25 +5,19 @@ const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
 
 const local = require('./_load-local.js')
 const s3 = require('./_load-s3.js')
-let tries = 0
+
+const isLocal = process.env.NODE_ENV === 'testing'
 
 /**
  * Cache loader
  * Pulls data from local cache dir or S3, depending on environment and needs
  */
-async function loadCache (params, useS3) {
-  tries++
+async function load (params, useS3) {
   let { source, scraper, date, tz } = params
   const { _sourceKey, timeseries } = source
 
-  let isLocal = process.env.NODE_ENV === 'testing'
-
-  // Force calling to S3 for cache if it isn't available locally
-  if (useS3) {
-    console.log('Local cache miss, attempting to pull from S3')
-    isLocal = false
-  }
-  const loader = isLocal ? local : s3
+  if (!isLocal) useS3 = true // Force S3 in production
+  const loader = useS3 ? s3 : local
 
   let folders = await loader.getFolders(_sourceKey)
 
@@ -44,19 +38,19 @@ async function loadCache (params, useS3) {
       tz
     })
 
-    if (!timeseries) {
+    if (!timeseries && files.length) {
       /**
        * If date is earlier than we have cached, bail
        */
       const { earliest, latest } = getDateBounds(files, tz)
-      if (datetime.dateIsBefore(date, earliest)) {
+      if (datetime.dateIsBefore(date, earliest) && useS3) {
         console.error('Sorry McFly, we need more gigawatts to go back in time')
-        throw Error(`Date requested (${date}) is before our earliest cache ${earliest}`)
+        throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is before our earliest cache ${earliest}`)
       }
 
-      if (datetime.dateIsAfter(date, latest)) {
+      if (datetime.dateIsAfter(date, latest) && useS3) {
         console.error('Sorry, without increasing gravity we cannot speed up time to get this data')
-        throw Error(`Date requested (${date}) is after our latest cache ${latest}`)
+        throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is after our latest cache ${latest}`)
       }
 
       // Filter files that match date when locale-cast from UTC
@@ -66,7 +60,7 @@ async function loadCache (params, useS3) {
       })
     }
 
-    if (!files.length) {
+    if (!files.length && useS3) {
       const msg = timeseries
         ? 'No cached files for this timeseries'
         : `No cached files found for ${date}`
@@ -97,15 +91,28 @@ async function loadCache (params, useS3) {
       cache.push(crawl)
     }
     if (cache !== 'miss') {
-      console.log(`${isLocal ? 'Local' : 'S3'} cache hit for: ${_sourceKey}`)
+      console.log(`${useS3 ? 'S3' : 'Local'} cache hit for: ${_sourceKey} / ${date}`)
       return cache
     }
   }
+  return false
+}
 
-  if (tries < 2) {
-    return loadCache (params, true)
+async function loadCache (params) {
+  let result = await load(params)
+  if (result) {
+    return result
   }
-  else throw Error('Could not load cache; cache not available locally or in S3')
+  // Only try a second time if loading locally didn't work
+  // Force calling to S3 for cache if it isn't available locally
+  else if (isLocal) {
+    console.log('Local cache miss, attempting to pull cache from S3')
+    result = await load(params, true)
+    if (result) {
+      return result
+    }
+  }
+  throw Error('Could not load cache; cache not available locally or in S3')
 }
 
 module.exports = loadCache

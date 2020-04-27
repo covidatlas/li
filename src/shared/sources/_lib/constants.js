@@ -1,1 +1,5 @@
-module.exports.UNASSIGNED = '(unassigned)'
+const UNASSIGNED = '(unassigned)'
+
+module.exports = {
+  UNASSIGNED
+}
