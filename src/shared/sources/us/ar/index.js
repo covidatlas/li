@@ -124,11 +124,6 @@ module.exports = {
         regions.push(transform.sumData(regions))
         regions = geography.addEmptyRegions(regions, allCounties, 'county')
 
-        // TODO remove this once #28 is fixed
-        regions = regions.filter(c => c.county !== constants.UNASSIGNED)
-
-        console.log(regions)
-
         return regions
       }
     }
