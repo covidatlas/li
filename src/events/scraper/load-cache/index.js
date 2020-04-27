@@ -13,13 +13,17 @@ const isLocal = process.env.NODE_ENV === 'testing'
  * Pulls data from local cache dir or S3, depending on environment and needs
  */
 async function load (params, useS3) {
+  const cl = console.log
   let { source, scraper, date, tz } = params
   const { _sourceKey, timeseries } = source
+
+  cl(`Requested date ${date}`)
 
   if (!isLocal) useS3 = true // Force S3 in production
   const loader = useS3 ? s3 : local
 
   let folders = await loader.getFolders(_sourceKey)
+  cl(`Got folders: ${folders} for sourceKey ${_sourceKey}`)
 
   /**
    * All cache data is saved with a 8601Z timestamp
@@ -37,12 +41,14 @@ async function load (params, useS3) {
       timeseries,
       tz
     })
+    cl(`Got files: ${files}`)
 
     if (!timeseries && files.length) {
       /**
        * If date is earlier than we have cached, bail
        */
       const { earliest, latest } = getDateBounds(files, tz)
+      cl(`Got earliest: ${earliest}, latest: ${latest}`)
       if (datetime.dateIsBefore(date, earliest) && useS3) {
         console.error('Sorry McFly, we need more gigawatts to go back in time')
         throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is before our earliest cache ${earliest}`)
@@ -54,10 +60,13 @@ async function load (params, useS3) {
       }
 
       // Filter files that match date when locale-cast from UTC
+      cl(`Before filter: ${files}`)
       files = files.filter(filename => {
         const castDate = getLocalDateFromFilename(filename, tz)
+        cl(`Got castDate: ${castDate}, comparing to date: ${date}`)
         return castDate === date
       })
+      cl(`After filter: ${files}`)
     }
 
     if (!files.length && useS3) {
@@ -68,12 +77,14 @@ async function load (params, useS3) {
     }
 
     let cache = []
+    cl(`prior to crawl loop, got files: ${files}`)
     for (const crawl of scraper.crawl) {
       // We may have multiple crawls for a single scraper (each with a unique name key)
       // Disambiguate and match them so we are getting back the correct data sources
       const { name='default' } = crawl
       const matchName = file => name === file.split('-')[3] // Skips over 8601Z ts
       const matches = files.filter(matchName)
+      cl(`after matches filter, matches: ${matches}`)
 
       // Fall back to S3 cache
       if (!matches.length) {
