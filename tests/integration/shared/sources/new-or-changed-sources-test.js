@@ -182,5 +182,8 @@ test('Teardown', async t => {
 // If any test failed, refer devs to docs/testing.md.
 test('Summary', t => {
   t.plan(1)
-  t.equal(0, failcount, `${failcount} integration tests failed.  See docs/testing.md for how to handle them`)
+  if (failcount === 0)
+    t.pass('All integration tests passed')
+  else
+    t.fail(`${failcount} integration tests failed.  See docs/testing.md for how to handle them`)
 })
