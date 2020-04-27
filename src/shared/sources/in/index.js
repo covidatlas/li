@@ -5,13 +5,13 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:IN'
 
-const labelFragmentsByKey = [
-  { state: 'name of state' },
-  { deaths: 'death' },
-  { cases: 'total confirmed cases' },
-  { recovered: 'cured' },
-  { discard: 's. no.' }
-]
+const schemaKeysByHeadingFragment = {
+  'name of state': 'state',
+  'death': 'deaths',
+  'total confirmed cases': 'cases',
+  'cured': 'recovered',
+  's. no.': null,
+}
 
 module.exports = {
   aggregate: 'state',
@@ -32,14 +32,14 @@ module.exports = {
             'https://www.mohfw.gov.in/'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const getIso2FromName = buildGetIso2FromName({ country })
         const normalizedTable = normalizeTable({ $, tableSelector: '#state-data' })
 
         const headingRowIndex = 0
         const dataKeysByColumnIndex = []
         normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
+          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
         })
 
         // Create new array with just the state data (no headings, comments, totals)

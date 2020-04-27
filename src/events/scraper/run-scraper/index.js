@@ -1,12 +1,12 @@
 const assertTotalsAreReasonable = require('./scraper-helpers/assert-totals-are-reasonable')
 const buildGetIso2FromName = require('./scraper-helpers/build-get-iso2-from-name')
-const getKey = require('./scraper-helpers/get-key')
+const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-heading')
 const normalizeTable = require('./scraper-helpers/normalize-table')
 
 const scraperHelpers = {
   assertTotalsAreReasonable,
   buildGetIso2FromName,
-  getKey,
+  getSchemaKeyFromHeading,
   normalizeTable,
 }
 
