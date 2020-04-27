@@ -3,6 +3,7 @@ const aws = require('aws-sdk')
 aws.config.setPromisesDependency(null)
 const getDatedFolders = require('./_get-dated-folders.js')
 
+const isLocal = process.env.NODE_ENV === 'testing'
 const env = process.env.NODE_ENV === 'production' ? 'production' : 'staging'
 
 const s3 = new aws.S3()
@@ -23,7 +24,9 @@ async function getFolders (_sourceKey) {
     if (token) listParams.ContinuationToken = token
 
     // Do the thing
-    const listObjects = s3.listObjectsV2(listParams)
+    const listObjects = isLocal
+      ? s3.makeUnauthenticatedRequest('listObjectsV2', listParams)
+      : s3.listObjectsV2(listParams)
     const objects = await listObjects.promise()
     for (const folder of objects.CommonPrefixes) {
       folders.push(folder.Prefix.split('/')[1])
@@ -51,7 +54,9 @@ async function getFiles (params) {
         Bucket,
         Prefix
       }
-      const listObjects = s3.listObjectsV2(listParams)
+      const listObjects = isLocal
+        ? s3.makeUnauthenticatedRequest('listObjectsV2', listParams)
+        : s3.listObjectsV2(listParams)
       const objects = await listObjects.promise()
       if (objects.Contents.length) {
         for (const file of objects.Contents) {
@@ -77,7 +82,9 @@ async function getFileContents (params) {
     Bucket,
     Key
   }
-  const getObject = s3.getObject(getParams)
+  const getObject = isLocal
+    ? s3.makeUnauthenticatedRequest('getObject', getParams)
+    : s3.getObject(getParams)
   const object = await getObject.promise()
 
   // Should always be gzipped, but jic
