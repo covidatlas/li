@@ -13,7 +13,8 @@ async function crawl (type, params) {
     ? `http://localhost:${process.env.PORT || 3333}`
     : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
   const path = `${root}/get/${getType}?options=${options}`
-  const token = new Buffer.from(process.env.CRAWL_TOKEN).toString('base64')
+  const crawlToken = process.env.CRAWL_TOKEN ? process.env.CRAWL_TOKEN : '' // Don't break the buffer
+  const token = new Buffer.from(crawlToken).toString('base64')
   const headers = { authorization: `Bearer ${token}` }
   const result = await got(path, {
     retry: 0,
