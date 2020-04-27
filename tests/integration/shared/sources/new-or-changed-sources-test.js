@@ -5,7 +5,6 @@ const glob = require('glob')
 const sandbox = require('@architect/sandbox')
 
 const srcShared = join(process.cwd(), 'src', 'shared')
-const datetime = require(join(srcShared, 'datetime', 'index.js'))
 const globJoin = require(join(srcShared, 'utils', 'glob-join.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const srcEvents = join(process.cwd(), 'src', 'events')
@@ -82,11 +81,10 @@ function makeEventMessage (hsh) {
 test('Live crawl', async t => {
   process.env.LI_CACHE_PATH = testingCache
   t.plan(sourceKeys.length + 1)
-  const today = datetime.today.utc()
   for (const key of sourceKeys) {
     try {
-      await crawlerHandler(makeEventMessage({ source: key, date: today }))
-      t.ok(`${key} succeeded`)
+      await crawlerHandler(makeEventMessage({ source: key }))
+      t.pass(`${key} succeeded`)
     } catch (err) {
       t.fail(`${key} failed: ${err}`)
     }
@@ -98,13 +96,12 @@ test('Live crawl', async t => {
 // Note: this test assumes that the testingCache contains data!
 test('Live scrape', async t => {
   t.plan(sourceKeys.length + 1)
-  const today = datetime.today.utc()
   for (const key of sourceKeys) {
     try {
-      const arg = makeEventMessage({ source: key, date: today, silent: true })
+      const arg = makeEventMessage({ source: key, silent: true })
       const data = await scraperHandler(arg)
       // TODO (testing): verify the returned data struct conforms to schema.
-      t.ok(`${key} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
+      t.pass(`${key} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
     } catch (err) {
       t.fail(`${key} failed: ${err}`)
     }
