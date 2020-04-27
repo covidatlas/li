@@ -86,7 +86,7 @@ async function crawlSource (event) {
     })
 
     console.log('Crawler error', event)
-    throw Error(err)
+    throw err
   }
 }
 

@@ -92,7 +92,7 @@ async function scrapeSource (event) {
       })
     }
     console.error(`Failed to scrape ${event.source}`)
-    throw Error(err)
+    throw err
   }
 }
 

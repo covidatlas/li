@@ -28,7 +28,7 @@ async function updateLocations (event) {
   }
   catch (err) {
     console.error(`Failed to update locations ${event.locationIDs}`)
-    throw Error(err)
+    throw err
   }
 }
 

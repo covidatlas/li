@@ -58,7 +58,7 @@ async function updateStatus (params) {
   }
   catch (err) {
     console.error(`Status update failed: ${JSON.stringify(params, null, 2)}`)
-    throw Error(err)
+    throw err
   }
 }
 
