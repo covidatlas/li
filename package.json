@@ -4,11 +4,14 @@
   "scripts": {
     "start": "arc sandbox",
     "lint": "eslint . --ignore-pattern node_modules --fix",
+    "list-sources": "node src/shared/sources/_lib/list-sources.js",
     "todos": "node tools/list-dev-todos.js",
     "test": "tape tests/**/*-test.js | tap-spec",
     "test:unit": "tape tests/unit/**/*-test.js | tap-spec",
     "test:integration": "tape tests/integration/**/*-test.js | tap-spec",
-    "migrate": "AWS_PROFILE=covidatlas ./scripts/publish-migrated-cache"
+    "migrate:latest": "./tools/migrate-latest-cache",
+    "migrate:publish": "AWS_PROFILE=covidatlas ./tools/publish-migrated-cache",
+    "migration:status": "node tools/report-migration-status.js"
   },
   "humans": [
     "This is a serverless monorepo",

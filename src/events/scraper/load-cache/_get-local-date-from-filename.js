@@ -1,6 +1,7 @@
 const path = require('path')
 const convert = require('@architect/shared/cache/_convert-timestamp.js')
 const datetime = require('@architect/shared/datetime/index.js')
+const validate = require('@architect/shared/utils/validate-cache-filename.js')
 
 module.exports = function getLocalDateFromFilename (filename, tz='America/Los_Angeles') {
 
@@ -8,6 +9,9 @@ module.exports = function getLocalDateFromFilename (filename, tz='America/Los_An
 
   // Extract the file from the path
   file = path.basename(file)
+
+  // Throw if we find a bad filename
+  validate(file)
 
   /**
    * Extract only the date, ignore the rest

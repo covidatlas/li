@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "@architect/functions": "^3.8.1",
+    "@architect/functions": "^3.8.4",
     "cheerio": "^1.0.0-rc.3",
     "country-levels": "https://github.com/hyperknot/country-levels/releases/download/v1.7.1/export_q7.tgz",
-    "csv-parse": "^4.8.8",
+    "csv-parse": "^4.8.9",
     "pdf2json": "^1.2.0",
     "spacetime": "^6.4.3"
   }

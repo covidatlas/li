@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@architect/functions": "^3.8.1",
+    "@architect/functions": "^3.8.4",
     "chrome-aws-lambda": "^2.1.1"
   }
 }
