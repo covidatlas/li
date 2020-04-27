@@ -80,6 +80,7 @@ function makeEventMessage (hsh) {
 
 test('Live crawl', async t => {
   process.env.LI_CACHE_PATH = testingCache
+  console.log(`In live crawl test: process.env.LI_CACHE_PATH = ${process.env.LI_CACHE_PATH}`)
   t.plan(sourceKeys.length + 1)
   for (const key of sourceKeys) {
     try {
