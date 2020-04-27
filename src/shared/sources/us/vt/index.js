@@ -57,9 +57,6 @@ module.exports = {
 
           if (county.includes('Pending Validation')) {
             county = constants.UNASSIGNED
-
-            // TODO remove this when #28 is fixed
-            return
           }
 
           regions.push({
