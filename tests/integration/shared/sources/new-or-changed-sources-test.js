@@ -95,6 +95,7 @@ test('Live crawl', async t => {
 
 // Note: this test assumes that the testingCache contains data!
 test('Live scrape', async t => {
+  process.env.LI_CACHE_PATH = testingCache
   t.plan(sourceKeys.length + 1)
   for (const key of sourceKeys) {
     try {
@@ -182,5 +183,8 @@ test('Teardown', async t => {
 // If any test failed, refer devs to docs/testing.md.
 test('Summary', t => {
   t.plan(1)
-  t.equal(0, failcount, `${failcount} integration tests failed.  See docs/testing.md for how to handle them`)
+  if (failcount === 0)
+    t.pass('All integration tests passed')
+  else
+    t.fail(`${failcount} integration tests failed.  See docs/testing.md for how to handle them`)
 })
