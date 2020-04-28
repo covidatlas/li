@@ -12,7 +12,6 @@ module.exports = async function calculateScraperTz (source) {
   // Some sources like JHU and NYT may already have a timezone specified
   if (tz) return tz
 
-
   // The US uses FIPS for its >3,000 counties
   if (country === 'iso1:US') {
     assert(!usStates[state], `Long form of state name used: ${state}, ${source._path}`)
