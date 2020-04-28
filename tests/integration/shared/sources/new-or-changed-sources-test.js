@@ -80,7 +80,6 @@ function makeEventMessage (hsh) {
 
 test('Live crawl', async t => {
   process.env.LI_CACHE_PATH = testingCache
-  console.log(`In live crawl test: process.env.LI_CACHE_PATH = ${process.env.LI_CACHE_PATH}`)
   t.plan(sourceKeys.length + 1)
   for (const key of sourceKeys) {
     try {
@@ -97,7 +96,6 @@ test('Live crawl', async t => {
 // Note: this test assumes that the testingCache contains data!
 test('Live scrape', async t => {
   process.env.LI_CACHE_PATH = testingCache
-  console.log(`In live scrape test: process.env.LI_CACHE_PATH = ${process.env.LI_CACHE_PATH}`)
   t.plan(sourceKeys.length + 1)
   for (const key of sourceKeys) {
     try {

@@ -7,7 +7,6 @@ let defaultcache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
 
 /** Return the default cache path, or LI_CACHE_PATH if set in env. */
 function cachePath (key) {
-  console.log(`In _load-local: process.env.LI_CACHE_PATH = ${process.env.LI_CACHE_PATH}`)
   let cache = defaultcache
   if (process.env.LI_CACHE_PATH) {
     cache = process.env.LI_CACHE_PATH
