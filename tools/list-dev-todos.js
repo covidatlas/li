@@ -20,6 +20,11 @@ const glob = require('glob')
 const path = require('path')
 const fs = require('fs')
 
+/** Glob always uses forward slash for separator, regardless of OS. */
+function globJoin (...args) {
+  return path.join(...args).replace(/\\/g, '/')
+}
+
 /** Scan file fname for all FIXME/TODO/etc entries. */
 function scanFile (fname) {
   const content = fs.readFileSync(fname, 'utf-8')
@@ -59,11 +64,15 @@ function printMatches (matches) {
       })
     })
   })
+  console.log(`\n(${matches.length} matches in ${allGroups.length} groups)\n`)
 }
 
-const pattern = path.join(process.cwd(), '**', '*.js')
+const pattern = globJoin(process.cwd(), '**', '*.js')
 const options = {
-  ignore: [ path.join('**', 'node_modules', '**'), path.join('**', 'list-dev-todos.js') ]
+  ignore: [
+    globJoin('**', 'node_modules', '**'),
+    globJoin('**', 'tools', '**')
+  ]
 }
 const matches = []
 glob.sync(pattern, options).forEach(fname => { matches.push(scanFile(fname)) })

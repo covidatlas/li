@@ -2,6 +2,7 @@
   "name": "li",
   "version": "0.0.0",
   "scripts": {
+    "help": "node tools/show-help.js",
     "start": "arc sandbox",
     "lint": "eslint . --ignore-pattern node_modules --fix",
     "list-sources": "node src/shared/sources/_lib/list-sources.js",
