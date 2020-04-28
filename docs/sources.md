@@ -24,22 +24,22 @@ should be included in this project.
 
 As shown in the samples, a `source` has `crawlers` which pull down
 data files (json, csv, html, pdf, tsv, raw), and `scrapers` which
-scrape those files and return useful data.  Sources can pull in data
+scrape those files and return useful data. Sources can pull in data
 for anything -- cities, counties, states, countries, or collections
 thereof. See the existing scrapers for ideas on how to deal with
 different ways of data being presented.
 
 Copy the template in `docs/sample-sources/template.md` to a new file
 in the correct country, region, and region directory (e.g.,
-`src/shared/sources/us/ca/mycounty-name.js`).  That file contains some
+`src/shared/sources/us/ca/mycounty-name.js`). That file contains some
 fields that you should fill in or delete, depending on the details of
 the source.
 
 ### Crawling
 
 At the moment, we provide support for page, headless, csv, tsv, pdf,
-json, raw.  A central controller will execute the source to crawl the
-provided URLs and cache the date.  You just need to supply the `url`,
+json, raw. A central controller will execute the source to crawl the
+provided URLs and cache the date. You just need to supply the `url`,
 `type`, and `name` if there are multiple urls to crawl.a
 
 ### Scraping
@@ -55,34 +55,47 @@ Your scraper should return an object, an array of objects, or `null`.
 
 The object may have the following attributes:
 
-```
+```javascript
 result = {
   // [ISO 3166-1 alpha-3 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3) [required]
-  country: 'xxx',
+  country: 'iso1:xxx',
+
   // The state, province, or region (not required if defined on scraper object)
-  state: 'xxx',
+  state: 'iso2:xxx',
+
   // The county or parish (not required if defined on scraper object)
   county: 'xxx',
+
   // The city name (not required if defined on scraper object)
   city: 'xxx',
+
   // Total number of cases
-  cases: 'xxx',
+  cases: 42,
+
   // Total number of deaths
-  deaths: 'xxx',
+  deaths: 42,
+
   // Total number of hospitalized
-  hospitalized: 'xxx',
+  hospitalized: 42,
+
   // Total number of discharged
-  discharged: 'xxx',
+  discharged: 42,
+
   // Total number recovered
-  recovered: 'xxx',
+  recovered: 42,
+
   // Total number tested
-  tested: 'xxx',
+  tested: 42,
+
   // GeoJSON feature associated with the location (See [Features and population data](#features-and-population-data))
   feature: 'xxx',
+
   // Additional identifiers to aid with feature matching (See [Features and population data](#features-and-population-data))
   featureId: 'xxx',
+
   // The estimated population of the location (See [Features and population data](#features-and-population-data))
-  population: 'xxx',
+  population: 42,
+
   // Array of coordinates as `[longitude, latitude]` (See [Features and population data](#features-and-population-data))
   coordinates: 'xxx',
 }
@@ -106,34 +119,16 @@ specify the fields that change per location (`county`, `cases`,
 the case if the source has not provided an update for today, or we are
 fetching historical information for which we have no cached data.
 
-
-### Source rating
-
-Sources are rated based on:
-
-1. **How hard is it to read?** `csv` and `json` give best scores,
-with `table` right behind it, with `list` and `paragraph` worse. `pdf`
-gets no points, and `image` gets negative points.
-
-2. **Timeseries?** Sources score points if they provide a
-timeseries.
-
-3. **Completeness** Sources get points for having `cases`, `tested`,
-`deaths`, `hospitalized`, `discharged`, `recovered`, `country`,
-`state`, `county`, and `city`.
-
-4. **SSL** Sources get points for serving over ssl
-
-5. **Headless?** Sources get docked points if they require a
-headless scraper
-
-
 ## Making sure your scraper doesn't break
 
 It's a tough challenge to write scrapers that will work when websites
 are inevitably updated. Here are some tips:
 
-- If your source is an HTML table, validate its structure
+- If your source is an HTML table, validate its structure: check that
+  table headers contain expected text, that columns exist, etc. For
+  example, if you say `result.deaths` is the value stored in column 2,
+  but the source has changed column 2 from "Deaths" to "Cases", your
+  scrape will complete successfully, but the data won't be correct.
 
 - If data for a field is not present (eg. no recovered information),
   **do not put 0 for that field**. Make sure to leave the field
@@ -159,7 +154,7 @@ are inevitably updated. Here are some tips:
 Source scrapers need to be able to operate correctly on old data, so
 updates to scrapers must be backwards compatible. If you know the date
 the site broke, you can have two implementations (or more) of a
-scraper in the same function, based on date.  Most sources in
+scraper in the same function, based on date. Most sources in
 `src/shared/sources` deal with such cases.
 
 ## Features and population data
@@ -179,7 +174,7 @@ to a particular feature, through the `featureId` field, or through the
 
 While the first two methods works most of the time, sometimes you will
 have to rely on `featureId` to help the crawler make the correct
-guess.  `featureId` is an object that specifies one or more of the
+guess. `featureId` is an object that specifies one or more of the
 attributes below:
 
 - `name`
@@ -213,4 +208,4 @@ object is in the correct form.
 
 We run scrapes periodically for every cached file, for every source.
 If you change a source, it will be exercised when you run `npm run
-test:integration`.  See [Testing](./testing.md) for more information.
+test:integration`. See [Testing](./testing.md) for more information.

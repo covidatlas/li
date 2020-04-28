@@ -2,9 +2,11 @@
 
 Any source added to the scraper must meet the following criteria:
 
-## 1. Sources must be government or health organizations
+## 1. Sources must be government, health organizations, or globally recognized and trustworthy
 
-No news articles, no aggregated sources, no Wikipedia.
+No news articles, no uncredited/questionable aggregated sources, no Wikipedia.
+
+Examples of trustworthy aggregated sources: New York Times (NYT), Johns Hopkins (JHU).
 
 ## 2. Sources must provide the number of cases at a bare minimum
 
