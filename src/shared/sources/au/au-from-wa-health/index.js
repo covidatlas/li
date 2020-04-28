@@ -9,7 +9,7 @@ const transform = require('../../_lib/transform.js')
 
 const country = 'iso1:AU'
 
-const labelFragmentsByKey = [ { deaths: 'deaths' }, { state: 'state' }, { cases: 'cases' } ]
+const schemaKeysByHeadingFragment = { deaths: 'deaths', state: 'state', cases: 'cases' }
 
 module.exports = {
   aggregate: 'state',
@@ -31,14 +31,14 @@ module.exports = {
             'https://ww2.health.wa.gov.au/Articles/A_E/Coronavirus/COVID19-statistics'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const getIso2FromName = buildGetIso2FromName({ country })
         const normalizedTable = normalizeTable({ $, tableSelector: 'h2:contains("in Australia") + table' })
 
         const headingRowIndex = 0
         const dataKeysByColumnIndex = []
         normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
+          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
         })
 
         // Create new array with just the state data (no headings, comments, totals)

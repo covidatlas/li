@@ -5,7 +5,7 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:AU'
 
-const labelFragmentsByKey = [ { state: 'location' }, { cases: 'confirmed cases' } ]
+const schemaKeysByHeadingFragment = { 'location': 'state', 'confirmed cases': 'cases' }
 
 module.exports = {
   aggregate: 'state',
@@ -27,14 +27,14 @@ module.exports = {
             'https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const getIso2FromName = buildGetIso2FromName({ country })
         const normalizedTable = normalizeTable({ $, tableSelector: '.health-table__responsive > table' })
 
         const headingRowIndex = 0
         const dataKeysByColumnIndex = []
         normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
+          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
         })
 
         // Create new array with just the state data (no headings, comments, totals)
@@ -59,6 +59,7 @@ module.exports = {
 
         const summedData = transform.sumData(states)
         states.push(summedData)
+        console.table(states)
 
         const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const casesFromTotalRow = parse.number(normalizedTable.find(row => row.some(column => column === 'Total'))[indexForCases])

@@ -7,17 +7,17 @@ const UNASSIGNED = '(unassigned)'
 
 const country = 'iso1:KR'
 
-const labelFragmentsByKey = [
-  { discard: 'daily change' },
-  { discard: 'imported cases' },
-  { discard: 'local outbreak' },
-  { discard: 'isolated' },
-  { discard: 'incidence' },
-  { state: 'city/province' },
-  { cases: 'confirmed cases' },
-  { deaths: 'deceased' },
-  { recovered: 'released from quarantine' }
-]
+const schemaKeysByHeadingFragment = {
+  'daily change': null,
+  'imported cases': null,
+  'local outbreak': null,
+  'isolated': null,
+  'incidence': null,
+  'city/province': 'state',
+  'confirmed cases': 'cases',
+  'deceased': 'deaths',
+  'released from quarantine': 'recovered',
+}
 
 module.exports = {
   aggregate: 'state',
@@ -39,14 +39,14 @@ module.exports = {
             'http://ncov.mohw.go.kr/en/bdBoardList.do?brdId=16&brdGubun=162&dataGubun=&ncvContSeq=&contSeq=&board_id='
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getKey, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const getIso2FromName = buildGetIso2FromName({ country })
         const normalizedTable = normalizeTable({ $, tableSelector: 'table.num' })
 
         const headingRowIndex = 1
         const dataKeysByColumnIndex = []
         normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getKey({ label: heading, labelFragmentsByKey })
+          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
         })
 
         // Create new array with just the state data (no headings, comments, totals)
