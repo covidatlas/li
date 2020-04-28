@@ -29,13 +29,22 @@ const pickBy = (object, predicate) => {
 }
 
 const assertAllValuesAreInSchema = (schemaKeysByHeadingFragment) => {
-  Object.values(schemaKeysByHeadingFragment).forEach(potentialKey => assert(schemaKeys.some(validKey => validKey === potentialKey), `Invalid value in schemaKeysByHeadingFragment: ${potentialKey}`))
+  const potentialKeys = Object.values(schemaKeysByHeadingFragment)
+  potentialKeys.forEach(potentialKey =>
+    assert(
+      schemaKeys.some(validKey => validKey === potentialKey),
+      `Invalid value in schemaKeysByHeadingFragment: ${potentialKey}`)
+    )
 }
 
 const getSchemaKeyFromHeading = ({ heading, schemaKeysByHeadingFragment }) => {
   assertAllValuesAreInSchema(schemaKeysByHeadingFragment)
   const slugHeading = slugify(heading, slugifyOptions)
-  const foundItems = pickBy(schemaKeysByHeadingFragment, (schemaKey, headingFragment) => slugHeading.includes(slugify(headingFragment, slugifyOptions)))
+
+  const foundItems = pickBy(schemaKeysByHeadingFragment, (schemaKey, headingFragment) => {
+    const slugFragment = slugify(headingFragment, slugifyOptions)
+    return slugHeading.includes(slugFragment)
+  })
   const foundSchemaKeys = Object.values(foundItems)
   assert.strictEqual(foundSchemaKeys.length, 1,
     `no single match found for ${slugHeading} in ${JSON.stringify(schemaKeysByHeadingFragment)}}`
