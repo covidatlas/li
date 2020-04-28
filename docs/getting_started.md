@@ -137,3 +137,7 @@ Unit and integration tests are kept separate because the former are
 blazingly fast, while the latter may take some time.
 
 For more info, see [Testing](./docs/testing.md).
+
+## Help
+
+Run `npm run help` to see a list of commands.

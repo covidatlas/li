@@ -45,12 +45,12 @@ async function load (params, useS3) {
       const { earliest, latest } = getDateBounds(files, tz)
       if (datetime.dateIsBefore(date, earliest) && useS3) {
         console.error('Sorry McFly, we need more gigawatts to go back in time')
-        throw Error(`Date requested (${date}) is before our earliest cache ${earliest}`)
+        throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is before our earliest cache ${earliest}`)
       }
 
       if (datetime.dateIsAfter(date, latest) && useS3) {
         console.error('Sorry, without increasing gravity we cannot speed up time to get this data')
-        throw Error(`Date requested (${date}) is after our latest cache ${latest}`)
+        throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is after our latest cache ${latest}`)
       }
 
       // Filter files that match date when locale-cast from UTC

@@ -12,7 +12,7 @@ module.exports = {
   },
   scrapers: [
     {
-      startDate: '2020-03-01',
+      startDate: '2020-03-12',
       crawl: [
         {
           type: 'page',

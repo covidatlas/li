@@ -19,7 +19,7 @@ async function regenerateSource (event) {
   }
   catch (err) {
     console.log('Regenerator error', event)
-    throw Error(err)
+    throw err
   }
 }
 

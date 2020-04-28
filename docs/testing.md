@@ -34,16 +34,24 @@ Since it's impossible for us to accurately guess what the right baseline branch 
 
 If this file is missing, the test will stop with a giant warning message.  (In CI, we just use `origin/master` as the base branch, and this file isn't required).
 
-Note you can ignore the `git diff` by setting some environment variables, e.g.:
+Note you can ignore the `git diff` by setting some environment
+variables, see below.
+
+#### Environment variables.
+
+The integration tests may be insufficient, or too inclusive.  You can filter the things to include using some environment variables:
 
 * `TEST_ALL=1 npm run test:integration` runs _all_ of the sources
 * `TEST_ONLY=gb-sct,nl,gb-eng npm run test:integration` runs the indicated sources
+* `SCRAPE_ONLY=2020-04-10,2020-04-11 npm run test:integration` only scrapes these dates in the cache
+
+You can combine `TEST_*` and `SCRAPE_ONLY`:
+
+`TEST_ONLY=us-ca-san-francisco-county SCRAPE_ONLY=2020-04-10,2020-04-11 npm run test:integration`
 
 #### Possible errors
 
-`new-or-changed-sources-test.js` may fail occasionally.  Some of these
-errors may be preventable, others not ... we will have to determine
-the best way to manage them going forward.
+`new-or-changed-sources-test.js` may fail occasionally.  Some of these errors may be preventable, others not ... we will have to determine the best way to manage them going forward.
 
 ##### Live crawl errors
 

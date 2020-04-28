@@ -11,7 +11,7 @@ async function crawlSource (event) {
     const source = getSource(event)
     const { scrapers, _sourceKey } = source
 
-    const timeLabel = `Crawl-${_sourceKey}`
+    const timeLabel = `Crawl ${_sourceKey}`
     console.time(timeLabel)
 
     /**
@@ -62,12 +62,31 @@ async function crawlSource (event) {
      */
     await cache(results)
 
+    // Alert status to a successful crawl
+    await arc.events.publish({
+      name: 'status',
+      payload: {
+        source: event.source,
+        event: 'crawler',
+        status: 'success'
+      }
+    })
+
     console.timeEnd(timeLabel)
   }
   catch (err) {
-    // TODO write something to the database that says this source is offline
+    // Alert status to a crawl failure
+    arc.events.publish({
+      name: 'status',
+      payload: {
+        source: event.source,
+        event: 'crawler',
+        status: 'failed'
+      }
+    })
+
     console.log('Crawler error', event)
-    throw Error(err)
+    throw err
   }
 }
 
