@@ -32,7 +32,7 @@ regen-timeseries rate(1 hour) # Regularly regenerates timeseries sources
 @tables
 # Primary location store
 locations
-  name *String
+  slug *String
 
 # Per-location case data
 case-data

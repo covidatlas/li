@@ -7,42 +7,38 @@ module.exports = function getLocationNames (locationIDs) {
   const locationNames = locationIDs.map(locationID => {
     const bits = locationID.split('#')
 
-    // Get the human-readable slug from ISO / FIPS data
-    let iso1
-    let iso2
-    let fips
-    let name = []
+    let location = {
+      locationID
+    }
+
+    // Construct the mostly-denormalized location object (including the human-readable slug) from ISO / FIPS data
+    let locationName = []
     for (const bit of bits) {
       const p = bit.split(':')
       const level = p[0]
-      let id = p[1]
+      const id = p[1].toUpperCase()
 
       if (level === 'iso1') {
-        id = id.toUpperCase()
-        iso1 = id
-        name.push(id)
+        // Location name
+        locationName.push(id)
       }
       if (level === 'iso2') {
-        id = id.toUpperCase()
-        iso2 = id
-        name.unshift(iso2Codes[id].name)
+        const { name } = iso2Codes[id]
+        // Location name
+        locationName.unshift(name)
       }
       if (level === 'fips') {
-        fips = id
-        name.unshift(fipsCodes[id].name)
+        const { name } = fipsCodes[id]
+        // Location name
+        locationName.unshift(name)
       }
     }
 
     // Slugify / lowcase
-    name = slugify(name.join('-'), { lower: true })
+    location.slug = slugify(locationName.join('-'), { lower: true })
+    location.name = locationName.join(', ')
 
-    return {
-      locationID,
-      name,
-      iso1,
-      iso2,
-      fips
-    }
+    return location
   })
 
   return locationNames
