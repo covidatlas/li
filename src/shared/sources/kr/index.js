@@ -39,8 +39,7 @@ module.exports = {
             'http://ncov.mohw.go.kr/en/bdBoardList.do?brdId=16&brdGubun=162&dataGubun=&ncvContSeq=&contSeq=&board_id='
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
-        const getIso2FromName = buildGetIso2FromName({ country })
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: 'table.num' })
 
         const headingRowIndex = 1
@@ -64,7 +63,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName(stateData.state.replace('Lazaretto', UNASSIGNED)),
+            state: getIso2FromName({ country, name: stateData.state.replace('Lazaretto', UNASSIGNED) }),
             cases: parse.number(stateData.cases.replace('-', 0)),
             deaths: parse.number(stateData.deaths),
             recovered: parse.number(stateData.recovered)

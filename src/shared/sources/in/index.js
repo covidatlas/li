@@ -32,8 +32,7 @@ module.exports = {
             'https://www.mohfw.gov.in/'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
-        const getIso2FromName = buildGetIso2FromName({ country })
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: '#state-data' })
 
         const headingRowIndex = 0
@@ -57,7 +56,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName(stateData.state.replace('Telengana', 'Telangana')),
+            state: getIso2FromName({ country, name: stateData.state.replace('Telengana', 'Telangana') }),
             cases: parse.number(stateData.cases),
             deaths: parse.number(stateData.deaths),
             recovered: parse.number(stateData.recovered)

@@ -31,8 +31,7 @@ module.exports = {
             'https://ww2.health.wa.gov.au/Articles/A_E/Coronavirus/COVID19-statistics'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
-        const getIso2FromName = buildGetIso2FromName({ country })
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: 'h2:contains("in Australia") + table' })
 
         const headingRowIndex = 0
@@ -56,7 +55,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName(stateData.state),
+            state: getIso2FromName({ country, name: stateData.state }),
             cases: parse.number(stateData.cases),
             deaths: parse.number(stateData.deaths)
           })
