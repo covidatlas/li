@@ -6,3 +6,4 @@ node_modules/
 sam.json
 sam.yaml
 scratch/
+tools/geojsondb/geojson-db-payload.json

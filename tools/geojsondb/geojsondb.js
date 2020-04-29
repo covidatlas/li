@@ -1,8 +1,7 @@
 #! /usr/bin/env node
 
-// const arc = require('@architect/functions')
 const glob = require('glob').sync
-const { readFileSync } = require('fs')
+const { readFileSync, writeFileSync } = require('fs')
 const { basename, join, sep } = require('path')
 const { brotliCompressSync } = require('zlib')
 const fipsCodes = require('country-levels/fips.json')
@@ -16,7 +15,6 @@ let files = glob(join(dir, '**'), { nodir: true })
 let keep = [ 'fips', 'iso1', 'iso2' ]
 const filter = f => keep.some(k => f.startsWith(join(dir, k, sep)))
 files = files.filter(filter)
-
 const fipsFiles = files.filter(f => f.startsWith(join(dir, 'fips', sep)))
 const iso2Files = files.filter(f => f.startsWith(join(dir, 'iso2', sep)))
 const iso1Files = files.filter(f => f.startsWith(join(dir, 'iso1', sep)))
@@ -47,9 +45,10 @@ function sizeCheck (item, type) {
   }
 }
 
+const isBase64Encoded = true
+
 let now = Date.now()
-// const fips =
-fipsFiles.map(fip => {
+const fips = fipsFiles.map(fip => {
   let id = basename(fip, '.geojson')
   const data = fipsCodes[id]
   let file = readFileSync(fip)
@@ -62,7 +61,8 @@ fipsFiles.map(fip => {
   const locationID = `iso1:us#iso2:${iso2}#fips:${id}`.toLowerCase()
   const item = {
     locationID,
-    payload
+    payload,
+    isBase64Encoded
   }
   sizeCheck(item, 'fips')
   return item
@@ -70,8 +70,7 @@ fipsFiles.map(fip => {
 stats.fipsTime = Date.now() - now
 
 now = Date.now()
-// const iso2 =
-iso2Files.map(state => {
+const iso2 = iso2Files.map(state => {
   let id = basename(state, '.geojson')
   let file = readFileSync(state)
   file = brotliCompressSync(file)
@@ -80,7 +79,8 @@ iso2Files.map(state => {
   const locationID = `iso1:${id.substr(0, 2)}#iso2:${id}`.toLowerCase()
   const item = {
     locationID,
-    payload
+    payload,
+    isBase64Encoded
   }
   sizeCheck(item, 'iso2')
   return item
@@ -88,8 +88,7 @@ iso2Files.map(state => {
 stats.iso2Time = Date.now() - now
 
 now = Date.now()
-// const iso1 =
-iso1Files.map(country => {
+const iso1 = iso1Files.map(country => {
   let id = basename(country, '.geojson')
   let file = readFileSync(country)
   file = brotliCompressSync(file)
@@ -98,27 +97,21 @@ iso1Files.map(country => {
   const locationID = `iso1:${id}`.toLowerCase()
   const item = {
     locationID,
-    payload
+    payload,
+    isBase64Encoded
   }
   sizeCheck(item, 'iso1')
   return item
 })
 stats.iso1Time = Date.now() - now
 
-/*
-let data;
-process.env.ARC_CLOUDFORMATION = 'CovidAtlasStaging'
-(async () => {
-  data = await arc.tables()
-})()
-
-for (const item of fips.concat(iso1, iso2)) {
-  // TODO write items to DB
-  data.geojson.put(item)
-}
-*/
-
 console.log(`Processed ${counter} items`)
+
+const payload = JSON.stringify(fips.concat(iso1, iso2))
+const filename = 'geojson-db-payload.json'
+writeFileSync(join(__dirname, filename), payload)
+console.log(`Wrote ${filename} (${payload.length / 1000}KB)`)
+
 console.log(`Stats:`, stats)
 
 console.timeEnd('Ran in')

@@ -47,6 +47,10 @@ invokes
   # lastRan
   # contentHash
 
+# GeoJSON features for fips + iso1 + iso2 locations
+geojson
+  locationID *String
+
 # Monitors source status
 status
   source *String
