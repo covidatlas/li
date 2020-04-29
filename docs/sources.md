@@ -6,7 +6,7 @@ This guide provides information on the criteria we use to determine whether a so
 
 ## Examples
 
-Annotated sample sources are in `docs/sample-sources/`, and will give you a rough idea of the shape of a source, and how it is used.
+An anotated sample source is in `docs/sample-sources/sample.js`. It will give you a rough idea of the shape of a source, and how it is used.
 
 Live sources are in `src/shared/sources/` as well.
 
@@ -18,7 +18,7 @@ See [./source-criteria.md](Source criteria) to determine if a source should be i
 
 As shown in the samples, a `source` has `crawlers` which pull down data files (json, csv, html, pdf, tsv, raw), and `scrapers` which scrape those files and return useful data. Sources can pull in data for anything -- cities, counties, states, countries, or collections thereof. See the existing scrapers for ideas on how to deal with different ways of data being presented.
 
-Copy the template in `docs/sample-sources/template.md` to a new file in the correct country, region, and region directory (e.g., `src/shared/sources/us/ca/mycounty-name.js`). That file contains some fields that you should fill in or delete, depending on the details of the source.
+Copy the template in `docs/sample-sources/template.md` to a new file in the correct country, region, and region directory (e.g., `src/shared/sources/us/ca/mycounty-name.js`). That file contains some fields that you should fill in or delete, depending on the details of the source. Also see the comments in `docs/sample-sources/sample.js`, and below.
 
 ### Crawling
 

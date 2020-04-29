@@ -7,8 +7,7 @@ const srcShared = join(process.cwd(), 'src', 'shared')
 const datetime = require(join(srcShared, 'datetime', 'index.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const { allowed } = require(join(srcShared, 'sources', '_lib', 'crawl-types.js'))
-const validSource = require(join(process.cwd(), 'docs', 'sample-sources', 'valid.js'))
-const invalidSource = require(join(process.cwd(), 'docs', 'sample-sources', 'invalid.js'))
+const validSource = require(join(process.cwd(), 'docs', 'sample-sources', 'sample.js'))
 
 /** Validate the source.
  * Returns { warnings: [], errors: [] }
@@ -134,14 +133,47 @@ function validateSource (source) {
   return result
 }
 
-test('Documentation sample, valid source', t => {
+test('Documentation sample', t => {
   t.plan(2)
   const result = validateSource(validSource)
   t.equal(result.warnings.join('; '), '', 'no warnings')
   t.equal(result.errors.join('; '), '',  'no errors')
 })
 
-test('Documentation sample, invalid source', t => {
+test('validateSource catches problems', t => {
+
+  // An source w/ many problems.
+  const invalidSource = {
+    country: 'badcode',
+    state: 'badstate',
+    aggregate: 'zipcode',
+    scrapers: [
+      {
+        startDate: '2020-03-01',
+        crawl: [ { type: 'text' /* bad type */, url: 'https://somedata.csv' } ],
+        scrape (data) { return { cases: data.cases } }
+      },
+      {
+        // (there should be a "startDate: '2020-03-02'," here)
+        crawl: [ { name: 'default' /* omit name */, type: 'csv', url: 'https://somedata.csv' } ],
+        async /* should by sync */ scrape (data) { return { cases: data.infected } }
+      },
+      {
+        startDate: '2020-03-03',
+        crawl: [ { name: 'default' /* omit name */, type: 'csv', url: 'https://somedata.csv' } ]
+        // Warning: missing scrape method
+      },
+      {
+        startDate: '2020-03-02',
+        crawl: [
+          { name: 'cases', type: 'csv', url: 'https://somedata.csv' },
+          { name: 'cases' /* dup. name */, type: 'page', url: 'https://somedata.html' }
+        ],
+        scrape (data) { return { cases: 42 + data.count } }
+      }
+    ]
+  }
+
   t.plan(2)
 
   const result = validateSource(invalidSource)
@@ -150,7 +182,7 @@ test('Documentation sample, invalid source', t => {
     '2020-03-03: Missing scrape method; please add scrape logic ASAP!',
     'Missing maintainers, please list one or more!'
   ]
-  t.deepEqual(result.warnings.sort(), expectedWarnings.sort(), 'warnings')
+  t.deepEqual(result.warnings.sort(), expectedWarnings.sort(), 'expected warnings caught')
 
   const expectedErrors = [
     '(missing startDate): Async scraper; scrapers should only contain synchronous logic.',
@@ -161,9 +193,10 @@ test('Documentation sample, invalid source', t => {
     '2020-03-03: Single crawler must not have a name key',
     '(missing startDate): Single crawler must not have a name key'
   ]
-  t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'errors')
+  t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'expected errors caught')
 })
 
+/** Testing actual scrapers. */
 let warnings = []
 test('Scraper validation test', t => {
   const sources = sourceMap()
@@ -177,7 +210,7 @@ test('Scraper validation test', t => {
       assert.ok(is.object(source), 'Source must be an exported CommonJS object')
 
       const result = validateSource(source)
-      result.warnings.forEach(w => warnings.push(w))
+      result.warnings.forEach(w => warnings.push(`Source ${key}: ${w}`))
       if (result.errors.length === 0) {
         t.pass(`${key} looks good!`)
       }
