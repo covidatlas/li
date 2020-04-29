@@ -18,7 +18,7 @@ module.exports = async function findNextInvoke () {
   const timestamps = invokes.map(i => i.lastInvoke)
   const sorted = sorter(timestamps)
   const last = invokes.find(i => i.lastInvoke === sorted[0])
-  const task = last.key
+  const task = last ? last.key : tasks[0]
 
   await data.invokes.put({
     type,
