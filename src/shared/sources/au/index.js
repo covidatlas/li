@@ -27,8 +27,7 @@ module.exports = {
             'https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, buildGetIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
-        const getIso2FromName = buildGetIso2FromName({ country })
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: '.health-table__responsive > table' })
 
         const headingRowIndex = 0
@@ -52,7 +51,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName(stateData.state),
+            state: getIso2FromName({ country, name: stateData.state }),
             cases: parse.number(stateData.cases)
           })
         })
