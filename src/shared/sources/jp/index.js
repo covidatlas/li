@@ -52,7 +52,7 @@ module.exports = {
         const states = []
         for (const [ stateName, stateAttributes ] of Object.entries(groupedByState)) {
           states.push({
-            state: getIso2FromName({ country, name: stateName.replace('Hokkaido', 'Hokkaidō') }),
+            state: getIso2FromName({ country, name: stateName }),
             cases: stateAttributes.length
           })
         }

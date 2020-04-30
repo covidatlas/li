@@ -6,6 +6,9 @@ const UNASSIGNED = '(unassigned)'
 
 const slugifyOptions = { lower: true }
 
+// Can be removed after https://github.com/simov/slugify/pull/76 is released.
+slugify.extend({ 'ō': 'o' })
+
 /**
  * Find ISO2 code within a country.
  * Guarantees non-ambiguous match (to avoid New York "City" or "State" problem).
