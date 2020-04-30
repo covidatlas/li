@@ -12,7 +12,7 @@ const schemaKeysByHeadingFragment = {
   'positif covid-19': 'cases'
 }
 
-const pivotTable = arrayOfArrays => {
+const transposeTable = arrayOfArrays => {
   const newArray = []
   arrayOfArrays.forEach((rowContent, rowIndex) => {
     rowContent.forEach((columnContent, columnIndex) => {
@@ -42,7 +42,7 @@ module.exports = {
         }
       ],
       scrape ($, date, { getSchemaKeyFromHeading, normalizeTable }) {
-        const normalizedTable = pivotTable(normalizeTable({ $, tableSelector: '.covid-case-container table' }))
+        const normalizedTable = transposeTable(normalizeTable({ $, tableSelector: '.covid-case-container table' }))
 
         const headingRowIndex = 0
         const dataKeysByColumnIndex = []
