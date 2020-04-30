@@ -46,7 +46,7 @@ async function getNormal (req) {
     // We presumably got a good response, return it
     if (ok) {
       // Compress, then base64 encode body in case we transit binaries, max 10MB payload
-      let responseBody = new Buffer.from(response.body)
+      let responseBody = Buffer.from(response.body)
       responseBody = brotliCompressSync(responseBody).toString('base64')
       if (responseBody.length >= 1000 * 1000 * 10) {
         console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))

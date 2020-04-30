@@ -3,7 +3,7 @@ module.exports = function validate (req) {
   try {
     if (!isLocal) {
       const auth = req.headers.authorization || req.headers.Authorization // lolhttp
-      const token = new Buffer.from(auth.substr(7), 'base64').toString()
+      const token = Buffer.from(auth.substr(7), 'base64').toString()
       if (token !== process.env.CRAWL_TOKEN) throw Error('Auth request failed')
     }
 
