@@ -57,9 +57,6 @@ module.exports = {
           })
         }
 
-        const statesCount = 46
-        assert.equal(states.length, statesCount, 'Wrong number of states found')
-
         const summedData = transform.sumData(states)
         states.push(summedData)
 
