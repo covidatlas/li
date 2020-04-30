@@ -53,7 +53,7 @@ async function getHeadless (req) {
       browser.close()
 
       // Compress, then base64 encode body in case we transit binaries, max 10MB payload
-      let responseBody = new Buffer.from(html)
+      let responseBody = Buffer.from(html)
       responseBody = brotliCompressSync(responseBody).toString('base64')
       if (responseBody.length >= 1000 * 1000 * 10) {
         console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))

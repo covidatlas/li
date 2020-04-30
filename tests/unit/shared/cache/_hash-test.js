@@ -22,7 +22,7 @@ test('Returns specified hashes', t => {
   t.equal(result, 'bc7e8a24e2', 'Returned substring hash of a string')
 
   // Buffer
-  const aBuffer = new Buffer.from(aString + 'extra')
+  const aBuffer = Buffer.from(aString + 'extra')
   result = hash(aBuffer)
   t.equal(result, '4ae0e0363fae332537f67e99533e5f09a873cd0b8254909d328f4481438429ea', 'Returned full hash of a buffer')
 

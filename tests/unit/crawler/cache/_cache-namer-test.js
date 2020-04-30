@@ -24,7 +24,7 @@ test('Generate some filenames', t => {
 
   let _sourceKey = 'a-place'
   let _name = 'default'
-  let data = new Buffer.from('hi there')
+  let data = Buffer.from('hi there')
   let type = 'page'
   let params = { _sourceKey, _name, data, type }
   let { filepath, filename } = cacheNamer(params)
@@ -56,7 +56,7 @@ test('Generate some filenames', t => {
 
   // Filename: the other bits, redeux
   _name = 'cases'
-  data = new Buffer.from('howdy')
+  data = Buffer.from('howdy')
   type = 'json'
   params = { _sourceKey, _name, data, type }
 

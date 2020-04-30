@@ -14,7 +14,7 @@ async function crawl (type, params) {
     : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
   const path = `${root}/get/${getType}?options=${options}`
   const crawlToken = process.env.CRAWL_TOKEN ? process.env.CRAWL_TOKEN : '' // Don't break the buffer
-  const token = new Buffer.from(crawlToken).toString('base64')
+  const token = Buffer.from(crawlToken).toString('base64')
   const headers = { authorization: `Bearer ${token}` }
   const result = await got(path, {
     retry: 0,
@@ -26,7 +26,7 @@ async function crawl (type, params) {
   if (statusCode === 200) {
     let response = JSON.parse(body)
     if (response.body) {
-      response.body = new Buffer.from(response.body, 'base64')
+      response.body = Buffer.from(response.body, 'base64')
       response.body = brotliDecompressSync(response.body)
     }
     return response
