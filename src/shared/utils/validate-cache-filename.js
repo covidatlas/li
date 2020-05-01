@@ -1,8 +1,11 @@
 const { extensions } = require('../sources/_lib/crawl-types.js')
 
 /**
- * It shouldn't really be feasible that we'd be passed a bad cache filename because the filenames we pass to S3 should be solid (and are tested)
- * That said, during the cache migration from CDS → Li there was plenty of potential for breakage, so this exists (for now) to help keep things tight
+ * It shouldn't really be feasible that we'd
+ * be passed a bad cache filename because the filenames we pass to S3 should be solid (and are tested).
+ * That said, during the cache migration from CDS → Li
+ * there was plenty of potential for breakage,
+ * so this exists (for now) to help keep things tight.
  */
 module.exports = function validateCacheFilename (filename) {
   const check = /^\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz]-[a-z]+-[a-h0-9]{5}\..*$/

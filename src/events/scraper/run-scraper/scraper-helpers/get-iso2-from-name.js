@@ -20,7 +20,9 @@ const getIso2FromName = ({ country, name }) => {
     return name
   }
   const slugName = slugify(name, slugifyOptions)
-  const foundItems = iso2WithinIso1.filter((canonicalItem) => slugify(canonicalItem.name, slugifyOptions).includes(slugName))
+  const foundItems = iso2WithinIso1.filter(
+    (canonicalItem) => slugify(canonicalItem.name, slugifyOptions).includes(slugName)
+  )
   assert.equal(foundItems.length, 1,
     `no single match found for ${name} in ${country}. Found ${iso2WithinIso1.map((item) => item.name).join()}`
   )

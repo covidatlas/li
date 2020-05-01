@@ -65,7 +65,9 @@ module.exports = {
         states.push(summedData)
 
         const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
-        const casesFromTotalRow = parse.number(normalizedTable.find(row => row.some(column => column === 'Total'))[indexForCases])
+        const casesFromTotalRow = parse.number(
+          normalizedTable.find(row => row.some(column => column === 'Total'))[indexForCases]
+        )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states
       }

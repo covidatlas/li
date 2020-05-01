@@ -31,7 +31,9 @@ module.exports = {
 
         if (date > lastDateInTimeseries) {
           console.error(
-            `NYT timeseries: date ${date} is newer than last sample time ${lastDateInTimeseries}; using last sample anyway`
+            `NYT timeseries:
+            date ${date} is newer than last sample time ${lastDateInTimeseries};
+            using last sample anyway`
           )
           date = lastDateInTimeseries
         }

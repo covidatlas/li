@@ -193,7 +193,9 @@ const _ut = {
       return
     }
     if (county === 'Central Utah') {
-      const aggCounties = [ 'Juab County', 'Millard County', 'Piute County', 'Sanpete County', 'Sevier County', 'Wayne County' ]
+      const aggCounties = [
+        'Juab County', 'Millard County', 'Piute County', 'Sanpete County', 'Sevier County', 'Wayne County'
+      ]
       aggCounties.forEach(county => {
         counties.push({
           county,

@@ -5,7 +5,8 @@ const sut = join(process.cwd(), 'src', 'events', 'crawler', 'cache', '_cache-nam
 const cacheNamer = require(sut)
 
 // This tests the filenames of files going into the cache
-// To see how we ensure the filenames coming out of the cache are correct, see: `tests/unit/shared/utils/validate-cache-filename-test.js`
+// To see how we ensure the filenames coming out of the cache are correct,
+// SEE: `tests/unit/shared/utils/validate-cache-filename-test.js`
 
 test('Module exists', t => {
   t.plan(1)

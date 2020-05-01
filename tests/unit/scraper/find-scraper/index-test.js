@@ -37,7 +37,9 @@ test('Selects correct scraper', t => {
 
   date = '2020-02-01'
   result = findScraper(source, date)
-  t.equal(result.startDate, jan, `Scraper selected a date in the next month, which contained another scraper (idk why not, it's easy enough to test)`)
+  t.equal(result.startDate, jan,
+    `Scraper selected a date in the next month, which contained another scraper (idk why not, it's easy enough to test)`
+  )
 
   date = '2020-03-03'
   result = findScraper(source, date)
