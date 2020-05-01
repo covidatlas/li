@@ -1,7 +1,9 @@
 ﻿const parse = require('./_parse.js')
 const { getYYYYMMDD } = require('./_format.js')
 
-const warn = () => console.warn(`datetime.scrapeDateIs* methods are deprecated\nplease use the scraper's date param and datetime.dateIs*`)
+const warn = () => console.warn(
+  `datetime.scrapeDateIs* methods are deprecated\nplease use the scraper's date param and datetime.dateIs*`
+)
 
 /** @returns {string} The value of the SCRAPE_DATE environment variable, as an ISO date */
 function scrapeDate () {

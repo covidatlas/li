@@ -40,7 +40,9 @@ function validateSource (source) {
 
   // Country
   requirement(country, 'Source must contain a country string')
-  requirement(country.startsWith('iso1:') && country.length === 7, `Country must be a properly formatted ISO key (e.g. 'iso1:US')`)
+  requirement(
+    country.startsWith('iso1:') && country.length === 7, `Country must be a properly formatted ISO key (e.g. 'iso1:US')`
+  )
 
   // State
   // TODO enforce ISO?
@@ -79,7 +81,9 @@ function validateSource (source) {
       const { type, data, url } = crawler
 
       // Crawl type
-      requirement(allowed.some(a => a === type), datedError(`Invalid crawler type '${type}'; must be one of: page, headless, csv, tsv, pdf, json, raw`))
+      requirement(allowed.some(a => a === type), datedError(
+        `Invalid crawler type '${type}'; must be one of: page, headless, csv, tsv, pdf, json, raw`
+      ))
 
       // Crawl data format type (for ranking I guess?)
       requirement(is.string(data) || !data, datedError('Crawler data must be a string'))
@@ -96,7 +100,9 @@ function validateSource (source) {
         requirement(crawler.name !== 'default', datedError(`Crawler name cannot be 'default'`))
         requirement(/^[a-z]+$/.test(crawler.name), datedError(`Crawler name must be lowercase letters only`))
         requirement(crawler.name.length <= 20, datedError(`Crawler name must be 20 chars or less`))
-        requirement(!crawlerNames[crawler.name], datedError(`Duplicate crawler name '${crawler.name}'; names must be unique`))
+        requirement(
+          !crawlerNames[crawler.name], datedError(`Duplicate crawler name '${crawler.name}'; names must be unique`)
+        )
         crawlerNames[crawler.name] = true
       }
     }
@@ -104,7 +110,10 @@ function validateSource (source) {
     // Scrape (optional, allows crawl-only sources that need scrapers for later)
     if (scrape) {
       requirement(is.function(scrape), datedError('Scrape must be a function'))
-      requirement(scrape.constructor.name !== 'AsyncFunction', datedError(`Async scraper; scrapers should only contain synchronous logic.`))
+      requirement(
+        scrape.constructor.name !== 'AsyncFunction',
+        datedError(`Async scraper; scrapers should only contain synchronous logic.`)
+      )
     }
 
     warning(!scrape, datedError(`Missing scrape method; please add scrape logic ASAP!`))
@@ -137,7 +146,7 @@ test('Documentation sample', t => {
   t.plan(2)
   const result = validateSource(validSource)
   t.equal(result.warnings.join('; '), '', 'no warnings')
-  t.equal(result.errors.join('; '), '',  'no errors')
+  t.equal(result.errors.join('; '), '', 'no errors')
 })
 
 test('validateSource catches problems', t => {

@@ -17,7 +17,19 @@ const schemaKeysByHeadingFragment = {
 }
 
 const getNamesThatMatchIso2s = name => {
-  if ([ 'Capital and Coast', 'Counties Manukau', 'Hutt Valley', 'Lakes', 'Mid Central', 'Nelson Marlborough', 'South Canterbury', 'Southern', 'Tairāwhiti', 'Wairarapa', 'Waitematā' ].includes(name)) {
+  if ([
+    'Capital and Coast',
+    'Counties Manukau',
+    'Hutt Valley',
+    'Lakes',
+    'Mid Central',
+    'Nelson Marlborough',
+    'South Canterbury',
+    'Southern',
+    'Tairāwhiti',
+    'Wairarapa',
+    'Waitematā'
+  ].includes(name)) {
     return UNASSIGNED
   }
   return name

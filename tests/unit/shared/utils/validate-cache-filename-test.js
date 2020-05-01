@@ -5,7 +5,8 @@ const sut = join(process.cwd(), 'src', 'shared', 'utils', 'validate-cache-filena
 const validate = require(sut)
 
 // This tests the filenames of files coming out of the cache
-// To see how we ensure the filenames oing into the cache are correct, see: `tests/unit/crawler/cache/_cache-namer-test.js`
+// To see how we ensure the filenames going into the cache are correct
+// SEE: `tests/unit/crawler/cache/_cache-namer-test.js`
 
 test('Module exists', t => {
   t.plan(1)
