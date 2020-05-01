@@ -5,7 +5,12 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:AU'
 
-const schemaKeysByHeadingFragment = { 'location': 'state', 'confirmed cases': 'cases' }
+const schemaKeysByHeadingFragment = {
+  'confirmed cases': 'cases',
+  deaths: 'deaths',
+  jurisdiction: 'state',
+  location: 'state',
+}
 
 module.exports = {
   aggregate: 'state',
@@ -61,7 +66,63 @@ module.exports = {
 
         const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const casesFromTotalRow = parse.number(
-          normalizedTable.find(row => row.some(column => column === 'Total'))[indexForCases]
+          normalizedTable.find((row) => row.some(column => column === 'Total'))[indexForCases]
+        )
+        assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
+        return states
+      }
+    },
+    {
+      startDate: '2020-04-02',
+      crawl: [
+        {
+          type: 'headless',
+          data: 'table',
+          url: 'https://www.health.gov.au/resources/total-covid-19-cases-and-deaths-by-states-and-territories'
+        }
+      ],
+      scrape ($, date, { assertTotalsAreReasonable, getSchemaKeyFromHeading, normalizeTable }) {
+        const normalizedTable = normalizeTable({ $, tableSelector: '.ng-scope table' })
+
+        const headingRowIndex = 0
+        console.log(normalizedTable)
+        const dataKeysByColumnIndex = []
+        normalizedTable[headingRowIndex].forEach((heading, index) => {
+          dataKeysByColumnIndex[index] = heading
+            ? getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
+            : null
+        })
+
+        const totalLabel = 'Australia'
+        // Create new array with just the state data (no headings, comments, totals)
+        const stateDataRows = normalizedTable.filter((row) =>
+          row.every(cell => cell !== totalLabel && cell !== 'Jurisdiction')
+        )
+
+        const statesCount = 8
+        assert.equal(stateDataRows.length, statesCount, 'Wrong number of rows found')
+
+        const states = []
+        stateDataRows.forEach((row) => {
+          const stateData = {}
+          row.forEach((value, columnIndex) => {
+            const key = dataKeysByColumnIndex[columnIndex]
+            stateData[key] = value
+          })
+
+          states.push({
+            state: 'iso2:AU-'+stateData.state,
+            cases: parse.number(stateData.cases),
+            deaths: parse.number(stateData.deaths)
+          })
+        })
+
+        const summedData = transform.sumData(states)
+        states.push(summedData)
+
+        const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
+        const casesFromTotalRow = parse.number(
+          normalizedTable.find((row) => row.some(column => column === totalLabel))[indexForCases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states
