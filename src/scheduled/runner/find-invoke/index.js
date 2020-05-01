@@ -13,18 +13,12 @@ module.exports = async function findNextInvoke () {
   invokes = invokes.Items.filter(i => i.type === type)
 
   const tasks = [ 'crawler', 'scraper' ]
-  let task
-
-  // Add entries for the new kids
-  if (invokes.length) {
-    task = tasks[0]
-  }
 
   // This will likely need to be rewritten if the task runner ever takes on more than just crawling and scraping
   const timestamps = invokes.map(i => i.lastInvoke)
   const sorted = sorter(timestamps)
   const last = invokes.find(i => i.lastInvoke === sorted[0])
-  task = last.key
+  const task = last ? last.key : tasks[0]
 
   await data.invokes.put({
     type,
