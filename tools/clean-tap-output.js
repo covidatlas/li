@@ -12,7 +12,7 @@ function printFailureSummary (failureLines) {
     operator: /^ {4}operator: (.*)/,
     expected: /^ {4}expected: (.*)/,
     actual: /^ {4}actual: (.*)/,
-    at: /^ {4}at: .*?\/li\/(tests\/.*)\)/
+    at: /^ {4}at: .*?\/(tests\/.*)\)/
   }
 
   const hsh = {}
