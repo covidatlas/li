@@ -18,8 +18,8 @@ test('Generate some filenames', t => {
   // Date breakdown
   const now = new Date()
   const year = now.getUTCFullYear().toString()
-  const month = (now.getUTCMonth() + 1).toString()
-  const date = now.getUTCDate().toString()
+  const month = (now.getUTCMonth() + 1).toString().padStart(2, '0')
+  const date = now.getUTCDate().toString().padStart(2, '0')
   const iso = now.toISOString().substr(0,10)
 
   let _sourceKey = 'a-place'
@@ -40,7 +40,7 @@ test('Generate some filenames', t => {
   // Do a little parts analysis
   // YYYY-MM-DD
   t.equal(parts[0], year, 'Year matches')
-  t.ok(parts[1].endsWith(month), 'Month matches') // Hacky test deals with padding
+  t.ok(parts[1], month, 'Month matches')
   t.equal(parts[2].substr(0, 2), date, 'Date matches')
 
   // Filename: the timestamp
