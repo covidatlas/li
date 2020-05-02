@@ -85,7 +85,6 @@ module.exports = {
         const normalizedTable = normalizeTable({ $, tableSelector: '.ng-scope table' })
 
         const headingRowIndex = 0
-        console.log(normalizedTable)
         const dataKeysByColumnIndex = []
         normalizedTable[headingRowIndex].forEach((heading, index) => {
           dataKeysByColumnIndex[index] = heading
