@@ -58,7 +58,6 @@ module.exports = {
 
         const summedData = transform.sumData(states)
         states.push(summedData)
-        console.table(states)
 
         const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const casesFromTotalRow = parse.number(
