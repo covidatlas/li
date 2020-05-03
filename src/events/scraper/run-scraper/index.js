@@ -2,12 +2,14 @@ const assertTotalsAreReasonable = require('./scraper-helpers/assert-totals-are-r
 const getIso2FromName = require('./scraper-helpers/get-iso2-from-name')
 const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-heading')
 const normalizeTable = require('./scraper-helpers/normalize-table')
+const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arrays')
 
 const scraperHelpers = {
   assertTotalsAreReasonable,
   getIso2FromName,
   getSchemaKeyFromHeading,
   normalizeTable,
+  transposeArrayOfArrays,
 }
 
 module.exports = async function runScraper (scraper, parsed, date) {
