@@ -2,11 +2,11 @@ const { brotliDecompressSync } = require('zlib')
 const got = require('got')
 
 async function crawl (type, params) {
-  const { url, rejectUnauthorized, cookies } = params
+  const { url, rejectUnauthorized, cookies, timeout } = params
   const getType = type !== 'headless' ? 'normal' : 'headless'
   const isLocal = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
 
-  let options = JSON.stringify({ type, url, rejectUnauthorized, cookies })
+  let options = JSON.stringify({ type, url, rejectUnauthorized, cookies, timeout })
   options = encodeURIComponent(options)
 
   const root = isLocal

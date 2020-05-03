@@ -9,22 +9,21 @@ const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const { allowed } = require(join(srcShared, 'sources', '_lib', 'crawl-types.js'))
 const validSource = require(join(process.cwd(), 'docs', 'sample-sources', 'sample.js'))
 
-/** Validate the source.
+/**
+ * Validate the source.
  * Returns { warnings: [], errors: [] }
  */
 function validateSource (source) {
   const result = { warnings: [], errors: [] }
 
-  /** Add to errors if check is falsey. */
+  // Add to errors if check is falsey
   function requirement (meetsRequirement, msg) {
-    if (!meetsRequirement)
-      result.errors.push(msg)
+    if (!meetsRequirement) result.errors.push(msg)
   }
 
-  /** Add to warnings if needsWarning. */
+  // Add to warnings if needsWarning
   function warning (needsWarning, msg) {
-    if (needsWarning)
-      result.warnings.push(msg)
+    if (needsWarning) result.warnings.push(msg)
   }
 
   const {
@@ -78,7 +77,7 @@ function validateSource (source) {
     // Ok, now let's go into the crawler(s)
     let crawlerNames = {}
     for (const crawler of crawl) {
-      const { type, data, url } = crawler
+      const { type, data, url, timeout } = crawler
 
       // Crawl type
       requirement(allowed.some(a => a === type), datedError(
@@ -104,6 +103,12 @@ function validateSource (source) {
           !crawlerNames[crawler.name], datedError(`Duplicate crawler name '${crawler.name}'; names must be unique`)
         )
         crawlerNames[crawler.name] = true
+      }
+
+      // Crawl timeout
+      if (timeout) {
+        requirement(is.number(timeout), 'Headless timeout must be a number')
+        requirement(type === 'headless', `Headless timeout is not valid for ${type}`)
       }
     }
 
@@ -142,6 +147,7 @@ function validateSource (source) {
   return result
 }
 
+// Test docs
 test('Documentation sample', t => {
   t.plan(2)
   const result = validateSource(validSource)
@@ -149,6 +155,7 @@ test('Documentation sample', t => {
   t.equal(result.errors.join('; '), '', 'no errors')
 })
 
+// Test the test
 test('validateSource catches problems', t => {
 
   // An source w/ many problems.
@@ -205,7 +212,7 @@ test('validateSource catches problems', t => {
   t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'expected errors caught')
 })
 
-/** Testing actual scrapers. */
+// Test the actual scrapers
 let warnings = []
 test('Scraper validation test', t => {
   const sources = sourceMap()
