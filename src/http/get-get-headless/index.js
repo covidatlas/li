@@ -23,12 +23,16 @@ async function getHeadless (req) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
 
-    browser = await chromium.puppeteer.launch({
+    const params = {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
       headless: chromium.headless,
-    })
+    }
+    // TODO ↓ remove me! ↓
+    console.log(`params:`, params)
+
+    browser = await chromium.puppeteer.launch(params)
     let page = await browser.newPage()
 
     await page.setUserAgent(agent)
