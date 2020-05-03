@@ -29,6 +29,10 @@ runner rate(1 hour)           # Regularly invokes crawls and scrapes
 regen-timeseries rate(1 hour) # Regularly regenerates timeseries sources
 
 
+@storage-public
+li-cache
+
+
 @tables
 # Primary location store
 locations
@@ -67,3 +71,8 @@ locations
 
 case-data
   locationID *String
+
+
+@macros
+architect/macro-storage-public
+public-bucket-policy

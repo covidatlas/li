@@ -50,5 +50,8 @@
     "*.js": [
       "eslint"
     ]
+  },
+  "dependencies": {
+    "@architect/macro-storage-public": "0.0.0"
   }
 }
