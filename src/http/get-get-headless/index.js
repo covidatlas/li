@@ -32,7 +32,19 @@ async function getHeadless (req) {
     // TODO ↓ remove me! ↓
     console.log(`params:`, params)
 
-    browser = await chromium.puppeteer.launch(params)
+    if (process.env.CI || process.env.NODE_ENV === 'testing') {
+      // TODO ↓ remove me! ↓
+      console.log(`launching plain puppeteer`)
+      // eslint-disable-next-line
+      const puppeteer = require('puppeteer')
+      browser = await puppeteer.launch()
+    }
+    else {
+      // TODO ↓ remove me! ↓
+      console.log(`using lambda puppeteer`)
+      browser = await chromium.puppeteer.launch(params)
+    }
+
     let page = await browser.newPage()
 
     await page.setUserAgent(agent)
