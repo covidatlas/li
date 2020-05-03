@@ -77,6 +77,7 @@ module.exports = {
       crawl: [
         {
           type: 'headless',
+          timeout: 15000,
           data: 'table',
           url: 'https://www.health.gov.au/resources/total-covid-19-cases-and-deaths-by-states-and-territories'
         }
