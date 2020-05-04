@@ -19,8 +19,8 @@ const normalizeTable = ({ $, tableSelector }) => {
     const $columns = $(row).find('th, td')
     $columns.each((columnIndex, column) => {
       const $column = $(column)
-      const rowSpan = Number.parseInt($column.attr('rowspan')) || 1
-      const columnSpan = Number.parseInt($column.attr('colspan')) || 1
+      const rowSpan = Number.parseInt($column.attr('rowspan'), 10) || 1
+      const columnSpan = Number.parseInt($column.attr('colspan'), 10) || 1
       const textValue = $column.text().trim()
 
       while (output[rowIndex] && output[rowIndex][columnIndex]) columnIndex++
