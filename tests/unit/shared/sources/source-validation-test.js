@@ -239,13 +239,10 @@ test('Scraper validation test', t => {
     }
   }
 
+  // Print warnings.
   if (warnings.length) {
-    setTimeout(() => {
-      console.warn('')
-      console.warn('⚠️  Warnings!')
-      for (const warn of warnings) {
-        console.warn(warn)
-      }
-    }, 100)
+    for (const warn of warnings) {
+      console.log('Warning: ' + warn)
+    }
   }
 })

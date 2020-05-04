@@ -78,33 +78,34 @@ function makeEventMessage (hsh) {
   return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
 }
 
-test('Live crawl', async t => {
+/** While crawl and scrape are separate operations, we're combining
+ * them for this test because the live crawl feeds directly into the
+ * scrape of the same data.  A failed crawl should just be a warning,
+ * because the external site is down, but a successful crawl and a
+ * failed scrape should be a failure, because it means that the scrape
+ * no longer works. */
+test('Live crawl and scrape', async t => {
   process.env.LI_CACHE_PATH = testingCache
   t.plan(sourceKeys.length + 1)
+
   for (const key of sourceKeys) {
+    let crawlCompleted = false
     try {
       await crawlerHandler(makeEventMessage({ source: key }))
-      t.pass(`${key} succeeded`)
-    } catch (err) {
-      t.fail(`${key} failed: ${err}`)
-    }
-  }
-  delete process.env.LI_CACHE_PATH
-  t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
-})
-
-// Note: this test assumes that the testingCache contains data!
-test('Live scrape', async t => {
-  process.env.LI_CACHE_PATH = testingCache
-  t.plan(sourceKeys.length + 1)
-  for (const key of sourceKeys) {
-    try {
-      const arg = makeEventMessage({ source: key, silent: true })
-      const data = await scraperHandler(arg)
+      crawlCompleted = true
+      const data = await scraperHandler(makeEventMessage({ source: key, silent: true }))
       // TODO (testing): verify the returned data struct conforms to schema.
       t.pass(`${key} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
     } catch (err) {
-      t.fail(`${key} failed: ${err}`)
+      if (!crawlCompleted) {
+        const msg = `Warning: Live ${key} crawl failed: ${err}`
+        console.log(msg)
+        t.pass(`${msg}`)
+      }
+      else {
+        // This was a scrape error, and could be a legit problem.
+        t.fail(`${key} scrape failed: ${err}`)
+      }
     }
   }
   delete process.env.LI_CACHE_PATH
