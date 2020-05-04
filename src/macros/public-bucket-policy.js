@@ -3,7 +3,7 @@ module.exports = function publicBucketPolicy (arc, cfn) {
   cfn.Resources.PublicPolicy = {
     Type : 'AWS::S3::BucketPolicy',
     Properties: {
-      Bucket: { Ref: 'LiCacheBucket' },
+      Bucket: { Ref: 'CacheBucket' },
       PolicyDocument: {
         Version: '2012-10-17',
         Statement: [
@@ -17,7 +17,7 @@ module.exports = function publicBucketPolicy (arc, cfn) {
                 '',
                 [
                   'arn:aws:s3:::',
-                  { Ref: 'LiCacheBucket' }
+                  { Ref: 'CacheBucket' }
                 ]
               ]
             }

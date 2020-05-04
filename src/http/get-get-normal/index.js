@@ -7,6 +7,9 @@ async function getNormal (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
   let { cookies, rejectUnauthorized, url } = options
+  const headers = {
+    'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
+  }
 
   try {
     const agent = 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_2) ' +
@@ -19,7 +22,7 @@ async function getNormal (req) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
 
-    let headers = {
+    let reqHeaders = {
       'user-agent': agent
     }
 
@@ -30,7 +33,7 @@ async function getNormal (req) {
     }
 
     const response = await got(url, {
-      headers,
+      headers: reqHeaders,
       timeout,
       retry: 0,
       // Throwing deprives us of raw error codes, which we want!
@@ -52,7 +55,8 @@ async function getNormal (req) {
         console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
         return {
           statusCode: 500,
-          json: { error: 'maximum_size_exceeded' }
+          json: { error: 'maximum_size_exceeded' },
+          headers
         }
       }
       // Set up response payload
@@ -76,12 +80,14 @@ async function getNormal (req) {
       const body = JSON.stringify(payload)
       return {
         statusCode: 200,
-        body
+        body,
+        headers
       }
     }
     else {
       return {
-        statusCode: status
+        statusCode: status,
+        headers
       }
     }
   }
@@ -90,7 +96,8 @@ async function getNormal (req) {
     console.log('Params:', JSON.stringify(options, null, 2))
     return {
       statusCode: 500,
-      json: { error: err.stack }
+      json: { error: err.stack },
+      headers
     }
   }
 }

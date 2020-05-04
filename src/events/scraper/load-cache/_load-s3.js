@@ -1,13 +1,12 @@
 const { gunzipSync } = require('zlib')
 const aws = require('aws-sdk')
-aws.config.setPromisesDependency(null)
 const getDatedFolders = require('./_get-dated-folders.js')
+const getCacheBucket = require('@architect/shared/utils/cache-bucket.js')
 
 const isLocal = process.env.NODE_ENV === 'testing'
-const env = process.env.NODE_ENV === 'production' ? 'production' : 'staging'
 
 const s3 = new aws.S3()
-const Bucket = `li-cache-${env}`
+const Bucket = getCacheBucket()
 
 async function getFolders (_sourceKey) {
   // Hooray recursive fns ♾

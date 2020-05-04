@@ -1,6 +1,12 @@
 const net = require('net')
 
-module.exports = function checkSandbox () {
+module.exports = function env () {
+
+  process.env.NODE_ENV = process.env.NODE_ENV || 'testing'
+  process.env.AWS_PROFILE = 'covidatlas'
+  process.env.AWS_REGION = 'us-west-1'
+  process.env.ARC_CLOUDFORMATION = 'LiStaging'
+
   net.createServer()
     .once('error', () => { /* noop */ })
     .once('listening', function () {

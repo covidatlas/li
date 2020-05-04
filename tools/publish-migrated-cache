@@ -6,9 +6,9 @@ const { join } = require('path')
 const glob = require('glob').sync
 const datetime = require('../src/shared/datetime/index.js')
 const globJoin = require('../src/shared/utils/glob-join.js')
+const getCacheBucket = require('../src/shared/utils/cache-bucket.js')
 const crypto = require('crypto')
 
-aws.config.setPromisesDependency(null)
 const s3 = new aws.S3()
 
 // ↓ Set this to true to dry-run / debug, or false if you actually want to mutate S3!
@@ -35,7 +35,7 @@ if (process.env.LATEST) {
 
 // Default to staging
 process.env.NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : 'staging'
-const Bucket = `li-cache-${process.env.NODE_ENV}`
+const Bucket = getCacheBucket()
 
 // Checks to see if file is already there
 async function head (params) {

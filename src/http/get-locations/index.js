@@ -7,7 +7,12 @@ async function getLocations () {
   const data = await arc.tables()
   const result = await data.locations.scan({})
   const locations = result.Items.map(i => i.name)
-  return { json: locations }
+  return {
+    json: locations,
+    headers: {
+      'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
+    }
+  }
 }
 
 exports.handler = arc.http.async(getLocations)
