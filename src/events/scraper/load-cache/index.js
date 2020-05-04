@@ -13,7 +13,7 @@ const isLocal = process.env.NODE_ENV === 'testing'
  * Pulls data from local cache dir or S3, depending on environment and needs
  */
 async function load (params, useS3) {
-  let { source, scraper, date, tz } = params
+  let { source, scraper, date, _dateUTC, tz } = params
   const { _sourceKey, timeseries } = source
 
   if (!isLocal) useS3 = true // Force S3 in production
@@ -53,10 +53,14 @@ async function load (params, useS3) {
         throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is after our latest cache ${latest}`)
       }
 
-      // Filter files that match date when locale-cast from UTC
+      // Filter files that match date
       files = files.filter(filename => {
-        const castDate = getLocalDateFromFilename(filename, tz)
-        return castDate === date
+        // Normally we're locale casting from UTC to the timezone of the source
+        // However, sometimes during local workflows we may want to look up files by UTC
+        const timezone = _dateUTC ? 'UTC' : tz
+        const match = _dateUTC ? _dateUTC : date
+        const castDate = getLocalDateFromFilename(filename, timezone)
+        return castDate === match
       })
     }
 

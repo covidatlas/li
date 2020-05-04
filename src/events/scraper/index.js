@@ -1,8 +1,8 @@
 const arc = require('@architect/functions')
-const datetime = require('@architect/shared/datetime/index.js')
 
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
 const findTz = require('./find-tz/index.js')
+const getDate = require('./get-date/index.js')
 const findScraper = require('./find-scraper/index.js')
 const loadCache = require('./load-cache/index.js')
 const parseCache = require('./parse-cache/index.js')
@@ -12,8 +12,6 @@ const write = require('./write/index.js')
 
 async function scrapeSource (event) {
   try {
-    let { date } = event
-
     /**
      * Load the requested source
      */
@@ -29,7 +27,7 @@ async function scrapeSource (event) {
      * Then normalize the date to the locale of the source
      * (If we don't, then anything running the source across the dateline will have issues)
      */
-    date = date ? datetime.getYYYYMMDD(date) :  datetime.cast(null, tz)
+    const { date, _dateUTC } = getDate(event, tz)
     const timeLabel = `Scrape: ${_sourceKey} / ${date}`
     console.time(timeLabel)
 
@@ -41,7 +39,7 @@ async function scrapeSource (event) {
     /**
      * Go acquire the data from the cache
      */
-    const cache = await loadCache({ source, scraper, date, tz })
+    const cache = await loadCache({ source, scraper, date, _dateUTC, tz })
 
     /**
      * Parse the requested data to be passed on to the 'scrape' function
