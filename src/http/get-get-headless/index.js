@@ -6,7 +6,7 @@ const chromium = require('chrome-aws-lambda')
 async function getHeadless (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { cookies, rejectUnauthorized, url } = options
+  let { cookies, rejectUnauthorized, url, timeout=5000 } = options
 
   let browser = null
 
@@ -15,20 +15,28 @@ async function getHeadless (req) {
                   'AppleWebKit/537.36 (KHTML, like Gecko) ' +
                   'Chrome/80.0.3987.132 Safari/537.36'
     const defaultViewport = { width: 1280, height: 800, isMobile: false }
-    const responseTimeout = 5000
-    const timeout = 30000
 
     // Important: this prevents SSL from failing
     if (rejectUnauthorized) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
 
-    browser = await chromium.puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    })
+    // Local env uses regular puppeteer
+    if (process.env.CI || process.env.NODE_ENV === 'testing') {
+      // eslint-disable-next-line
+      const puppeteer = require('puppeteer')
+      browser = await puppeteer.launch()
+    }
+    // Production uses the Lambda build
+    else {
+      browser = await chromium.puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath,
+        headless: chromium.headless,
+      })
+    }
+
     let page = await browser.newPage()
 
     await page.setUserAgent(agent)
@@ -39,7 +47,7 @@ async function getHeadless (req) {
     }
 
     const response = await page.goto(url, {
-      timeout,
+      timeout: 30000,
       waitUntil: 'networkidle2'
     })
 
@@ -48,7 +56,7 @@ async function getHeadless (req) {
 
     // We got a good response, return it
     if (ok) {
-      await page.waitFor(responseTimeout)
+      await page.waitFor(timeout)
       const html = await page.content()
       browser.close()
 

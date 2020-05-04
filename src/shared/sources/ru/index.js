@@ -42,7 +42,8 @@ module.exports = {
         const ruEntries = $.data.items.filter(({ ru }) => ru)
 
         const states = ruEntries.map(({ name, cases, cured: recovered, deaths }) => ({
-          // The slugify latinized names are quite different from the official latinizations so can't use getIso2FromName.
+          // The slugify latinized names are quite different from the
+          // official latinizations so can't use getIso2FromName.
 
           // The list contains data at federal subject level, which is the top-level political
           // divisions (including cities of Moscow and St Petersburg).
