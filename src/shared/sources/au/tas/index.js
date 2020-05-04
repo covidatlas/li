@@ -1,47 +1,43 @@
 const assert = require('assert')
-const maintainers = require('../_lib/maintainers.js')
-const parse = require('../_lib/parse.js')
-
-const country = 'iso1:ID'
+const maintainers = require('../../_lib/maintainers.js')
+const parse = require('../../_lib/parse.js')
 
 const schemaKeysByHeadingFragment = {
-  sembuh: 'recovered',
-  meninggal: 'deaths',
-  'jumlah pdp': null, // pasien dalam pengawasan: "People in monitoring"
-  'jumlah odp': null, // orang dalam pemantauan: "Patients under supervision"
-  'positif covid-19': 'cases'
+  'Cases in Tasmania': null,
+  'New cases': null,
+  'Total cases': 'cases',
+  Active: null,
+  Recovered: 'recovered',
+  Deaths: 'deaths'
 }
 
 module.exports = {
-  aggregate: 'state',
-  country,
+  country: 'iso1:AU',
+  state: 'iso2:AU-TAS',
   friendly: {
-    name: 'Ministry of Health Republic of Indonesia',
-    url: 'https://www.kemkes.go.id/'
+    name: 'Tasmanian Government',
+    url: 'https://www.coronavirus.tas.gov.au/facts/cases-and-testing-updates'
   },
   maintainers: [ maintainers.camjc ],
   scrapers: [
     {
-      startDate: '2020-02-23',
+      startDate: '2020-05-01',
       crawl: [
         {
           type: 'page',
           data: 'table',
-          url: 'https://www.kemkes.go.id/'
+          url: 'https://www.coronavirus.tas.gov.au/facts/cases-and-testing-updates'
         }
       ],
       scrape ($, date, { getSchemaKeyFromHeading, normalizeTable, transposeArrayOfArrays }) {
         const normalizedTable = transposeArrayOfArrays(
-          normalizeTable({ $, tableSelector: '.covid-case-container table' })
+          normalizeTable({ $, tableSelector: '#table12451' })
         )
 
         const headingRowIndex = 0
         const dataKeysByColumnIndex = []
         normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({
-            heading: heading.replace('(Positif COVID-19)', ''),
-            schemaKeysByHeadingFragment
-          })
+          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
         })
 
         const dataRow = normalizedTable[normalizedTable.length - 1]
@@ -49,7 +45,9 @@ module.exports = {
         const data = {}
         dataRow.forEach((value, columnIndex) => {
           const key = dataKeysByColumnIndex[columnIndex]
-          data[key] = parse.number(value.replace('.', ''))
+          if (key) {
+            data[key] = parse.number(value)
+          }
         })
 
         assert(data.cases > 0, 'Cases are not reasonable')
