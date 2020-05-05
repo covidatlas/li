@@ -8,7 +8,7 @@ const args = require('./src/cli/args.js')
 const checkSandbox = require('./src/cli/check-sandbox.js')
 const makeNice = require('./src/cli/make-nice.js')
 
-let { date } = args
+let { date, utc } = args
 let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
 
 ;(async () => {
@@ -29,7 +29,8 @@ let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
       name: 'scraper',
       payload: {
         date,
-        source: scrape
+        source: scrape,
+        isUTC: utc
       }
     })
   }

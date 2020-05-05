@@ -12,7 +12,7 @@ const write = require('./write/index.js')
 
 async function scrapeSource (event) {
   try {
-    let { date } = event
+    let { date, isUTC } = event
 
     /**
      * Load the requested source
@@ -21,9 +21,12 @@ async function scrapeSource (event) {
     const { _sourceKey } = source
 
     /**
-     * Get the timezone so we can locale-cast the specified date
+     * If date is not UTC, get the timezone so we can locale-cast the
+     * specified date.
      */
-    const tz = await findTz(source)
+    let tz = 'UTC'
+    if (!isUTC)
+      tz = await findTz(source)
 
     /**
      * Then normalize the date to the locale of the source

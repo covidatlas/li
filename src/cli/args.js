@@ -14,6 +14,11 @@ const args = require('yargs')
     description: 'Generate data for (or start the timeseries at) the provided date in YYYY-MM-DD format',
     type: 'string'
   })
+  .option('utc', {
+    alias: 'u',
+    description: 'use UTC',
+    type: 'boolean'
+  })
   .option('regenerate', {
     alias: 'r',
     description: 'Regenerate a source from scratch via cache',
