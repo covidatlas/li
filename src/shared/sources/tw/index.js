@@ -22,7 +22,7 @@ module.exports = {
   maintainers: [ maintainers.camjc ],
   scrapers: [
     {
-      startDate: '2020-01-15',
+      startDate: '2020-05-05',
       crawl: [
         {
           type: 'json',
