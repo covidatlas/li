@@ -68,9 +68,7 @@ module.exports = {
         })
 
         assert(data.cases > 0, 'Cases are not reasonable')
-        const appliedData = getTestedFromTestedNegative(data)
-        console.table(appliedData)
-        return appliedData
+        return getTestedFromTestedNegative(data)
       }
     }
   ]
