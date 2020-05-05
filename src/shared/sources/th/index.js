@@ -33,7 +33,7 @@ module.exports = {
 
         assert(stateAttributes.length > 1, 'data fetch failed, no attributes')
         const output = stateAttributes.map(item => ({
-          state: 'iso2:TH' + item.PROV_CODE.replace('00', UNASSIGNED),
+          state: `iso2:TH${item.PROV_CODE}`.replace('iso2:TH00', UNASSIGNED),
           cases: item.Count_Confirm,
           hospitalized: item.Count_Admission,
           recovered: item.Count_Recovery,
