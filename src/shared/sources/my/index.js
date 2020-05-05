@@ -62,9 +62,7 @@ module.exports = {
         const data = {}
         dataRow.forEach((value, columnIndex) => {
           const key = dataKeysByColumnIndex[columnIndex]
-          if (key) {
-            data[key] = parse.number(value)
-          }
+          data[key] = parse.number(value)
         })
 
         assert(data.cases > 0, 'Cases are not reasonable')
