@@ -6,7 +6,7 @@ const chromium = require('chrome-aws-lambda')
 async function getHeadless (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { cookies, rejectUnauthorized, url, timeout=5000 } = options
+  let { cookies, rejectUnauthorized, url, headers, timeout=5000 } = options
 
   let browser = null
 
@@ -45,6 +45,9 @@ async function getHeadless (req) {
       const cookie = Object.entries(cookies).map(([ cookie, value ]) => `${cookie}=${value}`).join('; ')
       await page.setExtraHTTPHeaders({ cookie })
     }
+    if (headers) {
+      await page.setExtraHTTPHeaders(headers)
+    }
 
     const response = await page.goto(url, {
       timeout: 30000,
@@ -52,7 +55,10 @@ async function getHeadless (req) {
     })
 
     const status = response && response.status()
-    const ok = `${status}`.startsWith(2)
+    const is2xx = `${status}`.startsWith(2)
+    const hasBody = response.body
+    // Believe it or not: we've seen 200s + empty bodies bc the request didn't have the "right" headers
+    const ok = is2xx && hasBody
 
     // We got a good response, return it
     if (ok) {
@@ -84,8 +90,9 @@ async function getHeadless (req) {
       }
     }
     else {
+
       return {
-        statusCode: status || 599 // Kinda? But 599 it's weird and noticeable
+        statusCode: is2xx ? 500 : status || 599
       }
     }
   }
