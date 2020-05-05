@@ -27,16 +27,9 @@ async function crawlSource (event) {
     // TODO maybe want to make this Promise.all once things are stable
     for (let crawl of scraper.crawl) {
       let { type, url } = crawl
-      crawl.url = typeof url === 'string'
-                     ? url
-                     : await url(crawler.client)
-
-      // A crawl may pass back a URL or { url, cookie }; extract and pass along
-      if (crawl.url.cookies) {
-        crawl.cookies = crawl.url.cookies
-      }
-      if (crawl.url.url) {
-        crawl.url = crawl.url.url
+      if (typeof url !== 'string') {
+        const result = await url(crawler.client)
+        Object.assign(crawl, result)
       }
 
       const response = await crawler(type, crawl)
