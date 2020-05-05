@@ -26,7 +26,10 @@ module.exports = {
       crawl: [
         {
           type: 'json',
-          url: 'https://covid19dashboard.cdc.gov.tw/dash4',
+          url: 'https://covid19dashboard.cdc.gov.tw/dash3',
+          headers: {
+            'Origin': 'https://919644827-atari-embeds.googleusercontent.com'
+          }
         },
       ],
       scrape ($) {
@@ -37,7 +40,6 @@ module.exports = {
             data[schemaKey] = parse.number(value)
           }
         }
-
         assert(data.cases > 0, 'Cases are not reasonable')
         return data
       }
