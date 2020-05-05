@@ -26,6 +26,7 @@ const cumulateObject = items =>
 const country = 'iso1:MM'
 
 module.exports = {
+  aggregate: 'state',
   country,
   priority: 1,
   friendly: {
