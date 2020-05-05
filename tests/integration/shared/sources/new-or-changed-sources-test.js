@@ -140,7 +140,7 @@ test('Historical scrape', async t => {
   for (const hsh of historicalScrapeTests) {
     const testname = `${hsh.key} cache scrape ${hsh.cacheDate}`
     try {
-      const arg = makeEventMessage({ source: hsh.key, date: hsh.cacheDate, silent: true, isUTC: true })
+      const arg = makeEventMessage({ source: hsh.key, date: hsh.cacheDate, silent: true, _useUTCdate: true })
       const data = await scraperHandler(arg)
       // TODO (testing): verify the returned data struct conforms to schema.
       t.ok(true, `${testname} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)

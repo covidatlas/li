@@ -14,11 +14,6 @@ const args = require('yargs')
     description: 'Generate data for (or start the timeseries at) the provided date in YYYY-MM-DD format',
     type: 'string'
   })
-  .option('utc', {
-    alias: 'u',
-    description: 'use UTC',
-    type: 'boolean'
-  })
   .option('regenerate', {
     alias: 'r',
     description: 'Regenerate a source from scratch via cache',
@@ -31,6 +26,11 @@ const args = require('yargs')
   .option('runner', {
     description: 'Fire the task runner (internal testing only)',
     type: 'string'
+  })
+  .option('utc', {
+    alias: 'u',
+    description: 'Internal / testing only / NOT for production use: scrape a UTC date specified in YYYY-MM-DD format',
+    type: 'boolean'
   })
   .help()
   .alias('help', 'h')

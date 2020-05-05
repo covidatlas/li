@@ -30,7 +30,7 @@ let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
       payload: {
         date,
         source: scrape,
-        isUTC: utc
+        _useUTCdate: utc
       }
     })
   }
