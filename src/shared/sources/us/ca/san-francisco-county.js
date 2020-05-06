@@ -3,8 +3,8 @@ const maintainers = require('../../_lib/maintainers.js')
 
 module.exports = {
   country: 'iso1:US',
-  state: 'CA',
-  county: 'San Francisco County',
+  state: 'iso2:US-CA',
+  county: 'fips:06075',
   maintainers: [ maintainers.jbencina ],
   friendly: {
     name: 'SF Department of Public Health',
