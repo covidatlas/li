@@ -140,7 +140,7 @@ test('Historical scrape', async t => {
   for (const hsh of historicalScrapeTests) {
     const testname = `${hsh.key} cache scrape ${hsh.cacheDate}`
     try {
-      const arg = makeEventMessage({ source: hsh.key, date: hsh.cacheDate, silent: true })
+      const arg = makeEventMessage({ source: hsh.key, date: hsh.cacheDate, silent: true, _useUTCdate: true })
       const data = await scraperHandler(arg)
       // TODO (testing): verify the returned data struct conforms to schema.
       t.ok(true, `${testname} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
@@ -156,12 +156,18 @@ test('Teardown', async t => {
    * listening to the sandbox port + 1 (see
    * https://github.com/architect/sandbox/blob/master/src/sandbox/index.js,
    * search for 'process.env.ARC_EVENTS_PORT').  If the sandbox is
-   * closed and events are still pending, ECONNREFUSED is thrown.  If
-   * unhandled, this crashes the Node process, including tape, so we'll
-   * ignore just these errors for the sake of testing. */
+   * closed and events are still pending, ECONNREFUSED or ECONNRESET
+   * is thrown.  If unhandled, this crashes the Node process,
+   * including tape, so we'll ignore just these errors for the sake of
+   * testing. */
   process.on('uncaughtException', err => {
-    if (err.message === `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`) {
-      console.error('(Ignoring sandbox exception thrown during integration test Teardown)')
+    const ignoreExceptions = [
+      `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
+      `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`
+    ]
+    if (ignoreExceptions.includes(err.message)) {
+      const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
+      console.error(msg)
     }
     else
       throw err
