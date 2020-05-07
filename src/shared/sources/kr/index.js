@@ -2,8 +2,7 @@ const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
-
-const UNASSIGNED = '(unassigned)'
+const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:KR'
 
@@ -39,7 +38,8 @@ module.exports = {
             'http://ncov.mohw.go.kr/en/bdBoardList.do?brdId=16&brdGubun=162&dataGubun=&ncvContSeq=&contSeq=&board_id='
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
+      scrape ($, date, helpers) {
+        const { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable } = helpers
         const normalizedTable = normalizeTable({ $, tableSelector: 'table.num' })
 
         const headingRowIndex = 1
