@@ -1,4 +1,3 @@
-const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
@@ -42,10 +41,7 @@ module.exports = {
         })
 
         // Create new array with just the state data (no headings, comments, totals)
-        const stateDataRows = normalizedTable.slice(1, 33)
-
-        const statesCount = 32
-        assert.equal(stateDataRows.length, statesCount, 'Wrong number of rows found')
+        const stateDataRows = normalizedTable.filter(row => row[0].match(/\d/))
 
         const states = []
         stateDataRows.forEach((row) => {
@@ -56,7 +52,11 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName({ country, name: stateData.state.replace('Telengana', 'Telangana') }),
+            state: getIso2FromName({
+              country, name: stateData.state
+                .replace('Telengana', 'Telangana')
+                .replace('Dadar Nagar Haveli', 'Dadra and Nagar Haveli')
+            }),
             cases: parse.number(stateData.cases),
             deaths: parse.number(stateData.deaths),
             recovered: parse.number(stateData.recovered)
@@ -69,7 +69,7 @@ module.exports = {
         const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const casesFromTotalRow = parse.number(
           normalizedTable.find(
-            row => row.some(column => column === 'Total number of confirmed cases in India')
+            row => row.some(cell => cell === 'Total number of confirmed cases in India')
           )[indexForCases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
