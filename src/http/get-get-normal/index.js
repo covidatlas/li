@@ -6,8 +6,8 @@ const got = require('got')
 async function getNormal (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { cookies, rejectUnauthorized, url } = options
-  const headers = {
+  let { cookies, rejectUnauthorized, url, headers } = options
+  const responseHeaders = {
     'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
   }
 
@@ -22,18 +22,22 @@ async function getNormal (req) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
 
-    let reqHeaders = {
+    let requestHeaders = {
       'user-agent': agent
+    }
+
+    if (headers) {
+      requestHeaders = Object.assign(requestHeaders, headers)
     }
 
     // Reconstitute cookies
     if (cookies) {
       let cookie = Object.entries(cookies).map(([ cookie, value ]) => `${cookie}=${value}`).join('; ')
-      headers.cookie = cookie
+      requestHeaders.cookie = cookie
     }
 
     const response = await got(url, {
-      headers: reqHeaders,
+      headers: requestHeaders,
       timeout,
       retry: 0,
       // Throwing deprives us of raw error codes, which we want!
@@ -44,7 +48,10 @@ async function getNormal (req) {
     })
 
     const status = response.statusCode
-    const ok = `${status}`.startsWith(2)
+    const is2xx = `${status}`.startsWith(2)
+    const hasBody = response.body
+    // Believe it or not: we've seen 200s + empty bodies bc the request didn't have the "right" headers
+    const ok = is2xx && hasBody
 
     // We presumably got a good response, return it
     if (ok) {
@@ -56,7 +63,7 @@ async function getNormal (req) {
         return {
           statusCode: 500,
           json: { error: 'maximum_size_exceeded' },
-          headers
+          headers: responseHeaders
         }
       }
       // Set up response payload
@@ -81,13 +88,13 @@ async function getNormal (req) {
       return {
         statusCode: 200,
         body,
-        headers
+        headers: responseHeaders
       }
     }
     else {
       return {
-        statusCode: status,
-        headers
+        headers: responseHeaders,
+        statusCode: is2xx ? 500 : status || 599
       }
     }
   }

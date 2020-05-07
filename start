@@ -7,7 +7,7 @@ const arc = require('@architect/functions')
 const timeseriesRegenerator = require('./src/scheduled/regen-timeseries/index.js').handler
 const taskRunner = require('./src/scheduled/runner/index.js').handler
 
-let { date } = args
+let { date, utc } = args
 let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
 
 ;(async () => {
@@ -24,7 +24,8 @@ let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
       name: 'scraper',
       payload: {
         date,
-        source: scrape
+        source: scrape,
+        _useUTCdate: utc
       }
     })
   }

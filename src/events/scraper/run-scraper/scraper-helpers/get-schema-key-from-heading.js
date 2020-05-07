@@ -10,6 +10,8 @@ const schemaKeys = [
   'recovered',
   'state',
   'county',
+  'icu',
+  'testedNegative', // Not in final schema, used for negative results to then combine with cases to get `tested` number.
   null // Use when we want to discard the column.
 ]
 
@@ -34,7 +36,7 @@ const assertAllValuesAreInSchema = (schemaKeysByHeadingFragment) => {
     assert(
       schemaKeys.some(validKey => validKey === potentialKey),
       `Invalid value in schemaKeysByHeadingFragment: ${potentialKey}`)
-    )
+  )
 }
 
 const getSchemaKeyFromHeading = ({ heading, schemaKeysByHeadingFragment }) => {

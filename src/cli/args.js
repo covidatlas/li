@@ -27,6 +27,11 @@ const args = require('yargs')
     description: 'Fire the task runner (internal testing only)',
     type: 'string'
   })
+  .option('utc', {
+    alias: 'u',
+    description: 'Internal / testing only / NOT for production use: scrape a UTC date specified in YYYY-MM-DD format',
+    type: 'boolean'
+  })
   .help()
   .alias('help', 'h')
   .argv
