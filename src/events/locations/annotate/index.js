@@ -22,6 +22,7 @@ module.exports = function annotateLocations (locations) {
 
       if (level === 'iso1') {
         const {
+          area_m2,
           center_lon,
           center_lat,
           countrylevel_id,
@@ -31,6 +32,7 @@ module.exports = function annotateLocations (locations) {
         } = iso1Codes[id]
 
         // Geo
+        if (area_m2) location.area = { squareMeters: area_m2 }
         if (center_lon && center_lat) location.coordinates = [ center_lon, center_lat ]
 
         // Other data
@@ -42,6 +44,7 @@ module.exports = function annotateLocations (locations) {
       }
       if (level === 'iso2') {
         const {
+          area_m2,
           center_lon,
           center_lat,
           countrylevel_id,
@@ -51,6 +54,7 @@ module.exports = function annotateLocations (locations) {
         } = iso2Codes[id]
 
         // Geo
+        if (area_m2) location.area = { squareMeters: area_m2 }
         if (center_lon && center_lat) location.coordinates = [ center_lon, center_lat ]
 
         // Other data
@@ -62,6 +66,8 @@ module.exports = function annotateLocations (locations) {
       }
       if (level === 'fips') {
         const {
+          area_m2,
+          census_data,
           center_lon,
           center_lat,
           countrylevel_id,
@@ -71,6 +77,16 @@ module.exports = function annotateLocations (locations) {
         } = fipsCodes[id]
 
         // Geo
+        let area = {}
+        if (area_m2) area.squareMeters = area_m2
+        if (census_data) {
+          const { ALAND, AWATER } = census_data
+          if (ALAND) area.landSquareMeters = ALAND
+          if (AWATER) area.waterSquareMeters = AWATER
+        }
+        if (Object.keys(area).length) {
+          location.area = area
+        }
         if (center_lon && center_lat) location.coordinates = [ center_lon, center_lat ]
 
         // Other data
