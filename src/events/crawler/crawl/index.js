@@ -4,12 +4,14 @@ const got = require('got')
 async function crawl (type, params) {
   const getType = type !== 'headless' ? 'normal' : 'headless'
   const isLocal = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
+  const isStaging = process.env.NODE_ENV === 'staging'
+
   let options = JSON.stringify(Object.assign(params, { type }))
   options = encodeURIComponent(options)
 
   const root = isLocal
     ? `http://localhost:${process.env.PORT || 3333}`
-    : `http://localhost:${process.env.PORT || 3333}` // FIXME change to prod url
+    : `https://api.${isStaging ? 'staging.' : ''}covidatlas.com`
   const path = `${root}/get/${getType}?options=${options}`
   const crawlToken = process.env.CRAWL_TOKEN ? process.env.CRAWL_TOKEN : '' // Don't break the buffer
   const token = Buffer.from(crawlToken).toString('base64')

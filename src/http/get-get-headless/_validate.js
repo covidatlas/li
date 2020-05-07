@@ -1,5 +1,12 @@
 module.exports = function validate (req) {
   const isLocal = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
+  let nope = {
+    statusCode: 400,
+    headers: {
+      'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
+    }
+  }
+
   try {
     if (!isLocal) {
       const auth = req.headers.authorization || req.headers.Authorization // lolhttp
@@ -10,15 +17,11 @@ module.exports = function validate (req) {
     let options = decodeURIComponent(req.queryStringParameters.options)
     options = JSON.parse(options)
     if (!options.url) {
-      return {
-        statusCode: 400
-      }
+      return nope
     }
     return
   }
   catch (err) {
-    return {
-      statusCode: 400
-    }
+    return nope
   }
 }

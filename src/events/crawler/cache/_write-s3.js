@@ -1,13 +1,12 @@
 const aws = require('aws-sdk')
 const { join } = require('path')
 const { gzipSync } = require('zlib')
+const getCacheBucket = require('@architect/shared/utils/cache-bucket.js')
 
 module.exports = async function writeS3 (data, filepath, filename) {
-  aws.config.setPromisesDependency(null)
-
   const s3 = new aws.S3()
 
-  const Bucket = `li-cache-${process.env.NODE_ENV}`
+  const Bucket = getCacheBucket()
   const Key = join(filepath, `${filename}.gz`)
   const Body = gzipSync(data)
 

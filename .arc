@@ -7,6 +7,7 @@ profile covidatlas
 region us-west-1
 
 
+@cdn
 @http
 get /get/normal
 get /get/headless
@@ -24,9 +25,13 @@ regenerator # Regenerates a source from cache
 status      # Status updater
 
 
-@scheduled
-runner rate(1 hour)           # Regularly invokes crawls and scrapes
-regen-timeseries rate(1 hour) # Regularly regenerates timeseries sources
+# @scheduled
+# runner rate(2 hour)           # Regularly invokes crawls and scrapes
+# regen-timeseries rate(12 hour) # Regularly regenerates timeseries sources
+
+
+@storage-public
+cache   # Main crawler cache
 
 
 @tables
@@ -61,9 +66,15 @@ status-logs
   source *String
   ts **String
 
+
 @indexes
 locations
   locationID *String
 
 case-data
   locationID *String
+
+
+@macros
+architect/macro-storage-public
+public-bucket-policy

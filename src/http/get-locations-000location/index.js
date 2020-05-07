@@ -2,14 +2,19 @@ const arc = require('@architect/functions')
 const sorter = require('@architect/shared/utils/sorter.js')
 
 async function getLocation (req) {
+  const headers = {
+    'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
+  }
   try {
     const data = await arc.tables()
     const name = req.pathParameters.location
     const result = await data.locations.get({ name })
+
     if (!result) {
       return {
         statusCode: 404,
-        json: { ok: false }
+        json: { ok: false },
+        headers
       }
     }
 
@@ -32,13 +37,15 @@ async function getLocation (req) {
     // Return data reverse chronologically
     caseData = sorter.objects(caseData).reverse()
     return {
-      json: caseData
+      json: caseData,
+      headers
     }
   }
   catch (err) {
     console.log(err)
     return {
-      statusCode: 500
+      statusCode: 500,
+      headers
     }
   }
 }

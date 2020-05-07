@@ -10,6 +10,10 @@ async function getHeadless (req) {
 
   let browser = null
 
+  const responseHeaders = {
+    'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
+  }
+
   try {
     const agent = 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_2) ' +
                   'AppleWebKit/537.36 (KHTML, like Gecko) ' +
@@ -73,7 +77,8 @@ async function getHeadless (req) {
         console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
         return {
           statusCode: 500,
-          json: { error: 'maximum_size_exceeded' }
+          json: { error: 'maximum_size_exceeded' },
+          headers: responseHeaders
         }
       }
       // Set up response payload
@@ -86,12 +91,13 @@ async function getHeadless (req) {
       const body = JSON.stringify(payload)
       return {
         statusCode: 200,
-        body
+        body,
+        headers: responseHeaders
       }
     }
     else {
-
       return {
+        headers: responseHeaders,
         statusCode: is2xx ? 500 : status || 599
       }
     }
@@ -104,7 +110,8 @@ async function getHeadless (req) {
     console.log('Params:', JSON.stringify(options, null, 2))
     return {
       statusCode: 500,
-      json: { error: err.stack }
+      json: { error: err.stack },
+      headers: responseHeaders
     }
   }
 }

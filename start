@@ -1,21 +1,16 @@
 #! /usr/bin/env node
+require('./src/cli/env.js')()
+const args = require('./src/cli/args.js')
+const makeNice = require('./src/cli/make-nice.js')
 const arc = require('@architect/functions')
 
 const timeseriesRegenerator = require('./src/scheduled/regen-timeseries/index.js').handler
 const taskRunner = require('./src/scheduled/runner/index.js').handler
 
-const args = require('./src/cli/args.js')
-const checkSandbox = require('./src/cli/check-sandbox.js')
-const makeNice = require('./src/cli/make-nice.js')
-
 let { date, utc } = args
 let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
 
 ;(async () => {
-  checkSandbox()
-
-  process.env.NODE_ENV = 'testing'
-
   if (crawl) {
     await arc.events.publish({
       name: 'crawler',
