@@ -20,7 +20,7 @@ module.exports = function annotateLocations (locations) {
       const level = p[0]
       const id = p[1].toUpperCase()
 
-      if (level === 'iso1') {
+      if (level === 'iso1' && iso1Codes[id]) {
         const {
           area_m2,
           center_lon,
@@ -42,7 +42,7 @@ module.exports = function annotateLocations (locations) {
         add('tz', timezone)
         add('level', 'country')
       }
-      if (level === 'iso2') {
+      if (level === 'iso2' && iso2Codes[id]) {
         const {
           area_m2,
           center_lon,
@@ -64,7 +64,7 @@ module.exports = function annotateLocations (locations) {
         add('tz', timezone)
         add('level', 'state')
       }
-      if (level === 'fips') {
+      if (level === 'fips' && fipsCodes[id]) {
         const {
           area_m2,
           census_data,

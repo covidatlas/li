@@ -2,8 +2,7 @@ const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
-
-const UNASSIGNED = '(unassigned)'
+const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:NZ'
 

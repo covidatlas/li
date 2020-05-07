@@ -1,7 +1,6 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
-
-const UNASSIGNED = '(unassigned)'
+const { UNASSIGNED } = require('../_lib/constants.js')
 
 module.exports = {
   aggregate: 'state',

@@ -1,8 +1,7 @@
 const assert = require('assert')
 const slugify = require('slugify')
 const iso2 = require('country-levels/iso2.json')
-
-const UNASSIGNED = '(unassigned)'
+const { UNASSIGNED } = require('@architect/shared/sources/_lib/constants.js')
 
 const slugifyOptions = { lower: true }
 
@@ -17,19 +16,18 @@ slugify.extend({ 'ō': 'o' })
  * @param {string} options.name - The name to look up ("Australian Capital Territory")
  * @returns {string} - The iso2 ID ('iso2:AU-ACT').
  */
-const getIso2FromName = ({ country, name }) => {
+module.exports = function getIso2FromName (params) {
+  const { country, name } = params
   const iso2WithinIso1 = Object.values(iso2).filter(item => item.iso2.startsWith(country.replace('iso1:', '')))
   if (name === UNASSIGNED) {
-    return name
+    return `iso2:${name}`
   }
   const slugName = slugify(name, slugifyOptions)
   const foundItems = iso2WithinIso1.filter(
     (canonicalItem) => slugify(canonicalItem.name, slugifyOptions).includes(slugName)
   )
   assert.equal(foundItems.length, 1,
-    `no single match found for ${name} in ${country}. Found ${iso2WithinIso1.map((item) => item.name).join()}`
+    `No single match found for ${name} in ${country}. Found ${iso2WithinIso1.map((item) => item.name).join()}`
   )
   return foundItems[0].countrylevel_id
 }
-
-module.exports = getIso2FromName
