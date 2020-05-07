@@ -78,7 +78,7 @@ async function getHeadless (req) {
         return {
           statusCode: 500,
           json: { error: 'maximum_size_exceeded' },
-          headers
+          headers: responseHeaders
         }
       }
       // Set up response payload
@@ -92,11 +92,10 @@ async function getHeadless (req) {
       return {
         statusCode: 200,
         body,
-        headers
+        headers: responseHeaders
       }
     }
     else {
-
       return {
         headers: responseHeaders,
         statusCode: is2xx ? 500 : status || 599
@@ -112,7 +111,7 @@ async function getHeadless (req) {
     return {
       statusCode: 500,
       json: { error: err.stack },
-      headers
+      headers: responseHeaders
     }
   }
 }

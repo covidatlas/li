@@ -104,7 +104,7 @@ async function getNormal (req) {
     return {
       statusCode: 500,
       json: { error: err.stack },
-      headers
+      headers: responseHeaders
     }
   }
 }
