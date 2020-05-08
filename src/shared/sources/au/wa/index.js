@@ -31,7 +31,6 @@ module.exports = {
           )
 
         assert(item, 'item for today not found')
-        console.table(item)
 
         const data = {
           cases: item.Confirmed,
