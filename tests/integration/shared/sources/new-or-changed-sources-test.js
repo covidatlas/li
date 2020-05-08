@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'testing'
 const { join, sep } = require('path')
 const fs = require('fs')
 const test = require('tape')
@@ -8,8 +9,8 @@ const srcShared = join(process.cwd(), 'src', 'shared')
 const globJoin = require(join(srcShared, 'utils', 'glob-join.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const srcEvents = join(process.cwd(), 'src', 'events')
-const crawlerHandler = require(join(srcEvents, 'crawler', 'index.js')).handler
-const scraperHandler = require(join(srcEvents, 'scraper', 'index.js')).handler
+const crawl = require(join(srcEvents, 'crawler', '_crawl.js'))
+const scrape = require(join(srcEvents, 'scraper', '_scrape.js'))
 const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
 
 /**
@@ -36,7 +37,6 @@ const changedSources = require(join(__dirname, '_lib', 'changed-sources.js'))
 let failcount = 0
 test.onFailure(() => { failcount++ })
 
-process.env.NODE_ENV = 'testing'
 
 /** A fake cache, destroyed and re-created for the test run. */
 const testingCache = join(process.cwd(), 'zz-testing-fake-cache')
@@ -74,10 +74,6 @@ test('Setup', async t => {
   t.pass('Sandbox started')
 })
 
-function makeEventMessage (hsh) {
-  return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
-}
-
 /** While crawl and scrape are separate operations, we're combining
  * them for this test because the live crawl feeds directly into the
  * scrape of the same data.  A failed crawl should just be a warning,
@@ -91,9 +87,9 @@ test('Live crawl and scrape', async t => {
   for (const key of sourceKeys) {
     let crawlCompleted = false
     try {
-      await crawlerHandler(makeEventMessage({ source: key }))
+      await crawl({ source: key })
       crawlCompleted = true
-      const data = await scraperHandler(makeEventMessage({ source: key, silent: true }))
+      const data = await scrape({ source: key })
       // TODO (testing): verify the returned data struct conforms to schema.
       t.pass(`${key} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
     } catch (err) {
@@ -140,8 +136,7 @@ test('Historical scrape', async t => {
   for (const hsh of historicalScrapeTests) {
     const testname = `${hsh.key} cache scrape ${hsh.cacheDate}`
     try {
-      const arg = makeEventMessage({ source: hsh.key, date: hsh.cacheDate, silent: true, _useUTCdate: true })
-      const data = await scraperHandler(arg)
+      const data = await scrape({ source: hsh.key, date: hsh.cacheDate, _useUTCdate: true })
       // TODO (testing): verify the returned data struct conforms to schema.
       t.ok(true, `${testname} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
     } catch (err) {
@@ -152,27 +147,6 @@ test('Historical scrape', async t => {
 })
 
 test('Teardown', async t => {
-  /** architect sandbox uses an internal server to handle events,
-   * listening to the sandbox port + 1 (see
-   * https://github.com/architect/sandbox/blob/master/src/sandbox/index.js,
-   * search for 'process.env.ARC_EVENTS_PORT').  If the sandbox is
-   * closed and events are still pending, ECONNREFUSED or ECONNRESET
-   * is thrown.  If unhandled, this crashes the Node process,
-   * including tape, so we'll ignore just these errors for the sake of
-   * testing. */
-  process.on('uncaughtException', err => {
-    const ignoreExceptions = [
-      `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
-      `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`
-    ]
-    if (ignoreExceptions.includes(err.message)) {
-      const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
-      console.error(msg)
-    }
-    else
-      throw err
-  })
-
   t.plan(2)
   if (fs.existsSync(testingCache)) {
     fs.rmdirSync(testingCache, { recursive: true })
