@@ -1,11 +1,12 @@
 const parse = require('../../_lib/parse.js')
-
+const maintainers = require('../../_lib/maintainers.js')
 const gssCodeMap = require('../_shared.js')
 
 module.exports = {
   country: 'iso1:GB',
   state: 'iso2:GB-ENG',
   aggregate: 'county',
+  maintainers: [ maintainers.qgolsteyn ],
   scrapers: [
     {
       startDate: '2020-03-01',
