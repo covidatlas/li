@@ -131,6 +131,14 @@ function validateSource (source) {
     requirement(is.string(friendly.url) || !friendly.url, 'Friendly url must be a string')
   }
 
+  // Maintainers
+  const { maintainers } = source
+  warning(!maintainers, 'Missing maintainers, please list one or more!')
+  if (maintainers) {
+    const nullMaintainers = maintainers.filter(m => !m)
+    requirement(nullMaintainers.length === 0, 'Should not have any null maintainers')
+  }
+
   // Priority
   if (priority) requirement(is.number(priority), 'Priority must be a number')
 
@@ -138,11 +146,10 @@ function validateSource (source) {
   if (endDate) requirement(datetime.looksLike.YYYYMMDD(endDate), 'endDate must be ISO formatted (YYYY-MM-DD)')
 
   // Optional and legacy fields
-  const { url, type, data, maintainers } = source
+  const { url, type, data } = source
   warning(url, `Source contains a 'url' param; please move this into a crawler.`)
   warning(type, `Source contains a 'type' param; please move this into a crawler.`)
   warning(data, `Source contains a 'data' param; please move this into a crawler.`)
-  warning(!maintainers, `Missing maintainers, please list one or more!`)
 
   return result
 }
