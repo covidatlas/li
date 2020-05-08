@@ -12,18 +12,6 @@ const schemaKeysByHeadingFragment = {
   'Kematian': 'deaths',
 }
 
-/**
- * @param {{ cases?: number; deaths?: number; recovered?: number; testedNegative?: number; tested?: number }} inputData
- */
-const getTestedFromTestedNegative = inputData => {
-  const data = { ...inputData }
-  if (!data.tested && data.testedNegative > 0) {
-    data.tested = data.testedNegative + data.cases
-    delete data.testedNegative
-  }
-  return data
-}
-
 module.exports = {
   aggregate: 'country',
   country,
@@ -43,7 +31,9 @@ module.exports = {
           url: 'https://www.moh.gov.my/index.php/pages/view/2019-ncov-wuhan'
         },
       ],
-      scrape ($, date, { getSchemaKeyFromHeading, normalizeTable, transposeArrayOfArrays }) {
+      scrape ($, date, {
+        getDataWithTestedNegativeApplied, getSchemaKeyFromHeading, normalizeTable, transposeArrayOfArrays
+      }) {
         const normalizedTable = transposeArrayOfArrays(
           normalizeTable({ $, tableSelector: 'center > table' })
         )
@@ -66,7 +56,7 @@ module.exports = {
         })
 
         assert(data.cases > 0, 'Cases are not reasonable')
-        return getTestedFromTestedNegative(data)
+        return getDataWithTestedNegativeApplied(data)
       }
     }
   ]

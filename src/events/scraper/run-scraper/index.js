@@ -1,6 +1,7 @@
 const assertTotalsAreReasonable = require('./scraper-helpers/assert-totals-are-reasonable')
 const getIso2FromName = require('./scraper-helpers/get-iso2-from-name')
 const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-heading')
+const getDataWithTestedNegativeApplied = require('./scraper-helpers/get-data-with-tested-negative-applied')
 const groupBy = require('./scraper-helpers/group-by')
 const normalizeTable = require('./scraper-helpers/normalize-table')
 const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arrays')
@@ -9,6 +10,7 @@ const scraperHelpers = {
   assertTotalsAreReasonable,
   getIso2FromName,
   getSchemaKeyFromHeading,
+  getDataWithTestedNegativeApplied,
   groupBy,
   normalizeTable,
   transposeArrayOfArrays,
