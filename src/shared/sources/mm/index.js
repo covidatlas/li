@@ -77,7 +77,7 @@ module.exports = {
 
         const summedData = transform.sumData(states)
         states.push(summedData)
-        assert(states.cases > 0, 'Cases are not reasonable')
+        assert(summedData.cases > 0, 'Cases are not reasonable')
         return states
       }
     }
