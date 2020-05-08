@@ -13,7 +13,6 @@ const schemaKeysByHeadingFragment = {
 }
 
 module.exports = {
-  aggregate: 'state',
   country,
   friendly: {
     name: 'Ministry of Health Republic of Indonesia',
