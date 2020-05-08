@@ -1,4 +1,5 @@
 const parse = require('../../_lib/parse.js')
+const maintainers = require('../../_lib/maintainers.js')
 const transform = require('../../_lib/transform.js')
 
 // region definitions are found on https://en.wikipedia.org/wiki/NHS_Scotland
@@ -24,6 +25,7 @@ module.exports = {
   country: 'iso1:GB',
   state: 'iso2:GB-SCT',
   aggregate: 'county',
+  maintainers: [ maintainers.lazd ],
   scrapers: [
     {
       startDate: '2020-03-01',

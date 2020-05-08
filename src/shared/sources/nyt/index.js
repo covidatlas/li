@@ -1,5 +1,6 @@
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
+const maintainers = require('../_lib/maintainers.js')
 const geography = require('../_lib/geography/index.js')
 const datetime = require('../../datetime/index.js')
 
@@ -7,6 +8,7 @@ module.exports = {
   country: 'iso1:US',
   timeseries: true,
   aggregate: 'county',
+  maintainers: [ maintainers.lazd ],
   priority: -1,
   tz: 'America/Los_Angeles',
   friendly: {

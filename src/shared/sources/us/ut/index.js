@@ -1,11 +1,13 @@
 const parse = require('../../_lib/parse.js')
 const transform = require('../../_lib/transform.js')
+const maintainers = require('../../_lib/maintainers.js')
 const geography = require('../../_lib/geography/index.js')
 
 module.exports = {
   state: 'UT',
   country: 'iso1:US',
   aggregate: 'county',
+  maintainers: [ maintainers.lazd ],
   scrapers: [
     {
       startDate: '2020-01-01',
