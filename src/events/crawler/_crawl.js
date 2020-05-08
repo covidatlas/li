@@ -1,4 +1,7 @@
+const datetime = require('@architect/shared/datetime/index.js')
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
+const findScraper = require('@architect/shared/sources/_lib/find-scraper.js')
+const findTz = require('../scraper/find-tz/index.js')
 const crawler = require('./crawler')
 const cache = require('./cache')
 
@@ -7,11 +10,13 @@ const cache = require('./cache')
  */
 module.exports = async function crawl (event) {
   try {
+    let { _useUTCdate } = event
+
     /**
      * Load the requested source
      */
     const source = getSource(event)
-    const { scrapers, _sourceKey } = source
+    const { _sourceKey } = source
 
     const timeLabel = `Crawl ${_sourceKey}`
     console.time(timeLabel)
@@ -19,8 +24,11 @@ module.exports = async function crawl (event) {
     /**
      * Select the current scraper from the source's available scrapers
      */
-    // TODO actually calculate latest start date; this hack works for now
-    const scraper = scrapers[scrapers.length - 1]
+    let tz = await findTz(source)
+    // Sometimes during certain local workflows we may want to use UTC instead
+    if (_useUTCdate) tz = 'UTC'
+    const date = datetime.cast(null, tz)
+    const scraper = findScraper(source, date)
 
     /**
      * Prepare all the 'get' results to be cached

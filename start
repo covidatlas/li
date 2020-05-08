@@ -15,7 +15,8 @@ let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
     await arc.events.publish({
       name: 'crawler',
       payload: {
-        source: crawl
+        source: crawl,
+        _useUTCdate: utc
       }
     })
   }
