@@ -1,6 +1,5 @@
 const assert = require('assert')
 const maintainers = require('../../_lib/maintainers.js')
-// const transform = require('../../_lib/transform.js')
 const datetime = require('../../../datetime/index.js')
 
 module.exports = {
