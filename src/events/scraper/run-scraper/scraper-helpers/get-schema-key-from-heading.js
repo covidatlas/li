@@ -5,12 +5,13 @@ const slugifyOptions = { lower: true }
 
 const schemaKeys = [
   'cases',
-  'hospitalized',
+  'county',
   'deaths',
+  'hospitalized',
+  'icu',
   'recovered',
   'state',
-  'county',
-  'icu',
+  'tested',
   'testedNegative', // Not in final schema, used for negative results to then combine with cases to get `tested` number.
   null // Use when we want to discard the column.
 ]
