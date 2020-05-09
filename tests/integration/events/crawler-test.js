@@ -3,12 +3,8 @@ process.env.NODE_ENV = 'testing'
 const test = require('tape')
 const { join } = require('path')
 const intDir = join(process.cwd(), 'tests', 'integration')
-const intLib = join(process.cwd(), 'tests', 'integration', '_lib')
-const sandbox = require(join(intLib, 'sandbox.js'))
-const testCache = require(join(intLib, 'testcache.js'))
-
-const srcShared = join(process.cwd(), 'src', 'shared')
-const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
+const sandbox = require(join(intDir, '_lib', 'sandbox.js'))
+const testCache = require(join(intDir, '_lib', 'testcache.js'))
 const srcEvents = join(process.cwd(), 'src', 'events')
 const crawlerHandler = require(join(srcEvents, 'crawler', 'index.js')).handler
 
@@ -17,14 +13,6 @@ const fs = require('fs')
 test('Setup', async t => {
   await sandbox.start()
   t.end()
-})
-
-test('Source map contains fake', async t => {
-  t.plan(1)
-  process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
-  const keys = Object.keys(sourceMap())
-  t.ok(keys.includes('fake'), `should have fake source in keys [ ${keys.join()} ]`)
-  delete process.env.LI_SOURCES_PATH
 })
 
 /** Create AWS event payload for the crawl/scrape handlers. */
