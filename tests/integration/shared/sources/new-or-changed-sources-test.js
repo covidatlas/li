@@ -1,9 +1,11 @@
 process.env.NODE_ENV = 'testing'
 const { join, sep } = require('path')
-const fs = require('fs')
 const test = require('tape')
 const glob = require('glob')
-const sandbox = require('@architect/sandbox')
+
+const intLib = join(process.cwd(), 'tests', 'integration', '_lib')
+const sandbox = require(join(intLib, 'sandbox.js'))
+const testCache = require(join(intLib, 'testcache.js'))
 
 const srcShared = join(process.cwd(), 'src', 'shared')
 const globJoin = require(join(srcShared, 'utils', 'glob-join.js'))
@@ -38,14 +40,6 @@ let failcount = 0
 test.onFailure(() => { failcount++ })
 
 
-/** A fake cache, destroyed and re-created for the test run. */
-const testingCache = join(process.cwd(), 'zz-testing-fake-cache')
-
-/** By default sandbox is started with port 3333, so specifying the
- * port here lets the tests run their own sandbox without colliding
- * with the existing port. */
-const sandboxPort = 5555
-
 let sourceKeys = []
 if (process.env.TEST_ALL) {
   sourceKeys = Object.keys(sourceMap())
@@ -63,15 +57,9 @@ if (sourceKeys.length === 0) {
 }
 
 test('Setup', async t => {
-  t.plan(2)
-  if (fs.existsSync(testingCache)) {
-    fs.rmdirSync(testingCache, { recursive: true })
-  }
-  fs.mkdirSync(testingCache)
-  t.ok(fs.existsSync(testingCache), 'Created temp directory')
-
-  await sandbox.start({ port: sandboxPort, quiet: true })
-  t.pass('Sandbox started')
+  t.plan(1)
+  await sandbox.start()
+  t.pass('Done')
 })
 
 /** While crawl and scrape are separate operations, we're combining
@@ -81,8 +69,9 @@ test('Setup', async t => {
  * failed scrape should be a failure, because it means that the scrape
  * no longer works. */
 test('Live crawl and scrape', async t => {
-  process.env.LI_CACHE_PATH = testingCache
-  t.plan(sourceKeys.length + 1)
+  testCache.setup()
+  t.ok(process.env.LI_CACHE_PATH !== undefined, 'using LI_CACHE_PATH')
+  t.plan(sourceKeys.length + 2)
 
   for (const key of sourceKeys) {
     let crawlCompleted = false
@@ -104,7 +93,7 @@ test('Live crawl and scrape', async t => {
       }
     }
   }
-  delete process.env.LI_CACHE_PATH
+  testCache.teardown()
   t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
 })
 
@@ -147,14 +136,9 @@ test('Historical scrape', async t => {
 })
 
 test('Teardown', async t => {
-  t.plan(2)
-  if (fs.existsSync(testingCache)) {
-    fs.rmdirSync(testingCache, { recursive: true })
-  }
-  t.notOk(fs.existsSync(testingCache), 'Removed temp directory')
-
-  await sandbox.end()
-  t.pass('Sandbox closed')
+  t.plan(1)
+  await sandbox.stop()
+  t.pass('Done')
 })
 
 // TODO (testing) Add fake source that crawls localhost:3000/integrationtest
