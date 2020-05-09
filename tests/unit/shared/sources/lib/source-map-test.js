@@ -26,3 +26,14 @@ test('Load sources', t => {
     t.ok(ok, 'Paths use correct folder delimiters')
   }
 })
+
+/** During some integration testing, it's useful to refer to fake
+ * sources that we have completely under our control. */
+test('Respects process.env.LI_SOURCES_PATH', t => {
+  t.plan(1)
+  const d = join(process.cwd(), 'tests', 'integration', 'fake-sources')
+  process.env.LI_SOURCES_PATH = d
+  const keys = Object.keys(sourceMap())
+  t.ok(keys.includes('fake'), `should have fake source in keys [ ${keys.join()} ]`)
+  delete process.env.LI_SOURCES_PATH
+})
