@@ -5,7 +5,7 @@ const datetime = require('../../../datetime/index.js')
 module.exports = {
   country: 'iso1:AU',
   state: 'iso2:AU-WA',
-  priority: 1,
+  priority: 2,
   timeseries: true,
   friendly: {
     name: 'Ministry of Health, Labour, and Welfare Japan',

@@ -14,6 +14,7 @@ const schemaKeysByHeadingFragment = {
 module.exports = {
   country: 'iso1:AU',
   state: 'iso2:AU-TAS',
+  priority: 2,
   friendly: {
     name: 'Tasmanian Government',
     url: 'https://www.coronavirus.tas.gov.au/facts/cases-and-testing-updates'

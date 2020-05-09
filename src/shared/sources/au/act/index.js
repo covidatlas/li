@@ -12,6 +12,7 @@ const schemaKeysByHeadingFragment = {
 module.exports = {
   country: 'iso1:AU',
   state: 'iso2:AU-ACT',
+  priority: 2,
   friendly: {
     name: 'ACT Government Health',
     url: 'https://www.health.act.gov.au'

@@ -5,8 +5,8 @@ const getDataWithTestedNegativeApplied = inputData => {
   const data = { ...inputData }
   if (!data.tested && data.testedNegative > 0) {
     data.tested = data.testedNegative + data.cases
-    delete data.testedNegative
   }
+  delete data.testedNegative
   return data
 }
 
