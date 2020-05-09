@@ -13,7 +13,7 @@ module.exports = {
       crawl: [
         {
           type: 'json',
-          url: 'localhost:3000/test/integration/2020-03-01.json'
+          url: 'http://localhost:5555/tests/fake-source-urls/fake/fake.json'
         }
       ],
       scrape (json) {

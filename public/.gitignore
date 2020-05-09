@@ -1,0 +1,4 @@
+# Localhost acts as a crawl source for fake sources during integration
+# tests.  See tests/integration/fake-sources.
+
+/tests

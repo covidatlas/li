@@ -1,5 +1,7 @@
 const path = require('path')
 const fs = require('fs')
+const glob = require('glob').sync
+const globJoin = require('../../../src/shared/utils/glob-join.js')
 
 /** A fake cache, destroyed and re-created for the test run. */
 const testingCache = path.join(process.cwd(), 'zz-testing-fake-cache')
@@ -23,8 +25,16 @@ function teardown () {
   delete process.env.LI_CACHE_PATH
 }
 
+/** Get all files from test cache. */
+function allFiles () {
+  const globPattern = globJoin(testingCache, '**', '*.*')
+  const filePaths = glob(globPattern)
+  return filePaths.map(s => s.replace(testingCache + path.sep, ''))
+}
+
 module.exports = {
   testingCache,
   setup,
-  teardown
+  teardown,
+  allFiles
 }
