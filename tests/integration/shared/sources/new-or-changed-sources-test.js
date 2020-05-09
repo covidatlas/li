@@ -56,12 +56,6 @@ if (sourceKeys.length === 0) {
   return  // exits this module.
 }
 
-test('Setup', async t => {
-  t.plan(1)
-  await sandbox.start()
-  t.pass('Done')
-})
-
 /** While crawl and scrape are separate operations, we're combining
  * them for this test because the live crawl feeds directly into the
  * scrape of the same data.  A failed crawl should just be a warning,
@@ -69,6 +63,7 @@ test('Setup', async t => {
  * failed scrape should be a failure, because it means that the scrape
  * no longer works. */
 test('Live crawl and scrape', async t => {
+  await sandbox.start()
   testCache.setup()
   t.ok(process.env.LI_CACHE_PATH !== undefined, 'using LI_CACHE_PATH')
   t.plan(sourceKeys.length + 2)
@@ -133,12 +128,6 @@ test('Historical scrape', async t => {
     }
   }
   t.pass('ok')
-})
-
-test('Teardown', async t => {
-  t.plan(1)
-  await sandbox.stop()
-  t.pass('Done')
 })
 
 // TODO (testing) Add fake source that crawls localhost:3000/integrationtest
