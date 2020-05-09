@@ -8,18 +8,25 @@ const architectSandbox = require('@architect/sandbox')
 const sandboxPort = 5555
 
 /** Only start sandbox once during a round of testing. */
-let sandboxStarted = false
+let startPromise = null
 
-/** Start the sandbox if needed. */
+/** Start the sandbox. */
 async function start () {
-  if (sandboxStarted) {
-    console.log('Already started, exiting.')
+  if (startPromise) {
+    console.log('Sandbox already started.')
+    await startPromise
     return
   }
-  console.log(`Starting on port ${sandboxPort}`)
-  await architectSandbox.start({ port: sandboxPort, quiet: true })
-  sandboxStarted = true
+  startPromise = architectSandbox.start({ port: sandboxPort, quiet: true })
+  console.log(`Starting sandbox on port ${sandboxPort}`)
+  await startPromise
 }
+
+/** This file is loaded as a module before all integration tests,
+ * so we can start the sandbox now.
+ * ref https://github.com/substack/tape#preloading-modules
+ */
+start()
 
 /** Called when all tests are complete. */
 async function _stop () {
@@ -46,7 +53,7 @@ async function _stop () {
   })
 
   await architectSandbox.end()
-  sandboxStarted = false
+  startPromise = null
 }
 
 /** At the end of all tests. */
