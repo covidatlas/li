@@ -5,10 +5,8 @@ const { join } = require('path')
 const intDir = join(process.cwd(), 'tests', 'integration')
 const sandbox = require(join(intDir, '_lib', 'sandbox.js'))
 const testCache = require(join(intDir, '_lib', 'testcache.js'))
-const srcEvents = join(process.cwd(), 'src', 'events')
-const crawlerHandler = require(join(srcEvents, 'crawler', 'index.js')).handler
-
-const fs = require('fs')
+const fakeCrawlSites = require(join(intDir, '_lib', 'fake-crawl-sites.js'))
+const crawlerHandler = require(join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
 
 test('Setup', async t => {
   await sandbox.start()
@@ -20,18 +18,9 @@ function makeEventMessage (hsh) {
   return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
 }
 
-/** The fake sources crawl localhost:5555, which the sandbox is
- * running on. */
-function writeTestFile (subdir, filename, content) {
-  const folder = join(process.cwd(), 'public', 'tests', 'fake-source-urls', subdir)
-  if (!fs.existsSync(folder))
-    fs.mkdirSync(folder, { recursive: true })
-  fs.writeFileSync(join(folder, filename), content)
-}
-
 test('crawl saves files to cache', async t => {
   process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
-  writeTestFile('fake', 'fake.json', JSON.stringify({ cases: 10, deaths: 20 }))
+  fakeCrawlSites.writeFile('fake', 'fake.json', JSON.stringify({ cases: 10, deaths: 20 }))
 
   testCache.setup()
   t.equal(0, testCache.allFiles().length, 'No files in cache.')
