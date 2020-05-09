@@ -7,6 +7,7 @@ const architectSandbox = require('@architect/sandbox')
 const sandboxPort = 5555
 
 async function start () {
+  console.log(`Starting on port ${sandboxPort}`)
   await architectSandbox.start({ port: sandboxPort, quiet: true })
 }
 
