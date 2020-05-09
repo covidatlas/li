@@ -1,7 +1,6 @@
 module.exports = {
   country: 'iso1:US',
   state: 'CA',
-  county: 'FakeCounty',
   maintainers: [],
   friendly: {
     name: 'Fake source',
