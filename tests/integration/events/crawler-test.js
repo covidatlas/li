@@ -9,11 +9,14 @@ const testCache = require(join(intLib, 'testcache.js'))
 
 const srcShared = join(process.cwd(), 'src', 'shared')
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
+const srcEvents = join(process.cwd(), 'src', 'events')
+const crawlerHandler = require(join(srcEvents, 'crawler', 'index.js')).handler
+
+const fs = require('fs')
 
 test('Setup', async t => {
-  t.plan(1)
   await sandbox.start()
-  t.pass('Done')
+  t.end()
 })
 
 test('Source map contains fake', async t => {
@@ -24,20 +27,36 @@ test('Source map contains fake', async t => {
   delete process.env.LI_SOURCES_PATH
 })
 
+/** Create AWS event payload for the crawl/scrape handlers. */
+function makeEventMessage (hsh) {
+  return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
+}
+
+/** The fake sources crawl localhost:5555, which the sandbox is
+ * running on. */
+function writeTestFile (subdir, filename, content) {
+  const folder = join(process.cwd(), 'public', 'tests', 'fake-source-urls', subdir)
+  if (!fs.existsSync(folder))
+    fs.mkdirSync(folder, { recursive: true })
+  fs.writeFileSync(join(folder, filename), content)
+}
+
 test('crawl saves files to cache', async t => {
+  process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
+  writeTestFile('fake', 'fake.json', JSON.stringify({ cases: 10, deaths: 20 }))
+
   testCache.setup()
-  /*
-    copy things to integration testing of local host
-    run crawl for the fake
-    files should be in the testing location
-  */
+  t.equal(0, testCache.allFiles().length, 'No files in cache.')
+
+  await crawlerHandler(makeEventMessage({ source: 'fake' }))
+  t.equal(1, testCache.allFiles().length, 'have file after crawl.')
+
   testCache.teardown()
+  delete process.env.LI_SOURCES_PATH
   t.end()
 })
 
 test('Teardown', async t => {
-  t.plan(1)
-  console.log('stopping sandbox')
   await sandbox.stop()
-  t.pass('Done')
+  t.end()
 })
