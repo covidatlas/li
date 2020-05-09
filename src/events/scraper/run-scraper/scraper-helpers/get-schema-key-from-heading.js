@@ -4,6 +4,7 @@ const slugify = require('slugify')
 const slugifyOptions = { lower: true }
 
 const schemaKeys = [
+  'active',
   'cases',
   'county',
   'deaths',
