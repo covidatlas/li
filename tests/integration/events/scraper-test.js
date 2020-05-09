@@ -9,17 +9,14 @@ const fakeCrawlSites = require(join(intDir, '_lib', 'fake-crawl-sites.js'))
 const crawlerHandler = require(join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
 const scraperHandler = require(join(process.cwd(), 'src', 'events', 'scraper', 'index.js')).handler
 
-test('Setup', async t => {
-  await sandbox.start()
-  t.end()
-})
-
 /** Create AWS event payload for the crawl/scrape handlers. */
 function makeEventMessage (hsh) {
   return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
 }
 
 test('scrape extracts data from cached file', async t => {
+  await sandbox.start()
+
   t.plan(9)
 
   process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
@@ -68,9 +65,4 @@ test('scrape extracts data from cached file', async t => {
 
   testCache.teardown()
   delete process.env.LI_SOURCES_PATH
-})
-
-test('Teardown', async t => {
-  await sandbox.stop()
-  t.end()
 })

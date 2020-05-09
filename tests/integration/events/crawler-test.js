@@ -8,17 +8,13 @@ const testCache = require(join(intDir, '_lib', 'testcache.js'))
 const fakeCrawlSites = require(join(intDir, '_lib', 'fake-crawl-sites.js'))
 const crawlerHandler = require(join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
 
-test('Setup', async t => {
-  await sandbox.start()
-  t.end()
-})
-
 /** Create AWS event payload for the crawl/scrape handlers. */
 function makeEventMessage (hsh) {
   return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
 }
 
 test('crawl saves files to cache', async t => {
+  await sandbox.start()
   process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
   fakeCrawlSites.writeFile('fake', 'fake.json', JSON.stringify({ cases: 10, deaths: 20 }))
 
@@ -30,10 +26,5 @@ test('crawl saves files to cache', async t => {
 
   testCache.teardown()
   delete process.env.LI_SOURCES_PATH
-  t.end()
-})
-
-test('Teardown', async t => {
-  await sandbox.stop()
   t.end()
 })
