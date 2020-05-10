@@ -37,7 +37,6 @@ module.exports = {
             const matches = body.match(
               /<a href="(?<url>.+?)".*(?:Department of Health and Human Services media release)/
             )
-            console.log(matches)
             const url = matches && matches.groups && matches.groups.url
             assert(url, `no url found`)
             return ({ url: makeAbsoluteUrl(url) })

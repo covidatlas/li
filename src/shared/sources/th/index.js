@@ -13,7 +13,7 @@ module.exports = {
   maintainers: [ maintainers.camjc ],
   scrapers: [
     {
-      startDate: '2020-05-05',
+      startDate: '2020-05-04',
       crawl: [
         {
           name: 'states',

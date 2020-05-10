@@ -27,7 +27,7 @@ module.exports = {
         assert(data.length > 1, 'data is unreasonable')
         const attributes = data
           .filter((item) => {
-            if (!item.verifyDate.startsWith('202-')) { // Some dates are in other years like year 0001.
+            if (!item.verifyDate.startsWith('202')) { // Some dates are in other years like year 0001.
               return false
             }
             const parsedDate = datetime.parse(item.verifyDate)
@@ -36,7 +36,6 @@ module.exports = {
 
         const output = { cases: attributes.length }
         assert(output.cases > 0, 'Cases are not reasonable')
-        console.table(output)
         return output
       }
     }

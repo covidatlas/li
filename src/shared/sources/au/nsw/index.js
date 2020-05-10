@@ -41,11 +41,12 @@ module.exports = {
           url: async (client) => {
             const rssFeed = 'https://www.health.nsw.gov.au/_layouts/feed.aspx?xsl=1&web=/news&page=4ac47e14-04a9-4016-b501-65a23280e841&wp=baabf81e-a904-44f1-8d59-5f6d56519965&pageurl=/news/Pages/rss-nsw-health.aspx'
             const { body } = await client({ url: rssFeed })
-            const date = datetime.getYYYYMMDD(datetime.cast(null, 'Australia/Sydney')).replace(/-/g, '')
-            const regex = new RegExp(`statistics<\/title><link>(?<url>[a-zA-Z\/.:_]+?${date}.+?)<\/link>`)
+            const localDate = datetime.cast(null, 'Australia/Sydney')
+            const formattedDate = datetime.getYYYYMMDD(localDate).replace(/-/g, '')
+            const regex = new RegExp(`statistics<\/title><link>(?<url>[a-zA-Z\/.:_]+?${formattedDate}.+?)<\/link>`)
             const matches = body.match(regex)
             const url = matches && matches.groups && matches.groups.url
-            assert(url, `no url found for date: ${date}`)
+            assert(url, `no url found for date: ${localDate}`)
             return { url }
           }
         }
