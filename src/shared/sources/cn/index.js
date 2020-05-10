@@ -29,7 +29,7 @@ module.exports = {
           type: 'json',
           url: () => {
             const date = datetime.getYYYYMMDD(datetime.cast(null, 'Asia/Shanghai')).replace(/-/g, '')
-            return `http://49.4.25.117/JKZX/yq_${date}.json`
+            return { url: `http://49.4.25.117/JKZX/yq_${date}.json` }
           }
         }
       ],
