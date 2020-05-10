@@ -1,9 +1,9 @@
 process.env.NODE_ENV = 'testing'
 
+const sandbox = require('@architect/sandbox')
 const test = require('tape')
 const { join } = require('path')
 const intDir = join(process.cwd(), 'tests', 'integration')
-const sandbox = require(join(intDir, '_lib', 'sandbox.js'))
 const testCache = require(join(intDir, '_lib', 'testcache.js'))
 const fakeCrawlSites = require(join(intDir, '_lib', 'fake-crawl-sites.js'))
 const crawlerHandler = require(join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
@@ -15,7 +15,7 @@ function makeEventMessage (hsh) {
 }
 
 test('scrape extracts data from cached file', async t => {
-  await sandbox.start()
+  await sandbox.start({ port: 5555, quiet: true })
 
   t.plan(9)
 
@@ -64,4 +64,5 @@ test('scrape extracts data from cached file', async t => {
   })
 
   testCache.teardown()
+  await sandbox.end()
 })

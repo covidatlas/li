@@ -1,9 +1,9 @@
 process.env.NODE_ENV = 'testing'
 
+const sandbox = require('@architect/sandbox')
 const test = require('tape')
 const { join } = require('path')
 const intDir = join(process.cwd(), 'tests', 'integration')
-const sandbox = require(join(intDir, '_lib', 'sandbox.js'))
 const testCache = require(join(intDir, '_lib', 'testcache.js'))
 const fakeCrawlSites = require(join(intDir, '_lib', 'fake-crawl-sites.js'))
 const crawlerHandler = require(join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
@@ -14,7 +14,8 @@ function makeEventMessage (hsh) {
 }
 
 test('crawl saves files to cache', async t => {
-  await sandbox.start()
+  await sandbox.start({ port: 5555, quiet: true })
+
   const sourcesPath = join(intDir, 'fake-sources')
   fakeCrawlSites.writeFile('fake', 'fake.json', JSON.stringify({ cases: 10, deaths: 20 }))
 
@@ -25,5 +26,6 @@ test('crawl saves files to cache', async t => {
   t.equal(1, testCache.allFiles().length, 'have file after crawl.')
 
   testCache.teardown()
+  await sandbox.end()
   t.end()
 })
