@@ -130,10 +130,6 @@ test('Historical scrape', async t => {
   t.pass('ok')
 })
 
-// TODO (testing) Add fake source that crawls localhost:3000/integrationtest
-// Prior to running test, copy test assets there.
-// Fake source can scrape data like a real scraper, easy and controlled.
-
 // If any test failed, refer devs to docs/testing.md.
 test('Summary', t => {
   t.plan(1)
