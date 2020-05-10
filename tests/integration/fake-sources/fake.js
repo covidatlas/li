@@ -3,8 +3,8 @@ module.exports = {
   state: 'CA',
   maintainers: [],
   friendly: {
-    name: 'Fake source',
-    url: 'rick-roll-url'
+    name: 'Canadian COVID Rolling Task Force',
+    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
   },
   scrapers: [
     {

@@ -1,6 +1,8 @@
 process.env.NODE_ENV = 'testing'
 const test = require('tape')
 const architectSandbox = require('@architect/sandbox')
+const path = require('path')
+const fs = require('fs')
 
 /** By default sandbox is started with port 3333, so specifying the
  * port here lets the tests run their own sandbox without colliding
@@ -56,12 +58,21 @@ async function _stop () {
   startPromise = null
 }
 
+/** Clear out any test files from public. */
+function _deleteTestFiles () {
+  const testsDir = path.join(process.cwd(), 'public', 'tests')
+  if (fs.existsSync(testsDir)) {
+    console.log(`deleting test files in ${testsDir}`)
+    fs.rmdirSync(testsDir, { recursive: true })
+  }
+}
+
 /** At the end of all tests. */
 test.onFinish(() => {
   console.log('All tests done.  Shutting down sandbox ...')
   _stop()
+  _deleteTestFiles()
   console.log('Sandbox shut down.')
-
 })
 
 module.exports = {
