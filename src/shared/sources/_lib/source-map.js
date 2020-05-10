@@ -3,12 +3,9 @@ const globJoin = require('../../utils/glob-join.js')
 const sourceKey = require('./source-key.js')
 const { sep } = require('path')
 
-module.exports = function sourceMap () {
-  let scrapersDir = globJoin(__dirname, '..')
-  if (process.env.LI_SOURCES_PATH)
-    scrapersDir = process.env.LI_SOURCES_PATH
-
-  const scrapers = globJoin(scrapersDir, '**', '*.js')
+module.exports = function sourceMap (params = {}) {
+  const scrapersPath = params._sourcesPath || globJoin(__dirname, '..')
+  const scrapers = globJoin(scrapersPath, '**', '*.js')
   let filePaths = glob(scrapers)
   // Ensure forward slashes emitted by glob get re-normalized per-platform
   filePaths = filePaths.map(f => f.split('/').join(sep))

@@ -4,9 +4,7 @@ const { sep } = require('path')
  * Get a canonical key derived from a source file
  */
 module.exports = function sourceKey (filePath) {
-  let splitAt = `shared${sep}sources`
-  if (process.env.LI_SOURCES_PATH)
-    splitAt = process.env.LI_SOURCES_PATH
+  let splitAt = `${sep}sources${sep}`
   const parts = filePath.split(splitAt)
   if (!parts[1]) {
     throw Error(`Invalid filePath: ${filePath}`)

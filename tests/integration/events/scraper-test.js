@@ -19,13 +19,13 @@ test('scrape extracts data from cached file', async t => {
 
   t.plan(9)
 
-  process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
+  const sourcesPath = join(intDir, 'fake-sources')
 
   const rawData = { cases: 10, deaths: 20 }
   fakeCrawlSites.writeFile('fake', 'fake.json', JSON.stringify(rawData))
 
   testCache.setup()
-  const event = makeEventMessage({ source: 'fake' })
+  const event = makeEventMessage({ source: 'fake', _sourcesPath: sourcesPath })
   await crawlerHandler(event)
   t.equal(1, testCache.allFiles().length, 'Sanity check, have data to scrape.')
 
@@ -64,5 +64,4 @@ test('scrape extracts data from cached file', async t => {
   })
 
   testCache.teardown()
-  delete process.env.LI_SOURCES_PATH
 })

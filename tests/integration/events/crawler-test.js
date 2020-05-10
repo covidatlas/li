@@ -15,16 +15,15 @@ function makeEventMessage (hsh) {
 
 test('crawl saves files to cache', async t => {
   await sandbox.start()
-  process.env.LI_SOURCES_PATH = join(intDir, 'fake-sources')
+  const sourcesPath = join(intDir, 'fake-sources')
   fakeCrawlSites.writeFile('fake', 'fake.json', JSON.stringify({ cases: 10, deaths: 20 }))
 
   testCache.setup()
   t.equal(0, testCache.allFiles().length, 'No files in cache.')
 
-  await crawlerHandler(makeEventMessage({ source: 'fake' }))
+  await crawlerHandler(makeEventMessage({ source: 'fake', _sourcesPath: sourcesPath }))
   t.equal(1, testCache.allFiles().length, 'have file after crawl.')
 
   testCache.teardown()
-  delete process.env.LI_SOURCES_PATH
   t.end()
 })
