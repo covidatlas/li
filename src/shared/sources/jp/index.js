@@ -25,7 +25,7 @@ module.exports = {
         }
       ],
       scrape ($, date, { getIso2FromName, groupBy }) {
-        assert($.features.length > 1, 'features are unreasonable')
+        assert($.features.length > 0, 'features are unreasonable')
         const attributes = $.features
           .map(({ attributes }) => attributes)
           .filter((item) => item.Date && datetime.dateIsBeforeOrEqualTo(new Date(item.Date), new Date(date)))

@@ -23,7 +23,7 @@ module.exports = {
         }
       ],
       scrape ($, date, { getDataWithTestedNegativeApplied }) {
-        assert($.features.length > 1, 'features are unreasonable')
+        assert($.features.length > 0, 'features are unreasonable')
         const item = $.features
           .map(({ attributes }) => attributes)
           .find(({ date: attributeDate }) =>
