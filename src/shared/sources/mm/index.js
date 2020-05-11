@@ -2,27 +2,6 @@ const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const transform = require('../_lib/transform.js')
 
-/**
- * Sum/add-up per key.
- * @param {Object[]} items - Things to sum per key
- * @returns {Object} - Keys are all the number fields on the object.
- */
-const cumulateObject = items =>
-  items.reduce((previous, item) => {
-    const newObject = { ...previous }
-    for (const [ key, value ] of Object.entries(item)) {
-      if (typeof value !== 'number') {
-        continue
-      }
-      if (!newObject[key]) {
-        newObject[key] = value
-        continue
-      }
-      newObject[key] += value
-    }
-    return newObject
-  }, {})
-
 const country = 'iso1:MM'
 
 module.exports = {
@@ -44,7 +23,7 @@ module.exports = {
             'https://services7.arcgis.com/AB2LoFxJT2bJUJYC/arcgis/rest/services/CaseCount_With_Cases_150420/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc&resultOffset=0&resultRecordCount=1000&resultType=standard&cacheHint=true'
         }
       ],
-      scrape ($, date, { getIso2FromName, groupBy }) {
+      scrape ($, date, { cumulateObjects,  getIso2FromName, groupBy }) {
         assert($.features.length > 1, 'features are unreasonable')
         const attributes = $.features.map(({ attributes }) => attributes)
 
@@ -65,7 +44,7 @@ module.exports = {
         const states = []
 
         for (const [ stateName, stateAttributes ] of Object.entries(groupedByState)) {
-          const cumulatedObject = cumulateObject(stateAttributes)
+          const cumulatedObject = cumulateObjects(stateAttributes)
           states.push({
             state: stateName,
             cases: cumulatedObject.Confirmed + (cumulatedObject.PUI || 0),
