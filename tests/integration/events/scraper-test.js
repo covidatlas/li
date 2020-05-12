@@ -40,6 +40,7 @@ test('scrape extracts data from cached file', async t => {
   t.equal(1, actual.length, '1 record in returned data')
 
   // These fields should match exactly.
+  // TODO (testing) Add extra fields here so we're sure nothing is lost.
   const expected = {
     cases: 10,
     deaths: 20,
