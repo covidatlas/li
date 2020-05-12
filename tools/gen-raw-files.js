@@ -415,7 +415,10 @@ async function main (options) {
 
       saveReport(filenames.scrapePath, scrapeData)
 
-      const sourceData = await getAllSourceData(sourceKeys, date)
+      const generatedSourceKeys = scrapeData.
+        map(sd => sd.source).
+        filter((value, index, self) => self.indexOf(value) === index)
+      const sourceData = await getAllSourceData(generatedSourceKeys, date)
       saveReport(filenames.sourcesPath, sourceData)
 
       const locationData = getLocationData(sourceData, scrapeData)
