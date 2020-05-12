@@ -29,12 +29,12 @@ module.exports = {
           type: 'json',
           url: () => {
             const date = datetime.getYYYYMMDD(datetime.cast(null, 'Asia/Shanghai')).replace(/-/g, '')
-            return `http://49.4.25.117/JKZX/yq_${date}.json`
+            return { url: `http://49.4.25.117/JKZX/yq_${date}.json` }
           }
         }
       ],
       scrape ($, date, { getIso2FromName }) {
-        assert($.features.length > 1, 'features are unreasonable')
+        assert($.features.length > 0, 'features are unreasonable')
         const attributes = $.features.map(({ properties }) => properties).filter(stateIsntTaiwan)
 
         assert(attributes.length > 1, 'data fetch failed, no attributes')

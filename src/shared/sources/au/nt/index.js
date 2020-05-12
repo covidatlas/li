@@ -41,7 +41,6 @@ module.exports = {
           }
         })
         assert(data.cases > 0, 'Cases is not reasonable')
-        console.log(data)
         return data
       }
     }

@@ -1,12 +1,19 @@
-const parse = require('../_lib/parse.js')
-const datetime = require('../../datetime/index.js')
-const transform = require('../_lib/transform.js')
+const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
+const parse = require('../_lib/parse.js')
+const transform = require('../_lib/transform.js')
 
-const mapping = require('./mapping.json')
+const country = 'iso1:NL'
+
+const countKey = 'Aantal'
+const dateKey = 'Datum'
+const stateKey = 'Provincienaam'
+
+const deathsType = 'Overleden'
+const hospitalizedType = 'Ziekenhuisopname'
 
 module.exports = {
-  country: 'iso1:NL',
+  country,
   timeseries: true,
   priority: 1,
   friendly: {
@@ -29,39 +36,32 @@ module.exports = {
           url: 'https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_NL_covid19_national.csv'
         }
       ],
-      scrape ({ provinces, national }, date) {
+      scrape ({ provinces, national }, date, { getIso2FromName }) {
+        const casesData = provinces.filter(item => date === item[dateKey] && item[stateKey] && item[countKey])
+        assert(casesData.length > 0, `no cases data found for ${date}`)
 
-        const casesData = provinces.filter(item => date === item.Datum)
+        const hospitalized = national.find(item => date === item[dateKey] && item.Type === hospitalizedType)
 
-        const hospitalized = national.find(item => date === item.Datum && item.Type === 'Ziekenhuisopname')
-
-        const deaths = national.find(item => date === item.Datum && item.Type === 'Overleden')
-
-        const casesByProvince = {}
-
-        for (const item of casesData) {
-          if (datetime.dateIsBeforeOrEqualTo(item.Datum, date) && item.Provincienaam) {
-            casesByProvince[item.Provincienaam] = parse.number(item.Aantal)
-          }
-        }
+        const deaths = national.find(item => date === item[dateKey] && item.Type === deathsType)
 
         const data = []
 
-        for (const region of Object.keys(casesByProvince)) {
+        for (const item of casesData) {
+          const name = item[stateKey].replace('Noord', 'North').replace('Zuid', 'South')
+
           data.push({
-            state: mapping[region],
-            cases: casesByProvince[region]
+            state: getIso2FromName({ country, name }),
+            cases: parse.number(item[countKey])
           })
         }
 
-        if (hospitalized || deaths || data.length > 0)
-          data.push(
-            transform.sumData(data, {
-              hospitalized: hospitalized ? parse.number(hospitalized.Aantal) : undefined,
-              deaths: deaths ? parse.number(deaths.Aantal) : undefined
-            })
-          )
-
+        data.push(
+          transform.sumData(data, {
+            hospitalized: hospitalized ? parse.number(hospitalized[countKey]) : undefined,
+            deaths: deaths ? parse.number(deaths[countKey]) : undefined
+          })
+        )
+        console.table(data)
         return data
       }
     }

@@ -2,7 +2,6 @@
 
 const arc = require('@architect/functions')
 const { join } = require('path')
-const { readFileSync } = require('fs')
 
 const filename = 'geojson-db-payload.json'
 const payload = require(join(__dirname, filename))
