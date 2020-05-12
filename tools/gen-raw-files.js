@@ -4,13 +4,19 @@
  *
  * run with `--help` to get args.
  *
+ * The options for this follow the semantics of options in CDS timeseries:
+ * - if date present, gen from that date to today
+ * - if date and endDate present, gen for range
+ *
+ * If no date is given, this gens only for today.
+ *
  * Sample calls:
  *
  * # For a range of dates, all scrapers, writing to zz-out:
- * $ node tools/gen-raw-files.js --output zz-out --startDate 2020-05-01 --endDate 2020-05-05
+ * $ node tools/gen-raw-files.js --output zz-out --date 2020-05-01 --endDate 2020-05-05
  *
- * # For a single date, single scraper:
- * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --date 2020-05-02
+ * # For all dates start at 2020-05-02, single scraper:
+ * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --date 2020-05-07
  *
  * # For today, single scraper, and do a crawl first:
  * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --crawl
@@ -54,15 +60,12 @@ const { argv } = yargs
   })
   .option('date', {
     alias: 'd',
-    description: 'Single date to generate, yyyy-mm-dd',
-    type: 'string'
-  })
-  .option('startDate', {
-    description: 'Start date, yyyy-mm-dd',
+    description: 'Start timeseries at yyyy-mm-dd',
     type: 'string'
   })
   .option('endDate', {
-    description: 'End date, yyyy-mm-dd',
+    alias: 'e',
+    description: 'End date of timeseries, yyyy-mm-dd',
     type: 'string'
   })
   .option('source', {
@@ -79,13 +82,8 @@ const { argv } = yargs
   .version(false)
   .help()
 
-if ((argv.date || argv.startDate || argv.endDate) && argv.crawl) {
+if ((argv.date) && argv.crawl) {
   console.error('\nError: can\'t specify both date and crawl together (crawl only works with current date)\n')
-  process.exit(1)
-}
-
-if (argv.date && argv.startDate) {
-  console.error('\nError: can\'t specify both date and startDate together\n')
   process.exit(1)
 }
 
@@ -102,29 +100,24 @@ function getSourceKeys (options) {
   return options.source
 }
 
-/** Generate a list of dates starting at the provided start date
- * ending at today or the provided end date.  If date is specified,
- * only returns that. */
+/** Generate a list of dates starting at the provided date
+ * ending at today or the provided end date.  If no date is specified,
+ * use today. */
 function getDates (options) {
   const datepart = d => { return d.toISOString().split('T')[0] }
   const today = new Date()
 
-  if (options.date) {
-    return [ datepart(new Date(options.date)) ]
-  }
-  if (options.startDate) {
+  if (!options.date) {
+    return [ datepart(today) ]
+  } else {
     const dates = []
     const endDate = options.endDate ? new Date(options.endDate) : today
-    let curDate = new Date(options.startDate)
+    let curDate = new Date(options.date)
     while (curDate <= endDate) {
       dates.push(datepart(curDate))
       curDate.setDate(curDate.getDate() + 1)
     }
     return dates
-  }
-  else {
-    // No date specified, just use today.
-    return [ datepart(today) ]
   }
 }
 
