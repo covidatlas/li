@@ -1,16 +1,18 @@
 const assertTotalsAreReasonable = require('./scraper-helpers/assert-totals-are-reasonable')
+const cumulateObjects = require('./scraper-helpers/cumulate-objects')
+const getDataWithTestedNegativeApplied = require('./scraper-helpers/get-data-with-tested-negative-applied')
 const getIso2FromName = require('./scraper-helpers/get-iso2-from-name')
 const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-heading')
-const getDataWithTestedNegativeApplied = require('./scraper-helpers/get-data-with-tested-negative-applied')
 const groupBy = require('./scraper-helpers/group-by')
 const normalizeTable = require('./scraper-helpers/normalize-table')
 const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arrays')
 
 const scraperHelpers = {
   assertTotalsAreReasonable,
+  cumulateObjects,
+  getDataWithTestedNegativeApplied,
   getIso2FromName,
   getSchemaKeyFromHeading,
-  getDataWithTestedNegativeApplied,
   groupBy,
   normalizeTable,
   transposeArrayOfArrays,

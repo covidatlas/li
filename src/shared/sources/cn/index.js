@@ -34,7 +34,7 @@ module.exports = {
         }
       ],
       scrape ($, date, { getIso2FromName }) {
-        assert($.features.length > 1, 'features are unreasonable')
+        assert($.features.length > 0, 'features are unreasonable')
         const attributes = $.features.map(({ properties }) => properties).filter(stateIsntTaiwan)
 
         assert(attributes.length > 1, 'data fetch failed, no attributes')
