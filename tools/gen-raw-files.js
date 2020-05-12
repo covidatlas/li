@@ -87,6 +87,11 @@ if ((argv.date) && argv.crawl) {
   process.exit(1)
 }
 
+console.log('--------------------------------------------------')
+console.log('Called gen-raw-files with arguments:')
+console.log(JSON.stringify(argv, null, 2))
+console.log('--------------------------------------------------')
+
 /** Get sources from options, or all. */
 function getSourceKeys (options) {
   if(!options.source)
