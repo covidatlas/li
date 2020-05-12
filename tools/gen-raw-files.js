@@ -80,11 +80,12 @@ const { argv } = yargs
 // Always crawl if we're generating for today.
 argv.crawl = (!argv.date) ? true : false
 
-
-console.log('--------------------------------------------------')
-console.log('Called gen-raw-files with arguments:')
-console.log(JSON.stringify(argv, null, 2))
-console.log('--------------------------------------------------')
+/*
+  console.log('--------------------------------------------------')
+  console.log('Called gen-raw-files with arguments:')
+  console.log(JSON.stringify(argv, null, 2))
+  console.log('--------------------------------------------------')
+*/
 
 /** Get sources from options, or all. */
 function getSourceKeys (options) {
@@ -424,9 +425,6 @@ async function main (options) {
       saveReport(filenames.locationsPath, locationData)
     }
 
-  }
-  catch (err) {
-    console.log(`Error: ${err}; ${err.stack}`)
   }
   finally {
     await sandbox.end()
