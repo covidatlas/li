@@ -8,7 +8,7 @@ module.exports = function getSource (params) {
   let source = params
   if (params.source) source = params.source
 
-  const sources = sourceMap()
+  const sources = sourceMap(params)
   const filePath = sources[source]
 
   if (!filePath) {

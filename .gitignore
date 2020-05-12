@@ -8,3 +8,6 @@ sam.yaml
 scratch/
 tools/geojsondb/geojson-db-payload.json
 test-results.txt
+
+# Some integration tests put files into public/tests to be scraped.
+public/tests

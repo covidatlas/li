@@ -1,10 +1,10 @@
 process.env.NODE_ENV = 'testing'
+const sandbox = require('@architect/sandbox')
 const { join, sep } = require('path')
 const test = require('tape')
 const glob = require('glob')
 
 const intLib = join(process.cwd(), 'tests', 'integration', '_lib')
-const sandbox = require(join(intLib, 'sandbox.js'))
 const testCache = require(join(intLib, 'testcache.js'))
 
 const srcShared = join(process.cwd(), 'src', 'shared')
@@ -56,12 +56,6 @@ if (sourceKeys.length === 0) {
   return  // exits this module.
 }
 
-test('Setup', async t => {
-  t.plan(1)
-  await sandbox.start()
-  t.pass('Done')
-})
-
 /** While crawl and scrape are separate operations, we're combining
  * them for this test because the live crawl feeds directly into the
  * scrape of the same data.  A failed crawl should just be a warning,
@@ -69,6 +63,7 @@ test('Setup', async t => {
  * failed scrape should be a failure, because it means that the scrape
  * no longer works. */
 test('Live crawl and scrape', async t => {
+  await sandbox.start({ port: 5555, quiet: true })
   testCache.setup()
   t.ok(process.env.LI_CACHE_PATH !== undefined, 'using LI_CACHE_PATH')
   t.plan(sourceKeys.length + 2)
@@ -95,6 +90,7 @@ test('Live crawl and scrape', async t => {
   }
   testCache.teardown()
   t.ok(process.env.LI_CACHE_PATH === undefined, 'no LI_CACHE_PATH')
+  await sandbox.end()
 })
 
 /**
@@ -120,6 +116,7 @@ const historicalScrapeTests = glob.sync(globJoin(cacheRoot, '*', '*')).
 
 // This uses real cache.
 test('Historical scrape', async t => {
+  await sandbox.start({ port: 5555, quiet: true })
   t.plan(historicalScrapeTests.length + 2)  // +1 cache dir check, +1 final pass
   t.ok(process.env.LI_CACHE_PATH === undefined, 'using real cache')
   for (const hsh of historicalScrapeTests) {
@@ -133,17 +130,8 @@ test('Historical scrape', async t => {
     }
   }
   t.pass('ok')
+  await sandbox.end()
 })
-
-test('Teardown', async t => {
-  t.plan(1)
-  await sandbox.stop()
-  t.pass('Done')
-})
-
-// TODO (testing) Add fake source that crawls localhost:3000/integrationtest
-// Prior to running test, copy test assets there.
-// Fake source can scrape data like a real scraper, easy and controlled.
 
 // If any test failed, refer devs to docs/testing.md.
 test('Summary', t => {

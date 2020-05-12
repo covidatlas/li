@@ -29,6 +29,8 @@ async function scrapeSource (event) {
         status: 'success'
       }
     })
+
+    return { data, locationIDs }
   }
   catch (err) {
     // Cache loading date bounds errors are valid, but do not need to update status
