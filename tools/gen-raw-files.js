@@ -160,10 +160,10 @@ async function getSingleRawData (sourceID, crawl, date) {
   try {
     if (crawl) {
       generationStatus[sourceID] = 'crawling'
-      await crawlSource({ source: sourceID })
+      await crawlSource({ source: sourceID, _useUTCdate: true })
     }
     generationStatus[sourceID] = 'scraping'
-    data = await scrape({ source: sourceID, date })
+    data = await scrape({ source: sourceID, date, _useUTCdate: true })
     generationStatus[sourceID] = 'done'
   }
   catch (err) {
@@ -192,9 +192,9 @@ async function asyncPool (array, poolSize) {
   return Promise.all(result).then(r => r.flat()).then(r => r.filter(e => e))
 }
 
-async function getRawScrapeData (keys, options) {
+async function getRawScrapeData (keys, date, options) {
   function makeScrapeCall (key) {
-    return async () => await getSingleRawData(key, options.crawl, options.date)
+    return async () => await getSingleRawData(key, options.crawl, date)
   }
   const promises = keys.map(k => makeScrapeCall(k))
   const reportingID = setInterval(() => reportGenerationStatus(), 5000)
@@ -396,18 +396,27 @@ async function main (options) {
     await sandbox.start({ port: sandboxPort, quiet: true })
 
     for (const date of getDates(options)) {
+      console.log('\n')
+      console.log('='.repeat(40))
+      console.log(`Generating ${date}`)
+
       generationStatus = {}
+      generationDate = date
+      sourceKeys.forEach(k => generationStatus[k] = 'pending')
+      const scrapeData = await getRawScrapeData(sourceKeys, date, options)
+      generationStatus = {}
+
+      if (scrapeData.length === 0) {
+        console.log(`No data scraped for ${date}, skipping file save.`)
+        continue
+      }
 
       const filenames = reportFilenames(options, date)
 
+      saveReport(filenames.scrapePath, scrapeData)
+
       const sourceData = await getAllSourceData(sourceKeys, date)
       saveReport(filenames.sourcesPath, sourceData)
-
-      generationDate = date
-      sourceKeys.forEach(k => generationStatus[k] = 'pending')
-      const scrapeData = await getRawScrapeData(sourceKeys, options)
-      generationStatus = {}
-      saveReport(filenames.scrapePath, scrapeData)
 
       const locationData = getLocationData(sourceData, scrapeData)
       saveReport(filenames.locationsPath, locationData)
