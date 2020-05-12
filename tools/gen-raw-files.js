@@ -3,6 +3,22 @@
  * Generates for all sources, unless --source is specified.
  *
  * run with `--help` to get args.
+ *
+ * Sample calls:
+ *
+ * # For a range of dates, all scrapers, writing to zz-out:
+ * $ node tools/gen-raw-files.js --output zz-out --startDate 2020-05-01 --endDate 2020-05-05
+ *
+ * # For a single date, single scraper:
+ * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --date 2020-05-02
+ *
+ * # For today, single scraper, and do a crawl first:
+ * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --crawl
+ *
+ * If the --output folder is "coronadatascraper/dist-raw", or the
+ * files generated from this tool are moved or copied there, these
+ * files can be consumed as part of the regular CDS report generation.
+ *
  */
 
 /** NODE_ENV must be 'testing' to ensure the sandbox is loaded
@@ -16,6 +32,7 @@ const assert = require('assert')
 const sandbox = require('@architect/sandbox')
 
 const srcLib = join(process.cwd(), 'src', 'shared', 'sources', '_lib')
+const datetime = require(join(process.cwd(), 'src', 'shared', 'datetime', 'index.js'))
 const sourceMap = require(join(srcLib, 'source-map.js'))
 const findScraper = require(join(srcLib, 'find-scraper.js'))
 const srcEvents = join(process.cwd(), 'src', 'events')
@@ -37,7 +54,15 @@ const { argv } = yargs
   })
   .option('date', {
     alias: 'd',
-    description: 'Date',
+    description: 'Single date to generate, yyyy-mm-dd',
+    type: 'string'
+  })
+  .option('startDate', {
+    description: 'Start date, yyyy-mm-dd',
+    type: 'string'
+  })
+  .option('endDate', {
+    description: 'End date, yyyy-mm-dd',
     type: 'string'
   })
   .option('source', {
@@ -54,8 +79,13 @@ const { argv } = yargs
   .version(false)
   .help()
 
-if (argv.date && argv.crawl) {
+if ((argv.date || argv.startDate || argv.endDate) && argv.crawl) {
   console.error('\nError: can\'t specify both date and crawl together (crawl only works with current date)\n')
+  process.exit(1)
+}
+
+if (argv.date && argv.startDate) {
+  console.error('\nError: can\'t specify both date and startDate together\n')
   process.exit(1)
 }
 
@@ -72,21 +102,64 @@ function getSourceKeys (options) {
   return options.source
 }
 
+/** Generate a list of dates starting at the provided start date
+ * ending at today or the provided end date.  If date is specified,
+ * only returns that. */
+function getDates (options) {
+  const datepart = d => { return d.toISOString().split('T')[0] }
+  const today = new Date()
+
+  if (options.date) {
+    return [ datepart(new Date(options.date)) ]
+  }
+  if (options.startDate) {
+    const dates = []
+    const endDate = options.endDate ? new Date(options.endDate) : today
+    let curDate = new Date(options.startDate)
+    while (curDate <= endDate) {
+      dates.push(datepart(curDate))
+      curDate.setDate(curDate.getDate() + 1)
+    }
+    return dates
+  }
+  else {
+    // No date specified, just use today.
+    return [ datepart(today) ]
+  }
+}
+
+
+/**
+ * Status reporting.
+ */
 
 /** The status of data collection. */
 let generationStatus = {}
 
-function reportGenerationStatus () {
-  const maxLen = Math.max(...Object.keys(generationStatus).map(s => s.length))
+/** The date to show in the heading. */
+let generationDate = null
 
-  console.log(`Current status (${new Date().toLocaleTimeString()})`)
+function reportGenerationStatus () {
+  const keys = Object.keys(generationStatus)
+  if (keys.length === 0)
+    return
+  const maxLen = Math.max(...keys.map(s => s.length))
+  const title = `  Current status for ${generationDate} (${new Date().toLocaleTimeString()})`
+  console.log('-'.repeat(title.length))
+  console.log(title)
   const statuses = [ 'crawling', 'scraping', 'done', 'failed', 'pending' ]
   statuses.forEach(status => {
     Object.entries(generationStatus).
       filter(e => e[1] === status).
       map(e => console.log(`  ${e[0].padEnd(maxLen + 2, ' ')}: ${e[1]}`))
   })
+  console.log('-'.repeat(title.length))
 }
+
+
+/**
+ * Loading data.
+ */
 
 /** Returns data, or null if there was an error. */
 async function getSingleRawData (sourceID, crawl, date) {
@@ -165,7 +238,15 @@ async function getSourceData (key, map, date) {
 
   // eslint-disable-next-line
   const source = require(srcPath)
-  const scraper = findScraper(source, date)
+  source._sourceKey = key
+  let scraper = null
+  try {
+    scraper = findScraper(source, date)
+  } catch (err) {
+    console.log(`${key}: No scraper at ${date}`)
+    return null
+  }
+
   const baseUrl = await getUrl(scraper)
   const tz = await calculateScraperTz(source)
 
@@ -220,7 +301,8 @@ function onlySpecifiedKeys (arrOfHashes, keys) {
 async function getAllSourceData (keys, date) {
   const srcMap = sourceMap()
   const promises = keys.map(async k => { return await getSourceData(k, srcMap, date) })
-  const sources = await Promise.all(promises)
+  let sources = await Promise.all(promises)
+  sources = sources.filter(s => s)
   const cdsSourceKeys = [
     '_key',  // Not included in CDS, but keeping it just in case.
     '_path',
@@ -287,10 +369,14 @@ function getLocationData (sourceData, scrapeData) {
  * This filenames are used in CDS during the `yarn raw:reportcombined`
  * script, so any changes here will require changes there as well.
 */
-function reportFilenames (options) {
+function reportFilenames (options, date) {
   let suffix = ''
-  if (options.date)
-    suffix = `-${options.date}`
+
+  // If a date was specified in options, or we're looping through a range,
+  // use the supplied date.
+  if (options.date || options.startDate)
+    suffix = `-${datetime.getYYYYMMDD(date)}`
+
   return {
     sourcesPath: join(options.output, `raw-li-sources${suffix}.json`),
     scrapePath: join(options.output, `raw-li-scrape${suffix}.json`),
@@ -310,23 +396,30 @@ async function main (options) {
       fs.mkdirSync(options.output)
 
     const sourceKeys = getSourceKeys(options)
-    sourceKeys.forEach(k => generationStatus[k] = 'pending')
 
     /** By default sandbox is started with port 3333; using another port
      * so this sandbox won't collide with default. */
     const sandboxPort = 5555
     await sandbox.start({ port: sandboxPort, quiet: true })
 
-    const filenames = reportFilenames(options)
+    for (const date of getDates(options)) {
+      generationStatus = {}
 
-    const sourceData = await getAllSourceData(sourceKeys, options.date || new Date())
-    saveReport(filenames.sourcesPath, sourceData)
+      const filenames = reportFilenames(options, date)
 
-    const scrapeData = await getRawScrapeData(sourceKeys, options)
-    saveReport(filenames.scrapePath, scrapeData)
+      const sourceData = await getAllSourceData(sourceKeys, date)
+      saveReport(filenames.sourcesPath, sourceData)
 
-    const locationData = getLocationData(sourceData, scrapeData)
-    saveReport(filenames.locationsPath, locationData)
+      generationDate = date
+      sourceKeys.forEach(k => generationStatus[k] = 'pending')
+      const scrapeData = await getRawScrapeData(sourceKeys, options)
+      generationStatus = {}
+      saveReport(filenames.scrapePath, scrapeData)
+
+      const locationData = getLocationData(sourceData, scrapeData)
+      saveReport(filenames.locationsPath, locationData)
+    }
+
   }
   catch (err) {
     console.log(`Error: ${err}; ${err.stack}`)
