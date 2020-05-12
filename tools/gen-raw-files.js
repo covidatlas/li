@@ -53,11 +53,6 @@ const scrape = require(join(srcEvents, 'scraper', '_scrape.js'))
 const yargs = require('yargs')
 
 const { argv } = yargs
-  .option('crawl', {
-    alias: 'c',
-    description: 'Run crawl',
-    type: 'boolean',
-  })
   .option('date', {
     alias: 'd',
     description: 'Start timeseries at yyyy-mm-dd',
@@ -82,10 +77,9 @@ const { argv } = yargs
   .version(false)
   .help()
 
-if ((argv.date) && argv.crawl) {
-  console.error('\nError: can\'t specify both date and crawl together (crawl only works with current date)\n')
-  process.exit(1)
-}
+// Always crawl if we're generating for today.
+argv.crawl = (!argv.date) ? true : false
+
 
 console.log('--------------------------------------------------')
 console.log('Called gen-raw-files with arguments:')
