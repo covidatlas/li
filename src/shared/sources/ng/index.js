@@ -1,21 +1,13 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
-const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:NG'
 
-const schemaKeysByHeadingFragment = {
-  'state': 'state',
-  'confirmed': 'cases',
-  'admission': null,
-  'discharged': 'recovered',
-  'deaths': 'deaths',
-}
-
 module.exports = {
   aggregate: 'state',
   country,
+  priority: 1,
   friendly: {
     name: 'Nigeria Center for Disease Control',
     url: 'https://covid19.ncdc.gov.ng/'
@@ -26,39 +18,27 @@ module.exports = {
       startDate: '2020-05-13',
       crawl: [
         {
-          type: 'page',
-          data: 'table',
+          type: 'json',
           url:
-            'https://covid19.ncdc.gov.ng/'
+            'https://services5.arcgis.com/Y2O5QPjedp8vHACU/arcgis/rest/services/NgeriaCovid19/FeatureServer/0//query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token='
         }
       ],
-      scrape ($, date, { getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
-        const normalizedTable = normalizeTable({ $, tableSelector: '#custom1' })
+      scrape ($, date, { getIso2FromName }) {
+        assert($.features.length > 0, 'features are unreasonable')
+        const attributes = $.features
+          .map(({ attributes }) => attributes)
+          .filter(attribute => attribute.TYPE_1 === 'State')
 
-        const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
-
-        // Create new array with just the state data (no headings, comments, totals)
-        const stateDataRows = normalizedTable.filter(row => row[row.length - 1].match(/^\d/))
+        assert(attributes.length > 1, 'data fetch failed, no attributes')
 
         const states = []
-        stateDataRows.forEach((row) => {
-          const stateData = {}
-          row.forEach((value, columnIndex) => {
-            const key = dataKeysByColumnIndex[columnIndex]
-            stateData[key] = value
-          })
-
+        attributes.forEach((attribute) => {
           states.push({
-            state: getIso2FromName({
-              country, name: stateData.state.replace('FCT', 'Federal Capital Territory')
-            }),
-            cases: parse.number(stateData.cases),
-            deaths: parse.number(stateData.deaths),
-            recovered: parse.number(stateData.recovered)
+            state: getIso2FromName({ country, name: attribute.NAME_1.replace('Nassarawa', 'Nasarawa') }),
+            active: attribute.Active_Cases,
+            cases: attribute.ConfCases,
+            deaths: attribute.Deaths,
+            recovered: attribute.Recovery
           })
         })
 
