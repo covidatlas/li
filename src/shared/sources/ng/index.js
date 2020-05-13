@@ -27,7 +27,6 @@ module.exports = {
         assert($.features.length > 0, 'features are unreasonable')
         const attributes = $.features
           .map(({ attributes }) => attributes)
-          .filter(attribute => attribute.TYPE_1 === 'State')
 
         assert(attributes.length > 1, 'data fetch failed, no attributes')
 
