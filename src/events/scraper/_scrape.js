@@ -59,7 +59,7 @@ module.exports = async function scrape (event) {
      * Normalize output
      */
     const data = normalizeData(source, output, date)
-
+    console.table(data)
     console.timeEnd(timeLabel)
 
     return data
