@@ -8,6 +8,18 @@ const sourceKey = require(path.join(lib, 'source-key.js'))
 const sourceMap = require(path.join(lib, 'source-map.js'))
 const { execSync } = require('child_process')
 
+let reportType = 'console'
+if (process.argv.includes('console')) {
+  reportType = 'console'
+} else if (process.argv.includes('report')) {
+  reportType = 'report'
+} else {
+  console.log('specify either console or report ...')
+  console.log('eg "npm run migration:status -- console"')
+  console.log('eg "npm --silent run migration:status -- report | pbcopy"')
+  process.exit(0)
+}
+
 
 function printWarning (s) {
   console.log()
@@ -45,7 +57,7 @@ and in that same repo, do "git fetch".
 
 /** Get commit info, keyed by relpaths. */
 function getRelPathCommits (basepath, relPaths, remote) {
-  console.log(`Getting commits in ${basepath} for ${relPaths.length} files from ${remote}/master ...`)
+  // console.log(`Getting commits in ${basepath} for ${relPaths.length} files from ${remote}/master ...`)
   const olddir = process.cwd()
   process.chdir(basepath)
 
@@ -67,7 +79,7 @@ function getRelPathCommits (basepath, relPaths, remote) {
   }, {})
 
   process.chdir(olddir)
-  console.log(`... done.`)
+  // console.log(`... done.`)
   return result
 }
 
@@ -162,16 +174,27 @@ const output = Object.keys(cdsmap).reduce((arr, k) => {
     else
       uptodate = 'no'
   }
+
+  let status = '-'
+  if (uptodate === 'yes')
+    status = 'done'
+  else if (limap[k])
+    status = 'needs_updating'
+  else
+    status = 'remaining'
+
   arr.push( {
-    key: k,
     cds: cdsmap[k].relpath,
-    li: limap[k] ? 'yes' : 'no',
-    uptodate: uptodate
+    in_li: limap[k] ? 'yes' : 'no',
+    li_key: k,
+    up_to_date: uptodate,
+    status
   } )
+
   return arr
 }, [])
 
-const padElements = makePaddedStringFunc(output, [ 'key', 'cds', 'li', 'uptodate' ])
+const padElements = makePaddedStringFunc(output, [ 'cds', 'in_li', 'li_key', 'up_to_date' ])
 const writeRows = rows => { rows.map(padElements).forEach(s => console.log(s)) }
 const writeData = (heading, rows) => {
   const s = `${heading} (${rows.length})`
@@ -180,14 +203,20 @@ const writeData = (heading, rows) => {
   writeRows(rows)
 }
 
-console.log(`\n\n${'='.repeat(40)}\n`)
-
 const headings = [
-  { key: 'key', cds: 'CDS path', li: 'li?', uptodate: 'up-to-date?' },
-  { key: '---', cds: '--------', li: '---', uptodate: '-----------' },
+  { li_key: 'key', cds: 'CDS path', in_li: 'li?', up_to_date: 'up-to-date?' },
+  { li_key: '---', cds: '--------', in_li: '---', up_to_date: '-----------' },
 ]
 
-writeRows(headings)
-writeData('DONE', output.filter(r => (r.uptodate === 'yes')))
-writeData('NEEDS UPDATING', output.filter(r => (r.li === 'yes' && r.uptodate !== 'yes')))
-writeData('REMAINING', output.filter(r => (r.li !== 'yes')))
+if (reportType === 'console') {
+  writeRows(headings)
+  writeData('DONE', output.filter(r => (r.status === 'done')))
+  writeData('NEEDS UPDATING', output.filter(r => (r.status === 'needs_updating')))
+  writeData('REMAINING', output.filter(r => (r.status === 'remaining')))
+  writeData('???', output.filter(r => (r.status === '-')))
+}
+
+if (reportType === 'report') {
+  console.log(Object.keys(output[0]).join('|'))
+  output.map(r => console.log(Object.values(r).join('|')))
+}

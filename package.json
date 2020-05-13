@@ -12,7 +12,8 @@
     "test:integration": "tape 'tests/integration/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
     "migrate:latest": "./tools/migrate-latest-cache",
     "migrate:publish": "AWS_PROFILE=covidatlas ./tools/publish-migrated-cache",
-    "migration:status": "node tools/report-migration-status.js"
+    "migration:status": "node tools/report-migration-status.js",
+    "migration:report": "npm --silent run migration:status -- report | pbcopy && echo 'Copied to clipboard'"
   },
   "humans": [
     "This is a serverless monorepo",
