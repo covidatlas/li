@@ -49,7 +49,7 @@ module.exports = async function scrape (event) {
     /**
      * Parse the requested data to be passed on to the 'scrape' function
      */
-    const parsed = await parseCache(cache, date)
+    const parsed = await parseCache(cache)
 
     /**
      * Scrape the specified source on the specified date
