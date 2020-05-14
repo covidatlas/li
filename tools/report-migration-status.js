@@ -13,8 +13,10 @@ if (process.argv.includes('console')) {
   reportType = 'console'
 } else if (process.argv.includes('report')) {
   reportType = 'report'
+} else if (process.argv.includes('summary')) {
+  reportType = 'summary'
 } else {
-  console.log('specify either console or report ...')
+  console.log('specify console || report || summary')
   console.log('eg "npm run migration:status -- console"')
   console.log('eg "npm --silent run migration:status -- report | pbcopy"')
   process.exit(0)
@@ -163,6 +165,33 @@ const lirels = Object.values(sourceMap()).map(s => s.replace(/.*shared.sources./
 const liCommitMap = getRelPathCommits(libase, lirels, 'covidatlas/li.git')
 const limap = getRptDataFor(Object.values(sourceMap()), liCommitMap)
 
+// Some scrapers are really done.
+const overrideStatus = {
+  'AU/aus-from-wa-health/index.js': 'deprecated',
+  'US/CA/alameda-county.js': 'deprecated',
+  'US/CA/calaveras-county.js': 'deprecated',
+  'US/CA/del-norte-county.js': 'deprecated',
+  'US/CA/glenn-county.js': 'deprecated',
+  'US/CA/kern-county.js': 'deprecated',
+  'US/CA/madera-county.js': 'deprecated',
+  'US/CA/marin-county.js': 'deprecated',
+  'US/CA/mendocino-county.js': 'deprecated',
+  'US/CA/merced-county.js': 'deprecated',
+  'US/CA/orange-county.js': 'deprecated',
+  'US/CA/riverside-county.js': 'deprecated',
+  'US/CA/sacramento-county.js': 'deprecated',
+  'US/CA/san-bernardino-county.js': 'deprecated',
+  'US/CA/santa-barbara-county.js': 'deprecated',
+  'US/CA/santa-clara-county.js': 'deprecated',
+  'US/CA/santa-cruz-county.js': 'deprecated',
+  'US/CA/sonoma-county.js': 'deprecated',
+  'US/CA/yolo-county.js': 'deprecated',
+  'US/GU/index.js': 'deprecated',
+
+  'IN/index.js': 'done',
+  'TW/index.js': 'done'
+}
+
 // ---------------------
 // Combine and output
 
@@ -182,6 +211,7 @@ const output = Object.keys(cdsmap).reduce((arr, k) => {
     status = 'needs_updating'
   else
     status = 'remaining'
+  status = overrideStatus[cdsmap[k].relpath] || status
 
   arr.push( {
     cds: cdsmap[k].relpath,
@@ -208,12 +238,26 @@ const headings = [
   { li_key: '---', cds: '--------', in_li: '---', up_to_date: '-----------' },
 ]
 
+const rpt = [
+  'done', 'needs_updating', 'remaining', 'deprecated', '-'
+].reduce((hsh, s) => {
+  hsh[s] = output.filter(r => (r.status === s))
+  return hsh
+}, {})
+
 if (reportType === 'console') {
   writeRows(headings)
-  writeData('DONE', output.filter(r => (r.status === 'done')))
-  writeData('NEEDS UPDATING', output.filter(r => (r.status === 'needs_updating')))
-  writeData('REMAINING', output.filter(r => (r.status === 'remaining')))
-  writeData('???', output.filter(r => (r.status === '-')))
+  Object.keys(rpt).forEach(k => {
+    writeData(k, rpt[k])
+  })
+}
+
+if (reportType === 'summary') {
+  console.log('Migration summary:')
+  Object.keys(rpt).forEach(k => {
+    if (rpt[k].length > 0)
+      console.log(`* ${k}: ${rpt[k].length}`)
+  })
 }
 
 if (reportType === 'report') {
