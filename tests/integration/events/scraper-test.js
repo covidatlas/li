@@ -1,35 +1,18 @@
 process.env.NODE_ENV = 'testing'
 
-const sandbox = require('@architect/sandbox')
 const test = require('tape')
-const { join } = require('path')
-const intDir = join(process.cwd(), 'tests', 'integration')
-const testCache = require(join(intDir, '_lib', 'testcache.js'))
-const fakeCrawlSites = require(join(intDir, '_lib', 'fake-crawl-sites.js'))
-const crawlerHandler = require(join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
-const scraperHandler = require(join(process.cwd(), 'src', 'events', 'scraper', 'index.js')).handler
+const utils = require('./utils.js')
+const testCache = require('../_lib/testcache.js')
 
-/** Create AWS event payload for the crawl/scrape handlers. */
-function makeEventMessage (hsh) {
-  return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
-}
 
-test('scrape extracts data from cached file', async t => {
-  await sandbox.start({ port: 5555, quiet: true })
+test.only('scrape extracts data from cached file', async t => {
+  await utils.setup()
 
-  t.plan(9)
+  utils.writeFakeSourceContent('fake/fake.json', { cases: 10, deaths: 20 })
+  await utils.crawl('fake')
+  t.equal(1, testCache.allFiles().length, 'sanity check.')
 
-  const sourcesPath = join(intDir, 'fake-sources')
-
-  const rawData = { cases: 10, deaths: 20 }
-  fakeCrawlSites.writeFile('fake', 'fake.json', JSON.stringify(rawData))
-
-  testCache.setup()
-  const event = makeEventMessage({ source: 'fake', _sourcesPath: sourcesPath })
-  await crawlerHandler(event)
-  t.equal(1, testCache.allFiles().length, 'Sanity check, have data to scrape.')
-
-  const fullResult = await scraperHandler(event)
+  const fullResult = await utils.scrape('fake')
   const result = fullResult[0]
   t.ok(result, 'Have result')
 
@@ -64,6 +47,6 @@ test('scrape extracts data from cached file', async t => {
     t.ok(actual[0][f].match(dateRe), `${f} matches ${dateRe}`)
   })
 
-  testCache.teardown()
-  await sandbox.end()
+  await utils.teardown()
+  t.end()
 })
