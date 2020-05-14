@@ -1,7 +1,7 @@
 const { join } = require('path')
 const test = require('tape')
 
-const sut = join(process.cwd(), 'src', 'events', 'scraper', 'find-scraper', 'index.js')
+const sut = join(process.cwd(), 'src', 'shared', 'sources', '_lib', 'find-scraper.js')
 const findScraper = require(sut)
 
 test('Module exists', t => {

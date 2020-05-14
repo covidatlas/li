@@ -1,5 +1,5 @@
-const datetime = require('@architect/shared/datetime/index.js')
-const sorter = require('@architect/shared/utils/sorter.js')
+const datetime = require('../../datetime/index.js')
+const sorter = require('../../utils/sorter.js')
 
 module.exports = function findScraper (source, date) {
   let scraperToUse = null

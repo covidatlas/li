@@ -1,7 +1,7 @@
 const datetime = require('@architect/shared/datetime/index.js')
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
+const findScraper = require('@architect/shared/sources/_lib/find-scraper.js')
 const findTz = require('./find-tz/index.js')
-const findScraper = require('./find-scraper/index.js')
 const loadCache = require('./load-cache/index.js')
 const parseCache = require('./parse-cache/index.js')
 const runScraper = require('./run-scraper/index.js')
@@ -11,6 +11,7 @@ const normalizeData = require('./normalize-data/index.js')
  * Executes the scrape
  */
 module.exports = async function scrape (event) {
+  let timeLabel = null
   try {
     let { date, _useUTCdate } = event
 
@@ -32,7 +33,7 @@ module.exports = async function scrape (event) {
      * (If we don't, then anything running the source across the dateline will have issues)
      */
     date = date ? datetime.getYYYYMMDD(date) : datetime.cast(null, tz)
-    const timeLabel = `Scrape: ${_sourceKey} / ${date}`
+    timeLabel = `Scrape: ${_sourceKey} / ${date}`
     console.time(timeLabel)
 
     /**
@@ -60,12 +61,14 @@ module.exports = async function scrape (event) {
      */
     const data = normalizeData(source, output, date)
 
-    console.timeEnd(timeLabel)
-
     return data
   }
   catch (err) {
     console.error(`Failed to scrape ${event.source}`)
     throw err
+  }
+  finally {
+    if (timeLabel)
+      console.timeEnd(timeLabel)
   }
 }
