@@ -7,7 +7,8 @@ const srcShared = join(process.cwd(), 'src', 'shared')
 const datetime = require(join(srcShared, 'datetime', 'index.js'))
 const sourceMap = require(join(srcShared, 'sources', '_lib', 'source-map.js'))
 const { allowed } = require(join(srcShared, 'sources', '_lib', 'crawl-types.js'))
-const validSource = require(join(process.cwd(), 'docs', 'sample-sources', 'sample.js'))
+const glob = require('glob').sync
+const globJoin = require('../../../../src/shared/utils/glob-join.js')
 
 /**
  * Validate the source.
@@ -157,9 +158,26 @@ function validateSource (source) {
 // Test docs
 test('Documentation sample', t => {
   t.plan(2)
+  // eslint-disable-next-line
+  const validSource = require(join(process.cwd(), 'docs', 'sample-sources', 'sample.js'))
   const result = validateSource(validSource)
   t.equal(result.warnings.join('; '), '', 'no warnings')
   t.equal(result.errors.join('; '), '', 'no errors')
+})
+
+// Ensure the integration test fakes are valid!
+test('Fake integration sources', t => {
+  const fakesDir = [ __dirname, '..', '..', '..', 'integration', 'fake-sources', 'sources' ]
+  const globPattern = globJoin(...fakesDir, '**', '*.js')
+  const sources = glob(globPattern)
+  sources.forEach(s => {
+    // eslint-disable-next-line
+    const source = require(s)
+    const result = validateSource(source)
+    t.equal(result.warnings.join('; '), '', `${s}: no warnings`)
+    t.equal(result.errors.join('; '), '', `${s}: no errors`)
+  })
+  t.end()
 })
 
 // Test the test
