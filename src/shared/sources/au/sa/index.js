@@ -46,7 +46,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'paragraph',
+          format: 'paragraph',
           url: firstUrl
         }
       ],
@@ -63,7 +63,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: () => {
             if (datetime.dateIsBeforeOrEqualTo(datetime.cast(null, 'Australia/Adelaide'), '2020-04-21')) {
               return { url: firstUrl }

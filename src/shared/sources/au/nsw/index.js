@@ -22,7 +22,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: async (client) => {
             const rssFeed = 'https://www.health.nsw.gov.au/_layouts/feed.aspx?xsl=1&web=/news&page=4ac47e14-04a9-4016-b501-65a23280e841&wp=baabf81e-a904-44f1-8d59-5f6d56519965&pageurl=/news/Pages/rss-nsw-health.aspx'
             const { body } = await client({ url: rssFeed })

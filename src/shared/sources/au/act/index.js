@@ -24,7 +24,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://www.health.act.gov.au/about-our-health-system/novel-coronavirus-covid-19'
         }
       ],
@@ -53,7 +53,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://www.covid19.act.gov.au/updates/confirmed-case-information'
         }
       ],
@@ -89,7 +89,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://www.covid19.act.gov.au'
         }
       ],

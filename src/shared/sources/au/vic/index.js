@@ -31,7 +31,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'paragraph',
+          format: 'paragraph',
           url: async (client) => {
             const { body } = await client({ url: 'https://www.dhhs.vic.gov.au/media-hub-coronavirus-disease-covid-19' })
             const matches = body.match(

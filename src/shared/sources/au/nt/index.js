@@ -23,7 +23,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://coronavirus.nt.gov.au/'
         }
       ],

@@ -27,7 +27,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url:
             'https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers'
         }
@@ -78,7 +78,7 @@ module.exports = {
         {
           type: 'headless',
           timeout: 15000,
-          data: 'table',
+          format: 'table',
           url: 'https://www.health.gov.au/resources/total-covid-19-cases-and-deaths-by-states-and-territories'
         }
       ],

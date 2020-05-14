@@ -14,7 +14,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://coronavirus.utah.gov/latest/'
         }
       ],
@@ -44,7 +44,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://coronavirus-dashboard.utah.gov/'
         }
       ],
@@ -82,7 +82,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://coronavirus-dashboard.utah.gov/'
         }
       ],

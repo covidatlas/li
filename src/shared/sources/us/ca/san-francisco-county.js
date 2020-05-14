@@ -16,7 +16,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'paragraph',
+          format: 'paragraph',
           url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'
         }
       ],

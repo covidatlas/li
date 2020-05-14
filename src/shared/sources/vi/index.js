@@ -17,7 +17,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'paragraph',
+          format: 'paragraph',
           url:
             'https://doh.vi.gov/covid19usvi'
         }
@@ -63,7 +63,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'paragraph',
+          format: 'paragraph',
           url:
             'https://doh.vi.gov/covid19usvi'
         }

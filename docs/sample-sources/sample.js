@@ -102,11 +102,13 @@ module.exports = {
       crawl: [
         {
           type: 'page',
+          format: 'paragraph',
           url: 'https://someotherdata-cases.html',
           name: 'cases'
         },
         {
           type: 'page',
+          format: 'table',
           url: 'https://someotherdata-deaths.html',
           name: 'deaths'
         }

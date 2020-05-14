@@ -78,7 +78,7 @@ function validateSource (source) {
     // Ok, now let's go into the crawler(s)
     let crawlerNames = {}
     for (const crawler of crawl) {
-      const { type, data, url, timeout } = crawler
+      const { type, format, url, timeout } = crawler
 
       // Crawl type
       requirement(allowed.some(a => a === type), datedError(
@@ -86,7 +86,7 @@ function validateSource (source) {
       ))
 
       // Crawl data format type (for ranking I guess?)
-      requirement(is.string(data) || !data, datedError('Crawler data must be a string'))
+      requirement(is.string(format) || !format, datedError('Crawler format must be a string'))
 
       // Crawl URL
       requirement(is.string(url) || is.function(url), datedError('Crawler url must be a string or function'))

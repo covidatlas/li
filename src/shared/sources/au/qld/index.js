@@ -25,7 +25,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: async (client) => {
             const { body } = await client({ url: 'https://www.health.qld.gov.au/news-events/doh-media-releases' })
             const matches = body.match(

@@ -26,7 +26,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url:
             'https://www.mohfw.gov.in/'
         }

@@ -27,7 +27,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'http://www.salud.gov.pr/Pages/coronavirus.aspx'
         }
       ],

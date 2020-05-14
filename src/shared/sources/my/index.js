@@ -27,7 +27,7 @@ module.exports = {
       crawl: [
         {
           type: 'page',
-          data: 'table',
+          format: 'table',
           url: 'https://www.moh.gov.my/index.php/pages/view/2019-ncov-wuhan'
         },
       ],
