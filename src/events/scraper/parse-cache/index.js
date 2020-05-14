@@ -19,15 +19,15 @@ module.exports = async function parseCache (cache, date) {
 
   const parsed = []
   for (const hit of cache) {
-    let { data } = hit
+    let { content } = hit
     // Convert non-binaries out of the buffer
     let result
     if (hit.type !== 'pdf') {
-      data = data.toString()
-      result = parse[hit.type]({ data, date })
+      content = content.toString()
+      result = parse[hit.type]({ content, date })
     }
     else {
-      result = await parse[hit.type]({ data, date })
+      result = await parse[hit.type]({ content, date })
     }
     const name = hit.name || 'default'
     parsed.push({ [name]: result })

@@ -3,6 +3,6 @@
  * @param {*} data the JSON payload to parse
  */
 module.exports = function json (params) {
-  const { data } = params
-  return JSON.parse(data)
+  const { content } = params
+  return JSON.parse(content)
 }

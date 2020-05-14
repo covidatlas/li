@@ -5,6 +5,6 @@ const cheerio = require('cheerio')
  * @param {*} data the CSV payload to parse
  */
 module.exports = function page (params) {
-  const { data } = params
-  return cheerio.load(data)
+  const { content } = params
+  return cheerio.load(content)
 }
