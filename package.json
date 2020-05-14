@@ -13,7 +13,8 @@
     "migrate:latest": "./tools/migrate-latest-cache",
     "migrate:publish": "AWS_PROFILE=covidatlas ./tools/publish-migrated-cache",
     "migration:status": "node tools/report-migration-status.js",
-    "migration:report": "npm --silent run migration:status -- report | pbcopy && echo 'Copied to clipboard'"
+    "migration:report": "npm --silent run migration:status -- report | pbcopy && echo 'Copied to clipboard'",
+    "migration:summary": "npm --silent run migration:status -- summary | pbcopy && echo 'Copied to clipboard'"
   },
   "humans": [
     "This is a serverless monorepo",
