@@ -5,7 +5,7 @@ const pdf = require('./types/pdf.js')
 const raw = require('./types/raw.js')
 const tsv = require('./types/tsv.js')
 
-module.exports = async function parseCache (cache, date) {
+module.exports = async function parseCache (cache) {
 
   const parse = {
     csv: csv,
@@ -24,10 +24,10 @@ module.exports = async function parseCache (cache, date) {
     let result
     if (hit.type !== 'pdf') {
       content = content.toString()
-      result = parse[hit.type]({ content, date })
+      result = parse[hit.type]({ content })
     }
     else {
-      result = await parse[hit.type]({ content, date })
+      result = await parse[hit.type]({ content })
     }
     const name = hit.name || 'default'
     parsed.push({ [name]: result })
