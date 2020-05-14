@@ -87,7 +87,7 @@ async function load (params, useS3) {
       // - attempting to scrape this file, and if it doesn't work, trying a previous scrape from the same day?
       const file = matches[matches.length - 1]
 
-      crawl.data = await loader.getFileContents({ _sourceKey, keys, file })
+      crawl.content = await loader.getFileContents({ _sourceKey, keys, file })
       cache.push(crawl)
     }
     if (cache !== 'miss') {

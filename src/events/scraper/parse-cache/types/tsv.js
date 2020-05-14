@@ -5,7 +5,7 @@ const csv = require('./csv.js')
  * @param {*} data the TSV payload to parse
  */
 module.exports = function tsv (params) {
-  const { data } = params
+  const { content } = params
   const options = { delimiter: '\t' }
-  return csv({ data, options })
+  return csv({ content, options })
 }

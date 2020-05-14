@@ -12,12 +12,12 @@ const PDFParser = require('pdf2json')
  * - page: the page number this element is situated in
  */
 module.exports = async function parsePDF (params) {
-  const { data } = params
+  const { content } = params
 
   return new Promise((resolve, reject) => {
     const parser = new PDFParser()
 
-    parser.parseBuffer(data)
+    parser.parseBuffer(content)
     parser.on('pdfParser_dataError', err => reject(err.parserError))
     parser.on('pdfParser_dataReady', pdfData => {
       const parsed = []

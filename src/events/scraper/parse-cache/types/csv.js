@@ -7,8 +7,8 @@ const csvParse = require('csv-parse/lib/sync')
  *  - delimiter: the delimiter to use (default is ,)
  */
 module.exports = function csv (params) {
-  const { data, options={} } = params
-  return csvParse(data, {
+  const { content, options={} } = params
+  return csvParse(content, {
     delimiter: options.delimiter,
     columns: true
   })
