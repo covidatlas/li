@@ -248,7 +248,7 @@ async function getSourceData (key, map, date) {
     _path: srcPath,
     url: baseUrl,
     scraperTz: tz,
-    type: scraper.crawl[0].data, // Used in CDS for ratings.
+    type: scraper.crawl[0].format, // Used in CDS for ratings.
   }
 
   if (source.friendly)
