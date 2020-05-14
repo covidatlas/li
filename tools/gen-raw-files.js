@@ -18,8 +18,8 @@
  * # For all dates start at 2020-05-02, single scraper:
  * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --date 2020-05-07
  *
- * # For today, single scraper, and do a crawl first:
- * $ node tools/gen-raw-files.js --output zz-kr-out --source kr --crawl
+ * # For today, single scraper (also does a crawl for today):
+ * $ node tools/gen-raw-files.js --output zz-kr-out --source kr
  *
  * If the --output folder is "coronadatascraper/dist-raw", or the
  * files generated from this tool are moved or copied there, these
@@ -436,5 +436,6 @@ async function main (options) {
  * Entry point.
  */
 
+console.log(`Generating Li files for ${getDates(argv)} dates`)
 main(argv)
 console.log('Done.')
