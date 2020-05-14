@@ -1,11 +1,11 @@
 process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
-const utils = require('./utils.js')
-const testCache = require('../_lib/testcache.js')
+const utils = require('../utils.js')
+const testCache = require('../../_lib/testcache.js')
 
 
-test.only('scrape extracts data from cached file', async t => {
+test('scrape extracts data from cached file', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('fake/fake.json', { cases: 10, deaths: 20 })
