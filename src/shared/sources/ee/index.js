@@ -9,8 +9,8 @@ module.exports = {
   country,
   timeseries: true,
   friendly: {
-    name: 'Presidenza del Consiglio dei Ministri - Dipartimento della Protezione Civile',
-    url: 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv',
+    name: 'Estonia Health and Welfare Information Systems Center',
+    url: 'https://www.terviseamet.ee/et/koroonaviirus/avaandmed'
   },
   maintainers: [ maintainers.qgolsteyn, maintainers.camjc ],
   scrapers: [
