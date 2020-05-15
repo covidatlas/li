@@ -177,7 +177,6 @@ const overrideStatus = {
   'US/CA/marin-county.js': 'deprecated',
   'US/CA/mendocino-county.js': 'deprecated',
   'US/CA/merced-county.js': 'deprecated',
-  'US/CA/orange-county.js': 'deprecated',
   'US/CA/riverside-county.js': 'deprecated',
   'US/CA/sacramento-county.js': 'deprecated',
   'US/CA/san-bernardino-county.js': 'deprecated',
