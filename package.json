@@ -14,7 +14,8 @@
     "migrate:publish": "AWS_PROFILE=covidatlas ./tools/publish-migrated-cache",
     "migration:status": "node tools/report-migration-status.js",
     "migration:report": "npm --silent run migration:status -- report | pbcopy && echo 'Copied to clipboard'",
-    "migration:summary": "npm --silent run migration:status -- summary | pbcopy && echo 'Copied to clipboard'"
+    "migration:summary": "npm --silent run migration:status -- summary | pbcopy && echo 'Copied to clipboard'",
+    "validate": "node tools/validate-source.js"
   },
   "humans": [
     "This is a serverless monorepo",

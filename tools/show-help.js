@@ -50,6 +50,12 @@ const descriptions = {
   'migration:status': {
     desc: 'Print summary report of coronadatascraper scraper -> li source migration.',
     docref: null
+  },
+  validate: {
+    desc: 'Validate a source.',
+    examples: [
+      'npm run validate gb-sct'
+    ]
   }
 }
 

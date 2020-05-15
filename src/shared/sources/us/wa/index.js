@@ -190,7 +190,9 @@ module.exports = {
 
           const updated = new Date(item.attributes.CV_Updated)
           if (datetime.dateIsBefore(updated, scrapeDate)) {
-            console.error(`⚠️  us-wa: stale data for ${county}\n   Scrape date: ${scrapeDate.toLocaleString()}\n   Last updated: ${updated.toLocaleString()}`)
+            const sd = scrapeDate.toLocaleString()
+            const ud = updated.toLocaleString()
+            console.error(`⚠️  us-wa: stale data for ${county}\n   Scrape date: ${sd}\n   Last updated: ${ud}`)
           }
 
           counties.push({
