@@ -27,7 +27,7 @@ module.exports = {
         assert($.features.length > 0, 'features are unreasonable')
         const attributes = $.features.map(({ attributes }) => attributes)
 
-        assert(attributes.length > 1, 'data fetch failed, no attributes')
+        assert(attributes.length > 0, 'data fetch failed, no attributes')
 
         const getIso2FromNameForMM = (nameRaw) => {
           const parentheticalRegex = / \(\w+\)/

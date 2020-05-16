@@ -30,7 +30,7 @@ module.exports = {
           .map(({ attributes }) => attributes)
           .filter((item) => item.Date && datetime.dateIsBeforeOrEqualTo(new Date(item.Date), new Date(date)))
 
-        assert(attributes.length > 1, 'data fetch failed, no attributes')
+        assert(attributes.length > 0, 'data fetch failed, no attributes')
 
         const groupedByState = groupBy(attributes, attribute => attribute.Prefecture)
 
