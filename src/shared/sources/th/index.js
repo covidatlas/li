@@ -27,10 +27,10 @@ module.exports = {
         }
       ],
       scrape ({ states, country }) {
-        assert(states.features.length > 1, 'features are unreasonable')
+        assert(states.features.length > 0, 'features are unreasonable')
         const stateAttributes = states.features.map(({ attributes }) => attributes)
 
-        assert(stateAttributes.length > 1, 'data fetch failed, no attributes')
+        assert(stateAttributes.length > 0, 'data fetch failed, no attributes')
         const output = stateAttributes.map(item => ({
           state: `iso2:TH-${item.PROV_CODE}`.replace('iso2:TH-00', UNASSIGNED),
           cases: item.Count_Confirm,

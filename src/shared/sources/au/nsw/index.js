@@ -98,7 +98,7 @@ module.exports = {
         }
       ],
       scrape ({ cases }, date, { cumulateObjects }) {
-        assert(cases.data.length > 1, 'cases data is unreasonable')
+        assert(cases.data.length > 0, 'cases data is unreasonable')
 
         const itemsByPOA = cases.data
           .filter(({ Date: attributeDate }) => {
