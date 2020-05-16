@@ -49,6 +49,12 @@ module.exports = {
     github: 'qgolsteyn',
     flag: '🇨🇦'
   },
+  jzohrab: {
+    name: 'Jeff Zohrab',
+    github: 'jzohrab',
+    email: 'jzohrab@gmail.com',
+    flag: '🇨🇦'
+  },
   slezakbs: {
     name: 'Brendan Slezak',
     email: 'brendan.slezak@geospark.io',
