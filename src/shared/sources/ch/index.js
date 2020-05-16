@@ -66,7 +66,6 @@ module.exports = {
         },
       ],
       scrape (data, date) {
-
         const dataByCanton = {}
         // Initialize
         for (const canton of cantons) {
@@ -103,7 +102,7 @@ module.exports = {
           }
         }
         const result = Object.values(dataByCanton)
-        result.push(transform.sumData(data))
+        result.push(transform.sumData(result))
         return result
 
       }
