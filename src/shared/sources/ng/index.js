@@ -28,7 +28,7 @@ module.exports = {
         const attributes = $.features
           .map(({ attributes }) => attributes)
 
-        assert(attributes.length > 1, 'data fetch failed, no attributes')
+        assert(attributes.length > 0, 'data fetch failed, no attributes')
 
         const states = []
         attributes.forEach((attribute) => {
