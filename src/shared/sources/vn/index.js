@@ -24,7 +24,7 @@ module.exports = {
       ],
       scrape ($, date) {
         const { data } = $
-        assert(data.length > 1, 'data is unreasonable')
+        assert(data.length > 0, 'data is unreasonable')
         const attributes = data
           .filter((item) => {
             if (!item.verifyDate.startsWith('202')) { // Some dates are in other years like year 0001.
