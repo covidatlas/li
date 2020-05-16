@@ -67,7 +67,7 @@ module.exports = {
           })
         }
 
-        assert(data.cases > 0, 'Cases is not reasonable')
+        assert(data.cases > 0, 'Cases are not reasonable')
         return data
       }
     }
