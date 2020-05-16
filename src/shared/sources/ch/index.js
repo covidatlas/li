@@ -67,46 +67,46 @@ module.exports = {
       ],
       scrape (data, date) {
 
-    const dataByCanton = {}
-    // Initialize
-    for (const canton of cantons) {
-      dataByCanton[canton] = {
-        state: `iso2:CH-${canton}`
-      }
-    }
-    for (const item of data.cases) {
-      if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
+        const dataByCanton = {}
+        // Initialize
         for (const canton of cantons) {
-          dataByCanton[canton].cases = parse.float(item[canton]) || dataByCanton[canton].cases
+          dataByCanton[canton] = {
+            state: `iso2:CH-${canton}`
+          }
         }
-      }
-    }
-    for (const item of data.deaths) {
-      if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
-        for (const canton of cantons) {
-          dataByCanton[canton].deaths = parse.float(item[canton]) || dataByCanton[canton].deaths
+        for (const item of data.cases) {
+          if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
+            for (const canton of cantons) {
+              dataByCanton[canton].cases = parse.float(item[canton]) || dataByCanton[canton].cases
+            }
+          }
         }
-      }
-    }
-    for (const item of data.hospitalized) {
-      if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
-        for (const canton of cantons) {
-          dataByCanton[canton].hospitalized = parse.float(item[canton]) || dataByCanton[canton].hospitalized
+        for (const item of data.deaths) {
+          if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
+            for (const canton of cantons) {
+              dataByCanton[canton].deaths = parse.float(item[canton]) || dataByCanton[canton].deaths
+            }
+          }
         }
-      }
-    }
-    for (const item of data.released) {
-      if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
-        for (const canton of cantons) {
-          dataByCanton[canton].discharged = parse.float(item[canton]) || dataByCanton[canton].discharged
+        for (const item of data.hospitalized) {
+          if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
+            for (const canton of cantons) {
+              dataByCanton[canton].hospitalized = parse.float(item[canton]) || dataByCanton[canton].hospitalized
+            }
+          }
         }
-      }
-    }
-    const result = Object.values(dataByCanton)
-    result.push(transform.sumData(data))
-    return result
+        for (const item of data.released) {
+          if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
+            for (const canton of cantons) {
+              dataByCanton[canton].discharged = parse.float(item[canton]) || dataByCanton[canton].discharged
+            }
+          }
+        }
+        const result = Object.values(dataByCanton)
+        result.push(transform.sumData(data))
+        return result
 
-}
+      }
     },
   ]
 }
