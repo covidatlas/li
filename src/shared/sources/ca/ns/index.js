@@ -42,7 +42,7 @@ module.exports = {
           console.error(
             `  🚨 timeseries for ${geography.getName(
             this
-          )}: SCRAPE_DATE ${scrapeDateString} is newer than last sample time ${datetime.getYYYYMD(
+          )}: scrape date ${scrapeDateString} is newer than last sample time ${datetime.getYYYYMD(
             lastDateInTimeseries
           )}. Using last sample anyway`
           )
@@ -50,7 +50,7 @@ module.exports = {
           scrapeDateString = datetime.getYYYYMD(scrapeDate)
         }
         if (scrapeDate < firstDateInTimeseries) {
-          throw new Error(`Timeseries starts later than SCRAPE_DATE ${scrapeDateString}`)
+          throw new Error(`Timeseries starts later than scrape date ${scrapeDateString}`)
         }
         for (const row of data) {
           if (datetime.getYYYYMD(`${row.Date} 12:00:00`) === scrapeDateString) {
@@ -62,7 +62,7 @@ module.exports = {
             }
           }
         }
-        const msg = `Timeseries does not contain a sample for SCRAPE_DATE ${scrapeDateString}`
+        const msg = `Timeseries does not contain a sample for scrape date ${scrapeDateString}`
         throw new Error(msg)
 
       }
@@ -99,7 +99,7 @@ module.exports = {
           console.error(
             `  🚨 timeseries for ${geography.getName(
             this
-          )}: SCRAPE_DATE ${scrapeDateString} is newer than last sample time ${datetime.getYYYYMD(
+          )}: scrape date ${scrapeDateString} is newer than last sample time ${datetime.getYYYYMD(
             lastDateInTimeseries
           )}. Using last sample anyway`
           )
@@ -107,7 +107,7 @@ module.exports = {
           scrapeDateString = datetime.getYYYYMD(scrapeDate)
         }
         if (scrapeDate < firstDateInTimeseries) {
-          throw new Error(`Timeseries starts later than SCRAPE_DATE ${scrapeDateString}`)
+          throw new Error(`Timeseries starts later than scrape date ${scrapeDateString}`)
         }
 
         const dataToDate = data.filter(row => {
@@ -124,6 +124,7 @@ module.exports = {
         // - non-ICU + ICU = current hospitalized
         let totalCases = 0
         let totalDeaths = 0
+
         let result = {}
         for (const row of dataToDate) {
           totalCases += parse.number(row.Cases)
@@ -139,13 +140,22 @@ module.exports = {
         }
 
         // Return
-        if (Object.keys(result).length > 0) {
-          console.table(result)
-          return result
-        } else {
-          const m = `Timeseries does not contain a sample for SCRAPE_DATE ${scrapeDateString}`
-          throw new Error(m)
+        if (Object.keys(result).length == 0) {
+          const m = `Timeseries does not contain a sample for ${scrapeDateString}`
+          console.log(m)
+
+          // There is no data.  Don't throw an error, because this is
+          // to be expected of this data source.  We don't actually
+          // have the data yet, so return undefined.
+          result = {
+            cases: undefined,
+            tested: undefined,
+            recovered: undefined,
+            deaths: undefined
+          }
         }
+
+        return result
       }
     }
   ]
