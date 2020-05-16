@@ -7,7 +7,11 @@ const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:CA'
 
-const parseOrUndefined = (value) =>value ? parse.number(value) : undefined
+const parseOrUndefined = (value) => value ? parse.number(value) : undefined
+
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Repatriated travellers': UNASSIGNED
+}
 
 module.exports = {
   aggregate: 'state',
@@ -33,7 +37,7 @@ module.exports = {
           .filter(row => row.date === datetime.getDDMMYYYY(date))
           .filter(row => 'Canada' !== row.prname)
           .map(row => ({
-            state: getIso2FromName({ country, name: row.prname.replace('Repatriated travellers', UNASSIGNED) }),
+            state: getIso2FromName({ country, name: row.prname, nameToCanonical }),
             cases: parseOrUndefined(row.numconf),
             deaths: parseOrUndefined(row.numdeaths),
             recovered: parseOrUndefined(row.numrecover),

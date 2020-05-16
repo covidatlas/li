@@ -2,9 +2,15 @@ const assert = require('assert')
 const datetime = require('../../datetime/index.js')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
-const transform = require('../_lib/transform.js'
-)
+const transform = require('../_lib/transform.js')
+
 const country = `iso1:UA`
+
+const isoMap = { // Non-unique gets mapped straight to ISO2
+  'Kyiv': 'iso2:UA-30',
+  'Kyivska': 'iso2:UA-32',
+  'Chernivetska': 'iso2:UA-77',
+}
 
 module.exports = {
   aggregate: 'state',
@@ -32,27 +38,16 @@ module.exports = {
       scrape ($, date, { getIso2FromName }) {
         const states = []
 
-        const getIso2inUA = (name) => {
-          if (name === 'Kyiv') {
-            return 'iso2:UA-30'
-          }
-          if (name === 'Kyivska') {
-            return 'iso2:UA-32'
-          }
-          if (name === 'Chernivetska') {
-            return 'iso2:UA-77'
-          }
-          const unSkaName = name
-            .replace('nska', '')
-            .replace('skа', '')
-            .replace('ska', '')
-            .replace('zka', '')
-          return getIso2FromName({ country, name: unSkaName })
-        }
-
         for (const state of $.ukraine) {
           states.push({
-            state: getIso2inUA(state.label.en),
+            state: getIso2FromName({
+              country, name: state.label.en
+                .replace('nska', '')
+                .replace('skа', '')
+                .replace('ska', '')
+                .replace('zka', '')
+              , isoMap
+            }),
             cases: parse.number(state.confirmed),
             deaths: parse.number(state.deaths),
             recovered: parse.number(state.recovered)

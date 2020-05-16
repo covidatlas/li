@@ -18,6 +18,10 @@ const schemaKeysByHeadingFragment = {
   'released from quarantine': 'recovered',
 }
 
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Lazaretto': UNASSIGNED
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -63,7 +67,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName({ country, name: stateData.state.replace('Lazaretto', UNASSIGNED) }),
+            state: getIso2FromName({ country, name: stateData.state, nameToCanonical }),
             cases: parse.number(stateData.cases.replace('-', 0)),
             deaths: parse.number(stateData.deaths),
             recovered: parse.number(stateData.recovered)

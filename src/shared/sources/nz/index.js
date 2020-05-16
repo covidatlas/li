@@ -15,23 +15,18 @@ const schemaKeysByHeadingFragment = {
   dhb: 'state'
 }
 
-const getNamesThatMatchIso2s = name => {
-  if ([
-    'Capital and Coast',
-    'Counties Manukau',
-    'Hutt Valley',
-    'Lakes',
-    'Mid Central',
-    'Nelson Marlborough',
-    'South Canterbury',
-    'Southern',
-    'Tairāwhiti',
-    'Wairarapa',
-    'Waitematā'
-  ].includes(name)) {
-    return UNASSIGNED
-  }
-  return name
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Capital and Coast': UNASSIGNED,
+  'Counties Manukau': UNASSIGNED,
+  'Hutt Valley': UNASSIGNED,
+  'Lakes': UNASSIGNED,
+  'Mid Central': UNASSIGNED,
+  'Nelson Marlborough': UNASSIGNED,
+  'South Canterbury': UNASSIGNED,
+  'Southern': UNASSIGNED,
+  'Tairāwhiti': UNASSIGNED,
+  'Wairarapa': UNASSIGNED,
+  'Waitematā': UNASSIGNED
 }
 
 module.exports = {
@@ -74,9 +69,8 @@ module.exports = {
             const key = dataKeysByColumnIndex[columnIndex]
             stateData[key] = value
           })
-          const stateName = getNamesThatMatchIso2s(stateData.state)
           states.push({
-            state: getIso2FromName({ country, name: stateName }),
+            state: getIso2FromName({ country, name: stateData.state, nameToCanonical }),
             cases: parse.number(stateData.cases),
             deaths: parse.number(stateData.deaths),
             recovered: parse.number(stateData.recovered)
