@@ -10,6 +10,7 @@ module.exports = function csv (params) {
   const { content, options={} } = params
   return csvParse(content, {
     delimiter: options.delimiter,
+    from_line: options.from_line || 1,
     columns: true
   })
 }
