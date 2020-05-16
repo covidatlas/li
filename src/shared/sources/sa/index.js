@@ -6,6 +6,13 @@ const country = 'iso1:SA'
 
 const sum = (items) => items.map(stateAttribute => stateAttribute.cases).reduce((a, b) => a + b, 0)
 
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Mecca': 'Makka',
+  'Medina': 'Madinah',
+  'Hail': 'Hayel',
+  'Jouf': 'Jawf',
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -41,12 +48,7 @@ module.exports = {
         for (const [ stateName, stateAttributes ] of Object.entries(groupedByState)) {
           if (stateName !== 'Total') {
             states.push({
-              state: getIso2FromName({ country, name: stateName
-                .replace('Mecca', 'Makka')
-                .replace('Medina', 'Madinah')
-                .replace('Hail', 'Hayel')
-                .replace('Jouf', 'Jawf')
-              }),
+              state: getIso2FromName({ country, name: stateName, nameToCanonical }),
               cases: sum(stateAttributes.filter(stateAttribute => stateAttribute.indicator === 'Cases')),
               active: sum(stateAttributes.filter(stateAttribute => stateAttribute.indicator === 'Active cases')),
               recovered: sum(stateAttributes.filter(stateAttribute => stateAttribute.indicator === 'Recoveries')),

@@ -12,6 +12,11 @@ const schemaKeysByHeadingFragment = {
   's. no.': null,
 }
 
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Telengana': 'Telangana',
+  'Dadar Nagar Haveli': 'Dadra and Nagar Haveli',
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -52,11 +57,7 @@ module.exports = {
           })
 
           states.push({
-            state: getIso2FromName({
-              country, name: stateData.state
-                .replace('Telengana', 'Telangana')
-                .replace('Dadar Nagar Haveli', 'Dadra and Nagar Haveli')
-            }),
+            state: getIso2FromName({ country, name: stateData.state, nameToCanonical }),
             cases: parse.number(stateData.cases),
             deaths: parse.number(stateData.deaths),
             recovered: parse.number(stateData.recovered)

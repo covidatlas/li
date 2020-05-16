@@ -40,7 +40,7 @@ module.exports = {
         assert(attributes.length > 0, 'data fetch failed, no attributes')
 
         const states = attributes.map(item => ({
-          state: getIso2FromName({ country, name: latinizationMap[item.name] }),
+          state: getIso2FromName({ country, name: item.name, nameToCanonical: latinizationMap }),
           cases: item[casesKey],
           deaths: item[deathsKey]
         }))

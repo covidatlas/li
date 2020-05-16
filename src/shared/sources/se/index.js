@@ -21,6 +21,14 @@ const nonStateKeys = [
   icuKey,
 ]
 
+const isoMap = { // Non-unique gets mapped straight to ISO2
+  'Gotland': 'iso2:SE-I',
+}
+
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Dalarna': 'Dalecarlia',
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -59,15 +67,8 @@ module.exports = {
         const states = []
         for (const [ key, value ] of Object.entries(cumulatedObject)) {
           if (!nonStateKeys.includes(key)) {
-            const overrides = {
-              'Gotland': 'iso2:SE-I',
-            }
             states.push({
-              state: overrides[key] || getIso2FromName({
-                country, name: key
-                  .replace('_', ' ')
-                  .replace('Dalarna', 'Dalecarlia')
-              }),
+              state: getIso2FromName({ country, name: key.replace('_', ' '), isoMap, nameToCanonical }),
               cases: value
             })
           }

@@ -7,6 +7,20 @@ const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:BE'
 
+const isoMap = { // Non-unique gets mapped straight to ISO2
+  'Flanders': 'iso2:BE-VLG',
+}
+
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Antwerpen': 'Antwerp',
+  "OostVlaanderen": "East Flanders",
+  "VlaamsBrabant": "Flemish Brabant",
+  "WestVlaanderen": "West Flanders",
+  "Li�ge": "Liège",
+  "BrabantWallon": "Walloon Brabant",
+  "NA": UNASSIGNED,
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -43,24 +57,6 @@ module.exports = {
         }
       ],
       scrape ({ cases, deaths, hospitalized, tested }, date, { getIso2FromName }) {
-        const getIso2BE = (name) => {
-          const isoOverrides = { // Non-unique gets mapped straight to ISO2
-            'Flanders': 'iso2:BE-VLG',
-          }
-
-          const nameOverrides = { // Name differences get mapped to the canonical names
-            'Antwerpen': 'Antwerp',
-            "OostVlaanderen": "East Flanders",
-            "VlaamsBrabant": "Flemish Brabant",
-            "WestVlaanderen": "West Flanders",
-            "Li�ge": "Liège",
-            "BrabantWallon": "Walloon Brabant",
-            "NA": UNASSIGNED,
-          }
-
-          return isoOverrides[name] || getIso2FromName({ country, name: nameOverrides[name] || name })
-        }
-
         const dataByRegion = {}
         const dataByProvince = {}
         let nationalData = { tested: 0 }
@@ -119,7 +115,7 @@ module.exports = {
 
         for (const reg of Object.keys(dataByProvince)) {
           let regionData = {
-            state: getIso2BE(reg),
+            state: getIso2FromName({ country, name: reg, isoMap, nameToCanonical }),
             ...dataByRegion[reg]
           }
 
@@ -127,8 +123,8 @@ module.exports = {
             const provinceData = []
             for (const prov of Object.keys(dataByProvince[reg])) {
               provinceData.push({
-                state: getIso2BE(reg),
-                county: getIso2BE(prov),
+                state: getIso2FromName({ country, name: reg, isoMap, nameToCanonical }),
+                county: getIso2FromName({ country, name: prov, isoMap, nameToCanonical }),
                 ...dataByProvince[reg][prov]
               })
             }
@@ -145,7 +141,7 @@ module.exports = {
             // Brussels is both a region and a province. Add to both
             data.push({
               ...regionData,
-              county: getIso2BE(reg)
+              county: getIso2FromName({ country, name: reg, isoMap, nameToCanonical })
             })
             data.push(regionData)
           } else if (reg === 'NA') {

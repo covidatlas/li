@@ -4,6 +4,10 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:NG'
 
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'Nassarawa': 'Nasarawa'
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -33,7 +37,7 @@ module.exports = {
         const states = []
         attributes.forEach((attribute) => {
           states.push({
-            state: getIso2FromName({ country, name: attribute.NAME_1.replace('Nassarawa', 'Nasarawa') }),
+            state: getIso2FromName({ country, name: attribute.NAME_1, nameToCanonical }),
             active: attribute.Active_Cases,
             cases: attribute.ConfCases,
             deaths: attribute.Deaths,

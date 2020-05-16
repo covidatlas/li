@@ -4,6 +4,11 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:MM'
 
+const isoMap = { // Non-unique gets mapped straight to ISO2
+  'Chin':'iso2:MM-14',
+  'Mangway':'iso2:MM-03',
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -32,14 +37,10 @@ module.exports = {
         const getIso2FromNameForMM = (nameRaw) => {
           const parentheticalRegex = / \(\w+\)/
           const name = nameRaw.replace(parentheticalRegex, '').replace(' State', '').replace(' Region', '')
-          if (name === 'Chin') {
-            return 'iso2:MM-14'
-          }
-          if (name === 'Mangway') {
-            return 'iso2:MM-03'
-          }
-          return getIso2FromName({ country, name })
+
+          return getIso2FromName({ country, name, isoMap })
         }
+
         const groupedByState = groupBy(attributes, attribute => getIso2FromNameForMM(attribute.SR))
         const states = []
 

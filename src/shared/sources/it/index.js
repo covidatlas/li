@@ -7,6 +7,21 @@ const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:IT'
 
+const isoMap = { // Non-unique gets mapped straight to ISO2
+  'Calabria': 'iso2:IT-78',
+  'Lombardia': 'iso2:IT-25',
+  'P.A. Trento': 'iso2:IT-32',
+  'Piemonte': 'iso2:IT-21',
+  'Puglia': 'iso2:IT-75',
+  'Sicilia': 'iso2:IT-82',
+  'Toscana': 'iso2:IT-52',
+  "Valle d'Aosta": 'iso2:IT-23',
+}
+
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  'P.A. Bolzano': UNASSIGNED,
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -26,27 +41,10 @@ module.exports = {
         }
       ],
       scrape ($, date, { getIso2FromName }) {
-
-        const getIso2IT = (name) => {
-          const overrides = {
-            'Calabria' : 'iso2:IT-78',
-            'Lombardia' : 'iso2:IT-25',
-            'P.A. Bolzano' : UNASSIGNED,
-            'P.A. Trento' : 'iso2:IT-32',
-            'Piemonte' : 'iso2:IT-21',
-            'Puglia' : 'iso2:IT-75',
-            'Sicilia' : 'iso2:IT-82',
-            'Toscana' : 'iso2:IT-52',
-            "Valle d'Aosta" : 'iso2:IT-23',
-          }
-
-          return overrides[name] || getIso2FromName({ country, name })
-        }
-
         const states = $
           .filter(row => row.data.substr(0, 10) === datetime.getYYYYMMDD(date))
           .map(row => ({
-            state: getIso2IT(row.denominazione_regione),
+            state: getIso2FromName({ country, name: row.denominazione_regione, isoMap, nameToCanonical }),
             cases: parse.number(row.totale_casi),
             deaths: parse.number(row.deceduti),
             recovered: parse.number(row.dimessi_guariti),

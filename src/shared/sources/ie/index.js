@@ -6,6 +6,10 @@ const parse = require('../_lib/parse.js')
 
 const country = 'iso1:IE'
 
+const isoMap = { // Non-unique gets mapped straight to ISO2
+  'Meath': 'iso2:IE-MH',
+}
+
 module.exports = {
   aggregate: 'state',
   country,
@@ -25,27 +29,20 @@ module.exports = {
         }
       ],
       scrape ($, date, { getIso2FromName }) {
-        const getIso2IE = (name) => {
-          const isoOverrides = { // Non-unique gets mapped straight to ISO2
-            'Meath': 'iso2:IE-MH',
-          }
-          return isoOverrides[name] || getIso2FromName({ country, name })
-        }
-
-        const casesByRegion = {}
+        const casesByState = {}
 
         for (const item of $) {
           const itemDate = datetime.parse(item['﻿TimeStamp'].replace(/\//g, '-'))
           if (itemDate === date) {
-            casesByRegion[item.CountyName] = parse.number(item.ConfirmedCovidCases)
+            casesByState[item.CountyName] = parse.number(item.ConfirmedCovidCases)
           }
         }
 
         const states = []
-        for (const stateName of Object.keys(casesByRegion)) {
+        for (const stateName of Object.keys(casesByState)) {
           states.push({
-            state: getIso2IE(stateName),
-            cases: casesByRegion[stateName]
+            state: getIso2FromName({ country, name: stateName, isoMap }),
+            cases: casesByState[stateName]
           })
         }
 
