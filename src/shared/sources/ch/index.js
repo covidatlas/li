@@ -42,7 +42,7 @@ module.exports = {
   maintainers: [ maintainers.qgolsteyn ],
   scrapers: [
     {
-      startDate: '1999-09-09',
+      startDate: '2020-02-25',
       crawl: [
         {
           type: 'csv',
@@ -110,11 +110,3 @@ module.exports = {
     },
   ]
 }
-
-
-// TODO: delete unused requires
-// TODO: fyi deleted source.url, value = https://github.com/daenuprobst/covid19-cases-switzerland/
-// TODO: fyi deleted source.type, value = csv
-// TODO: fix 1999-09-09 start date
-// TODO: fix 1999-09-09 scrape and crawl
-// TODO: "normalize" maintainers (replace with references, sorry :-) )
