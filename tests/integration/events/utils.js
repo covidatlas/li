@@ -19,14 +19,42 @@ function makeEventMessage (hsh) {
   return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
 }
 
+/** The port for tests. */
+const sandboxPort = 5555
+
 async function setup () {
-  await sandbox.start({ port: 5555, quiet: true })
+  await sandbox.start({ port: sandboxPort, quiet: true })
   testCache.setup()
+  fakeCrawlSites.deleteAllFiles()
+}
+
+/** architect sandbox uses an internal server to handle events,
+ * listening to the sandbox port + 1 (see
+ * https://github.com/architect/sandbox/blob/master/src/sandbox/index.js,
+ * search for 'process.env.ARC_EVENTS_PORT').  If the sandbox is
+ * closed and events are still pending, ECONNREFUSED or ECONNRESET
+ * is thrown.  If unhandled, this crashes the Node process,
+ * including tape, so we'll ignore just these errors for the sake of
+ * testing. */
+function ignoreSandboxUncaughtExceptions () {
+  process.on('uncaughtException', err => {
+    const ignoreExceptions = [
+      `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
+      `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`
+    ]
+    if (ignoreExceptions.includes(err.message)) {
+      // const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
+      // console.error(msg)
+    }
+    else
+      throw err
+  })
 }
 
 async function teardown () {
   fakeCrawlSites.deleteAllFiles()
   testCache.teardown()
+  ignoreSandboxUncaughtExceptions()
   await sandbox.end()
 }
 
