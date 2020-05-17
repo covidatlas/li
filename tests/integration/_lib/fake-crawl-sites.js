@@ -15,6 +15,13 @@ function writeFile (subdir, filename, content) {
   fs.writeFileSync(join(folder, filename), content)
 }
 
+/** Delete all files from baseFolder. */
+function deleteAllFiles () {
+  if (fs.existsSync(baseFolder))
+    fs.rmdirSync(baseFolder, { recursive: true })
+}
+
 module.exports = {
-  writeFile
+  writeFile,
+  deleteAllFiles
 }
