@@ -76,11 +76,17 @@ function validateSource (source) {
 
       // Crawl type
       requirement(allowed.some(a => a === type), datedError(
-        `Invalid crawler type '${type}'; must be one of: page, headless, csv, tsv, pdf, json, raw`
+        `Invalid crawler.type '${type}'; must be one of: page, headless, csv, tsv, pdf, json, raw`
       ))
 
-      // Crawl data format type (for ranking I guess?)
-      requirement(is.string(data) || !data, datedError('Crawler data must be a string'))
+      // Crawl data (format) type, for ranking
+      if (data) {
+        requirement(is.string(data), datedError('Crawler data must be a string'))
+        const allowedData = [ 'table', 'list', 'paragraph' ]
+        requirement(allowedData.some(a => a === data), datedError(
+          `Invalid crawler.data '${data}'; must be one of: ${allowedData.join(', ')}`
+        ))
+      }
 
       // Crawl URL
       requirement(is.string(url) || is.function(url), datedError('Crawler url must be a string or function'))
