@@ -62,7 +62,7 @@ test('validateSource catches problems', t => {
       {
         startDate: '2020-03-02',
         crawl: [
-          { name: 'cases', type: 'csv', url: 'https://somedata.csv' },
+          { name: 'cases', type: 'csv', data: 'trash', url: 'https://somedata.csv' },
           { name: 'cases' /* dup. name */, type: 'page', url: 'https://somedata.html' }
         ],
         scrape (data) { return { cases: 42 + data.count } }
@@ -84,7 +84,8 @@ test('validateSource catches problems', t => {
     '(missing startDate): Async scraper; scrapers should only contain synchronous logic.',
     'Country must be a properly formatted ISO key (e.g. \'iso1:US\')',
     '2020-03-02: Duplicate crawler name \'cases\'; names must be unique',
-    '2020-03-01: Invalid crawler type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
+    '2020-03-02: Invalid crawler.data \'trash\'; must be one of: table, list, paragraph',
+    '2020-03-01: Invalid crawler.type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
     'Scraper must contain a startDate',
     '2020-03-03: Single crawler must not have a name key',
     '(missing startDate): Single crawler must not have a name key'
