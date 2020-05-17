@@ -31,7 +31,7 @@ module.exports = {
           const recordDate = datetime.getYYYYMMDD(`20${yy}-${mm}-${dd}`)
           return recordDate === date
         })
-        assert(thisDatesRecord, `data fetch failed, no record for date ${date}`)
+        assert(thisDatesRecord, `no record for date ${date}`)
 
         const data = {
           cases: parse.number(thisDatesRecord["total cases"]),
