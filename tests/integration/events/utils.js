@@ -25,6 +25,7 @@ async function setup () {
 }
 
 async function teardown () {
+  fakeCrawlSites.deleteAllFiles()
   testCache.teardown()
   await sandbox.end()
 }
