@@ -104,10 +104,10 @@ module.exports = {
         // console.table(testedByDepartements)
 
         const hospitalizedByDepartments = {}
-        // Discharged and deaths are cummulative, while hospitalized is current
+        // Discharged and deaths are cumulative, while hospitalized is current
         // We can calculate new patients with this formula:
         // new_patients = n_current_patients - n_yesterdays_patients + n__todays_discharged_patient + n_todays_deaths
-        // We then sum the number of new_patients to get a cummulative number
+        // We then sum the number of new_patients to get a cumulative number
         for (const item of hopitalizedData) {
           if (datetime.dateIsBeforeOrEqualTo(item.jour, date)) {
             const prev = hospitalizedByDepartments[item.dep]
@@ -154,7 +154,7 @@ module.exports = {
           } else {
             // Other departements are in Metropolitan France
             const item = {
-              country: 'iso1:FX', // ISO1 code for Metropolitan France
+              country: 'iso1:FR', // ISO1 code for Metropolitan France
               county: `iso2:FR-${dep}`,
               state: departementsToRegion[dep],
               tested: testedByDepartements[dep],
