@@ -78,27 +78,26 @@ module.exports = {
       ],
       scrape ( { hospitalized, tested }, date) {
 
-        let hopitalizedData = hospitalized
-        // console.log('raw hopitalizedData')
-        // console.table(hopitalizedData)
+        let hopitalizedData = hospitalized.
+            filter(item => datetime.dateIsBeforeOrEqualTo(item.jour, date)).
+            // Hospitalized data is broken down by gender, we are only
+            // interested in all genders
+            filter(item => item.sexe === '0').
+            // Sort by date to ensure accurate cummulative count
+            sort((a, b) => a.jour - b.jour)
 
-        // Hospitalized data is broken down by gender, we are only interested in all genders
-        hopitalizedData = hopitalizedData.filter(item => item.sexe === '0')
-        // Sort by date to ensure accurate cummulative count
-        hopitalizedData = hopitalizedData.sort((a, b) => a.jour - b.jour)
-
-        let testedData = tested
-        // Testing data is broken down by age group, we are only
-        // interested in all age groups
-        testedData = testedData.filter(item => item.clage_covid === '0')
-        // Sort by date to ensure accurate cummulative count
-        testedData = testedData.sort((a, b) => a.jour - b.jour)
+        let testedData = tested.
+            filter(item => datetime.dateIsBeforeOrEqualTo(item.jour, date)).
+            // Testing data is broken down by age group, we are only
+            // interested in all age groups
+            filter(item => item.clage_covid === '0').
+            // Sort by date to ensure accurate cummulative count
+            sort((a, b) => a.jour - b.jour)
 
         const testedByDepartements = {}
         // Capture cumulative testing data, as the testing data is for the day only
         for (const item of testedData) {
-          if (datetime.dateIsBeforeOrEqualTo(item.jour, date))
-            testedByDepartements[item.dep] = parse.number(item.nb_test) + (testedByDepartements[item.dep] || 0)
+          testedByDepartements[item.dep] = parse.number(item.nb_test) + (testedByDepartements[item.dep] || 0)
         }
         // console.log('tested by depts')
         // console.table(testedByDepartements)
@@ -109,30 +108,28 @@ module.exports = {
         // new_patients = n_current_patients - n_yesterdays_patients + n__todays_discharged_patient + n_todays_deaths
         // We then sum the number of new_patients to get a cumulative number
         for (const item of hopitalizedData) {
-          if (datetime.dateIsBeforeOrEqualTo(item.jour, date)) {
-            const prev = hospitalizedByDepartments[item.dep]
-            if (prev) {
-              // Get the number of new discharged and deaths
-              const deltaDeaths = parse.number(item.dc) - prev.deaths
-              const deltaDischarged = parse.number(item.rad) - prev.discharged
-              // Calculate new patients for today according to formula above
-              const newHospitalized = parse.number(item.hosp) - prev.todayHospitalized + deltaDeaths + deltaDischarged
-              hospitalizedByDepartments[item.dep] = {
-                // Store today's number to calculate formula above
-                todayHospitalized: parse.number(item.hosp),
-                // Sum number of new hospitalization
-                hospitalized: prev.hospitalized + newHospitalized,
-                deaths: parse.number(item.dc),
-                discharged: parse.number(item.rad)
-              }
-            } else {
-              // First day with info for this departement
-              hospitalizedByDepartments[item.dep] = {
-                todayHospitalized: parse.number(item.hosp),
-                hospitalized: parse.number(item.hosp),
-                deaths: parse.number(item.dc),
-                discharged: parse.number(item.rad)
-              }
+          const prev = hospitalizedByDepartments[item.dep]
+          if (prev) {
+            // Get the number of new discharged and deaths
+            const deltaDeaths = parse.number(item.dc) - prev.deaths
+            const deltaDischarged = parse.number(item.rad) - prev.discharged
+            // Calculate new patients for today according to formula above
+            const newHospitalized = parse.number(item.hosp) - prev.todayHospitalized + deltaDeaths + deltaDischarged
+            hospitalizedByDepartments[item.dep] = {
+              // Store today's number to calculate formula above
+              todayHospitalized: parse.number(item.hosp),
+              // Sum number of new hospitalization
+              hospitalized: prev.hospitalized + newHospitalized,
+              deaths: parse.number(item.dc),
+              discharged: parse.number(item.rad)
+            }
+          } else {
+            // First day with info for this departement
+            hospitalizedByDepartments[item.dep] = {
+              todayHospitalized: parse.number(item.hosp),
+              hospitalized: parse.number(item.hosp),
+              deaths: parse.number(item.dc),
+              discharged: parse.number(item.rad)
             }
           }
         }
