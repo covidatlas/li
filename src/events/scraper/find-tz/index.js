@@ -12,9 +12,11 @@ module.exports = async function calculateScraperTz (source) {
   // Some sources like JHU and NYT may already have a timezone specified
   if (tz) return tz
 
+  const errLabel = 'Timezone error'
+
   // The US uses FIPS for its >3,000 counties
   if (country === 'iso1:US') {
-    assert(!usStates[state], `Long form of state name used: ${state}, ${source._path}`)
+    assert(!usStates[state], `${errLabel}: Long form of state name used: ${state}, ${source._path}`)
 
     // iso2.json is kinda big, only load it if we need it
     // eslint-disable-next-line
@@ -23,8 +25,8 @@ module.exports = async function calculateScraperTz (source) {
     // Handle iso2-tagged state params
     const stateCode = state.startsWith('iso2:') ? state.substr(5) : `US-${state}`
     const stateData = iso2Codes[stateCode]
-    assert(stateData, `State data not found for ${state}, ${source._path}`)
-    assert(stateData.timezone, `State missing timezone information ${state}`)
+    assert(stateData, `${errLabel}: State data not found for ${state}, ${source._path}`)
+    assert(stateData.timezone, `${errLabel}: State missing timezone information ${state}`)
     return stateData.timezone
   }
 
@@ -36,7 +38,7 @@ module.exports = async function calculateScraperTz (source) {
 
     if (iso2Codes[state.substr(5)]) {
       const stateData = iso2Codes[state.substr(5)]
-      assert(stateData.timezone, `State missing timezone information ${state}`)
+      assert(stateData.timezone, `${errLabel}: State missing timezone information ${state}`)
       return stateData.timezone
     }
   }
@@ -46,10 +48,10 @@ module.exports = async function calculateScraperTz (source) {
     const rawCountry = country.replace('iso1:', '')
     if (iso1Codes[rawCountry]) {
       const countryData = iso1Codes[rawCountry]
-      assert(countryData.timezone, `Country missing timezone information ${country}`)
+      assert(countryData.timezone, `${errLabel}: Country missing timezone information ${country}`)
       return countryData.timezone
     }
   }
 
-  throw Error('Timezone not found; we must know the timezone of the source')
+  throw Error(`${errLabel}: we must know the timezone of the source`)
 }
