@@ -50,9 +50,9 @@ async function getIndexUrls (client) {
 
     assert(title, `Have title ${title} in line "${line}"`)
     assert(url, `Have url ${url} in line "${line}"`)
-    if (title.match(/donnees-hospitalieres-covid19-.*.csv/))
+    if (!ret.hospitalized && title.match(/^donnees-hospitalieres-covid19-.*.csv$/))
       ret.hospitalized = url
-    if (title.match(/donnees-tests-covid19-labo-quotidien-.*.csv/))
+    if (!ret.tested && title.match(/^donnees-tests-covid19-labo-quotidien-.*.csv$/))
       ret.tested = url
 
     if (ret.tested && ret.hospitalized)
@@ -104,6 +104,9 @@ module.exports = {
       scrape ( { hospitalized, tested }, date) {
 
         let hopitalizedData = hospitalized
+        // console.log('raw hopitalizedData')
+        // console.table(hopitalizedData)
+
         // Hospitalized data is broken down by gender, we are only interested in all genders
         hopitalizedData = hopitalizedData.filter(item => item.sexe === '0')
         // Sort by date to ensure accurate cummulative count
@@ -122,6 +125,8 @@ module.exports = {
           if (datetime.dateIsBeforeOrEqualTo(item.jour, date))
             testedByDepartements[item.dep] = parse.number(item.nb_test) + (testedByDepartements[item.dep] || 0)
         }
+        // console.log('tested by depts')
+        // console.table(testedByDepartements)
 
         const hospitalizedByDepartments = {}
         // Discharged and deaths are cummulative, while hospitalized is current
@@ -156,6 +161,8 @@ module.exports = {
             }
           }
         }
+        // console.log('hospit by depts')
+        // console.table(hospitalizedByDepartments)
 
         const overseas = []
         const regions = {}
@@ -210,6 +217,7 @@ module.exports = {
         // And for all of Metropolitan France
         data.push(transform.sumData(departements, { country: 'iso1:FX' }))
 
+        // console.table(data)
         return data
       }
     }
