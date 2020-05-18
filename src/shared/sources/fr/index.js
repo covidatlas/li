@@ -10,67 +10,42 @@ const parse = require(srcShared + 'sources/_lib/parse.js')
 const departementsToCountry = require('./departements-to-country.json')
 const departementsToRegion = require('./departements-to-region.json')
 
+/** A table of contents for subsequent fetches for data. */
+const indexUrl = 'https://www.data.gouv.fr/fr/organizations/sante-publique-france/datasets-resources.csv'
 
-/** The urls for the latest dataset are posted at a fixed site, which
- * is updated daily. */
-let indexUrls = null
-
-
-/** Get the urls from fixed site, and store in indexUrls for
- * subsequent url lookups.  We don't have csvParse available, so
- * parsing by hand. :-( */
-async function getIndexUrls (client) {
-  if (indexUrls) {
-    return indexUrls
-  }
-
-  /** The index listing URLs to call for data. */
-  const indexUrl = 'https://www.data.gouv.fr/fr/organizations/sante-publique-france/datasets-resources.csv'
-
+/** Get the urls from indexUrl, and return the url whose title matches
+ * the titleRegex.  We don't have csvParse available, so parsing by
+ * hand. :-( */
+async function getIndexUrl (client, titleRegex) {
   const { body } = await client({ url: indexUrl })
   assert(body, 'Should have a response body')
   const lines = body.split(/\r?\n/).filter(s => s.trim() !== '')
   assert(lines.length > 1, 'Need at least 1 line for titles')
   const headings = lines[0].split(';')
 
-  function getHeadingIndex (title) {
-    const i = headings.indexOf(`"${title}"`)
-    assert(i !== -1, `No match for "${title}"`)
+  function getHeadingIndex (heading) {
+    const i = headings.indexOf(`"${heading}"`)
+    assert(i !== -1, `No match for "${heading}"`)
     return i
   }
 
-  const ret = {}
-  const titleFieldIndex = getHeadingIndex('title')
-  const urlFieldIndex = getHeadingIndex('url')
-
   for (let line of lines) {
     const a = line.split(';').map(s => s.replace(/^"/, '').replace(/"$/, ''))
-    const title = a[ titleFieldIndex ]
-    const url = a[ urlFieldIndex ]
-
-    assert(title, `Have title ${title} in line "${line}"`)
-    assert(url, `Have url ${url} in line "${line}"`)
-    if (!ret.hospitalized && title.match(/^donnees-hospitalieres-covid19-.*.csv$/))
-      ret.hospitalized = url
-    if (!ret.tested && title.match(/^donnees-tests-covid19-labo-quotidien-.*.csv$/))
-      ret.tested = url
-
-    if (ret.tested && ret.hospitalized)
-      break
+    const title = a[ getHeadingIndex('title') ]
+    const url = a[ getHeadingIndex('url') ]
+    assert(title && url, `Have title and url in line "${line}"`)
+    if (title.match(titleRegex))
+      return url
   }
 
-  assert(ret.hospitalized && ret.tested, 'have hospitalized and tested')
-  indexUrls = ret
-  console.log(`Final urls:`)
-  console.log(JSON.stringify(indexUrls, null, 2))
-  return indexUrls
+  throw new Error(`No match for title ${titleRegex} at ${indexUrl}`)
 }
 
 
 module.exports = {
   country: 'iso1:FR',
   timeseries: true,
-  maintainers: [ maintainers.qgolsteyn ],
+  maintainers: [ maintainers.qgolsteyn, maintainers.jzohrab ],
   priority: 1,
   friendly:   {
     description: 'Santé publique France is the French national agency of public health.',
@@ -87,8 +62,8 @@ module.exports = {
           options: { delimiter: ';' },
           name: 'hospitalized',
           url: async (client) => {
-            const urls = await getIndexUrls(client)
-            return { url: urls.hospitalized }
+            const url = await getIndexUrl(client, /^donnees-hospitalieres-covid19-.*.csv$/)
+            return { url }
           }
         },
         {
@@ -96,8 +71,8 @@ module.exports = {
           options: { delimiter: ';' },
           name: 'tested',
           url: async (client) => {
-            const urls = await getIndexUrls(client)
-            return { url: urls.tested }
+            const url = await getIndexUrl(client, /^donnees-tests-covid19-labo-quotidien-.*.csv$/)
+            return { url }
           }
         },
       ],
