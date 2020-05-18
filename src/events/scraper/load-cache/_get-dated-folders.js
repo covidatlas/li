@@ -32,5 +32,8 @@ module.exports = function getDatedFolders (params) {
   tomorrow = folders.findIndex(f => f === tomorrow)
   if (tomorrow !== -1) cacheDirs.push(tomorrow)
 
-  return cacheDirs
+  function unique (value, index, self) {
+    return self.indexOf(value) === index
+  }
+  return cacheDirs.filter(unique)
 }

@@ -1,7 +1,8 @@
+const assert = require('assert')
 const sorter = require('@architect/shared/utils/sorter.js')
 const datetime = require('@architect/shared/datetime/index.js')
 const getDateBounds = require('./_get-date-bounds.js')
-const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
+const getLocalDateFromFolder = require('./_get-local-date-from-folder.js')
 
 const local = require('./_load-local.js')
 const s3 = require('./_load-s3.js')
@@ -29,20 +30,15 @@ async function load (params, useS3) {
     // Sort from earliest to latest
     folders = sorter(folders)
 
-    // Gets all eligible files for source
-    let { keys, files } = await loader.getFiles({
-      _sourceKey,
-      date,
-      folders,
-      timeseries,
-      tz
-    })
+    // Gets all eligible folders for source
+    let timefolders = await loader.getTimeFolders({ _sourceKey, folders })
 
-    if (!timeseries && files.length) {
+    if (!timeseries && timefolders.length) {
       /**
        * If date is earlier than we have cached, bail
        */
-      const { earliest, latest } = getDateBounds(files, tz)
+      const { earliest, latest } = getDateBounds(timefolders, tz)
+
       if (datetime.dateIsBefore(date, earliest) && useS3) {
         console.error('Sorry McFly, we need more gigawatts to go back in time')
         throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is before our earliest cache ${earliest}`)
@@ -53,26 +49,32 @@ async function load (params, useS3) {
         throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is after our latest cache ${latest}`)
       }
 
-      // Filter files that match date when locale-cast from UTC
-      files = files.filter(filename => {
-        const castDate = getLocalDateFromFilename(filename, tz)
+      // Filter folders that match date when locale-cast from UTC
+      timefolders = timefolders.filter(f => {
+        const castDate = getLocalDateFromFolder(f, tz)
         return castDate === date
       })
     }
 
-    if (!files.length && useS3) {
+    if (!timefolders.length && useS3) {
       const msg = timeseries
         ? 'No cached files for this timeseries'
         : `No cached files found for ${date}`
       throw Error(msg)
     }
 
+    // Use the latest timefolder
+    const useTimefolder = timefolders[timefolders.length - 1]
+    const files = await loader.getFiles({ _sourceKey, folder: useTimefolder })
+
     let cache = []
     for (const crawl of scraper.crawl) {
       // We may have multiple crawls for a single scraper (each with a unique name key)
       // Disambiguate and match them so we are getting back the correct data sources
       const { name='default' } = crawl
-      const matchName = file => name === file.split('-')[3] // Skips over 8601Z ts
+
+      // File name is, e.g., default-99fd8.json.gz, so only get the name part.
+      const matchName = file => name === file.split('-')[0]
       const matches = files.filter(matchName)
 
       // Fall back to S3 cache
@@ -81,13 +83,15 @@ async function load (params, useS3) {
         break
       }
 
-      // We may have multiple files for this day, choose the last one
+      // TODO: will need to fix this for pagination.
+      assert.equal(matches.length, 1, `exactly one match for crawl name '${name}'`)
+
       // TODO we may want to do more here, including:
       // - analysis of contents (e.g. stale files, etc.)
       // - attempting to scrape this file, and if it doesn't work, trying a previous scrape from the same day?
-      const file = matches[matches.length - 1]
+      const file = matches[0]
 
-      crawl.content = await loader.getFileContents({ _sourceKey, keys, file })
+      crawl.content = await loader.getFileContents({ _sourceKey, folder: useTimefolder, file })
       cache.push(crawl)
     }
     if (cache !== 'miss') {

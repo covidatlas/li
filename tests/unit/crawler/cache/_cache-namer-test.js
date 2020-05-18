@@ -13,57 +13,34 @@ test('Module exists', t => {
   t.ok(cacheNamer, 'cacheNamer module exists')
 })
 
-test('Generate some filenames', t => {
-  t.plan(14)
-
+test('cacheFolder', t => {
   // Date breakdown
   const now = new Date()
-  const year = now.getUTCFullYear().toString()
-  const month = (now.getUTCMonth() + 1).toString().padStart(2, '0')
-  const date = now.getUTCDate().toString().padStart(2, '0')
   const iso = now.toISOString().substr(0,10)
 
   let _sourceKey = 'a-place'
-  let _name = 'default'
-  let data = Buffer.from('hi there')
-  let type = 'page'
-  let params = { _sourceKey, _name, data, type }
-  let { filepath, filename } = cacheNamer(params)
 
-  // Filepath
+  let filepath = cacheNamer.cacheFolder({ _sourceKey })
   let parts = filepath.split('/')
   t.equal(parts[0], _sourceKey, 'Filepath root folder matches')
   t.equal(parts[1], iso, 'Filepath date folder matches')
+  t.match(parts[2], /^\d{2}_\d{2}_\d{2}.\d{3}z$/, 'Time part matches')
+  t.end()
+})
+
+test('Generate some filenames', t => {
+  let _name = 'default'
+  let data = Buffer.from('hi there')
+  let type = 'page'
+  let params = { _name, data, type }
+  let filename = cacheNamer.cacheNamer(params)
 
   // Filename
-  parts = filename.split('-')
-
-  // Do a little parts analysis
-  // YYYY-MM-DD
-  t.equal(parts[0], year, 'Year matches')
-  t.ok(parts[1], month, 'Month matches')
-  t.equal(parts[2].substr(0, 2), date, 'Date matches')
-
-  // Filename: the timestamp
-  const ts = parts[2].substr(2)
-  t.ok(ts.startsWith('t'), 'Timestamp begins with lowercase t')
-  t.equal(ts.length, 14, 'Timestamp is 8601Z length')
-  t.ok(ts.endsWith('z'), 'Timestamp ends with lowercase z')
+  let parts = filename.split('-')
 
   // Filename: the other bits
-  t.equal(parts[3], _name, 'name matches')
-  t.equal(parts[4].split('.')[0], '9b96a', 'Hash appended')
-  t.equal(parts[4].split('.')[1], 'html', 'Correct extension')
-
-  // Filename: the other bits, redeux
-  _name = 'cases'
-  data = Buffer.from('howdy')
-  type = 'json'
-  params = { _sourceKey, _name, data, type }
-
-  ;({ filename } = cacheNamer(params))
-  parts = filename.split('-')
-  t.equal(parts[3], _name, 'name matches')
-  t.equal(parts[4].split('.')[0], '0f112', 'Hash appended')
-  t.equal(parts[4].split('.')[1], type, 'Correct extension')
+  t.equal(parts[0], _name, 'name matches')
+  t.equal(parts[1].split('.')[0], '9b96a', 'Hash appended')
+  t.equal(parts[1].split('.')[1], 'html', 'Correct extension')
+  t.end()
 })

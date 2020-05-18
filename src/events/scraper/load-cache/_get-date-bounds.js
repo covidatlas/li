@@ -1,13 +1,13 @@
 const sorter = require('@architect/shared/utils/sorter.js')
-const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
+const getLocalDateFromFolder = require('./_get-local-date-from-folder.js')
 
 /**
- * Takes a cached filename, returns date boundaries
+ * Takes a cached path, returns date boundaries
  */
-module.exports = function getDateBounds (files, tz) {
-  const sorted = sorter(files) // jic
-  const earliest = getLocalDateFromFilename(sorted[0], tz)
-  const latest = getLocalDateFromFilename(sorted[sorted.length - 1], tz)
+module.exports = function getDateBounds (folders, tz) {
+  const sorted = sorter(folders) // jic
+  const earliest = getLocalDateFromFolder(sorted[0], tz)
+  const latest = getLocalDateFromFolder(sorted[sorted.length - 1], tz)
 
   return { earliest, latest }
 }

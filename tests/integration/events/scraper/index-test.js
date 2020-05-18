@@ -5,14 +5,7 @@ const utils = require('../utils.js')
 const testCache = require('../../_lib/testcache.js')
 
 
-test('scrape extracts data from cached file', async t => {
-  await utils.setup()
-
-  utils.writeFakeSourceContent('fake/fake.json', { cases: 10, deaths: 20 })
-  await utils.crawl('fake')
-  t.equal(1, testCache.allFiles().length, 'sanity check.')
-
-  const fullResult = await utils.scrape('fake')
+function validateResult (t, fullResult) {
   const result = fullResult[0]
   t.ok(result, 'Have result')
 
@@ -46,7 +39,27 @@ test('scrape extracts data from cached file', async t => {
     const dateRe = /^\d\d\d\d-\d\d-\d\d/
     t.ok(actual[0][f].match(dateRe), `${f} matches ${dateRe}`)
   })
+}
 
-  await utils.teardown()
+test('scrape extracts data from cached file', async t => {
+  await utils.setup()
+
+  utils.writeFakeSourceContent('fake/fake.json', { cases: 10, deaths: 20 })
+  await utils.crawl('fake')
+  t.equal(1, testCache.allFiles().length, 'sanity check.')
+
+  try {
+    const fullResult = await utils.scrape('fake')
+    t.pass('scrape succeeded')
+    validateResult(t, fullResult)
+  }
+  catch (err) {
+    console.log(err.stack)
+    t.fail(err)
+  }
+  finally {
+    await utils.teardown()
+  }
+
   t.end()
 })

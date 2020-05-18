@@ -1,7 +1,7 @@
 const { gunzipSync } = require('zlib')
 const aws = require('aws-sdk')
-const getDatedFolders = require('./_get-dated-folders.js')
 const getCacheBucket = require('@architect/shared/utils/cache-bucket.js')
+const getDatedFolders = require('./_get-dated-folders.js')
 
 const isLocal = process.env.NODE_ENV === 'testing'
 
@@ -28,7 +28,13 @@ async function getFolders (_sourceKey) {
       : s3.listObjectsV2(listParams)
     const objects = await listObjects.promise()
     for (const folder of objects.CommonPrefixes) {
-      folders.push(folder.Prefix.split('/')[1])
+      // folder.Prefix will be the full path, including the _sourceKey,
+      // e.g. "kr/2020-05-18/"
+      const f = folder.Prefix.split('/').
+            filter(p => p).  // Remove empty end entry
+            splice(1).       // Drop the _sourceKey
+            join('/')
+      folders.push(f)
     }
     // Recurse if necessary
     if (objects.IsTruncated) {
@@ -40,42 +46,49 @@ async function getFolders (_sourceKey) {
   return folders
 }
 
-async function getFiles (params) {
+/** Get the time folders under the sourceKey's date folders. */
+async function getTimeFolders (params) {
   const { _sourceKey, folders } = params
 
-  // Gather yesterday (UTC+), today, and tomorrow (UTC-)
-  let keys = []
+  // Gather yesterday (UTC+), today, and tomorrow (UTC-).
+  let timefolders = []
   const cacheDirs = getDatedFolders(params)
   for (const cacheDir of cacheDirs) {
     if (folders[cacheDir] !== undefined) {
-      const Prefix = `${_sourceKey}/${folders[cacheDir]}/`
-      let listParams = {
-        Bucket,
-        Prefix
-      }
-      const listObjects = isLocal
-        ? s3.makeUnauthenticatedRequest('listObjectsV2', listParams)
-        : s3.listObjectsV2(listParams)
-      const objects = await listObjects.promise()
-      if (objects.Contents.length) {
-        for (const file of objects.Contents) {
-          keys.push(file.Key)
-        }
-      }
+      const result = await getFolders(_sourceKey + '/' + folders[cacheDir])
+      timefolders = timefolders.concat(result)
+    }
+  }
+  return timefolders
+}
+
+/** Get all file names in the given folder. */
+async function getFiles (params) {
+  const { _sourceKey, folder } = params
+
+  let keys = []
+  const Prefix = `${_sourceKey}/${folder}/`
+  let listParams = {
+    Bucket,
+    Prefix
+  }
+  const listObjects = isLocal
+    ? s3.makeUnauthenticatedRequest('listObjectsV2', listParams)
+    : s3.listObjectsV2(listParams)
+  const objects = await listObjects.promise()
+  if (objects.Contents.length) {
+    for (const file of objects.Contents) {
+      keys.push(file.Key)
     }
   }
 
-  // The keys as gathered above are our final S3 paths to call
-  // For now we need to filter by UTC dates, so re-map down to just the filenames
-  let files = keys.map(k => k.split('/')[2])
-
-  return { keys, files }
+  let files = keys.map(k => k.split('/').pop())
+  return files
 }
 
 async function getFileContents (params) {
-  const { keys, file } = params
-
-  const Key = keys.find(k => k.endsWith(file))
+  const { _sourceKey, folder, file } = params
+  const Key = [ _sourceKey, folder, file ].join('/')
 
   let getParams = {
     Bucket,
@@ -92,6 +105,7 @@ async function getFileContents (params) {
 
 module.exports = {
   getFolders,
+  getTimeFolders,
   getFiles,
   getFileContents
 }

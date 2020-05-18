@@ -1,6 +1,6 @@
 const { gunzipSync } = require('zlib')
 const fs = require('fs')
-const { join } = require('path')
+const { basename, join } = require('path')
 const getDatedFolders = require('./_get-dated-folders.js')
 
 let defaultcache = join(__dirname, '..', '..', '..', '..', 'crawler-cache')
@@ -22,33 +22,40 @@ async function getFolders (_sourceKey) {
   return folders
 }
 
-async function getFiles (params) {
+/** Each sourceKey has cache folder structure: {date}/{time}/{file}.
+ * Get list of {date}/{time} folders. */
+async function getTimeFolders (params) {
   const { _sourceKey, folders } = params
 
-  // Gather yesterday (UTC+), today, and tomorrow (UTC-)
-  let files = []
+  // Gather yesterday (UTC+), today, and tomorrow (UTC-).
+  let timefolders = []
   const cacheDirs = getDatedFolders(params)
   for (const cacheDir of cacheDirs) {
     if (folders[cacheDir] !== undefined) {
-      const result = fs.readdirSync(join(cachePath(_sourceKey), folders[cacheDir]))
-      files = files.concat(result)
+      const p = cachePath(_sourceKey)
+      const subdirs = fs.readdirSync(join(p, folders[cacheDir]))
+      const result = subdirs.map(s => join(folders[cacheDir], s))
+      timefolders = timefolders.concat(result)
     }
   }
+  return timefolders
+}
 
-  return { files }
+/** Return just the filename. */
+async function getFiles (params) {
+  const { _sourceKey, folder } = params
+  const p = join(cachePath(_sourceKey), folder)
+  const files = fs.readdirSync(p).map(s => basename(s))
+  return files
 }
 
 async function getFileContents (params) {
-  const { _sourceKey, file } = params
-
-  const dir = file.substr(0, 10)
-  const filePath = join(cachePath(_sourceKey), dir, file)
+  const { _sourceKey, folder, file } = params
+  const filePath = join(cachePath(_sourceKey), folder, file)
 
   if (fs.existsSync(filePath)) {
     const file = fs.readFileSync(filePath)
-
-    // Should always be gzipped, but jic, esp working locally
-    return filePath.endsWith('.gz') ? gunzipSync(file) : file
+    return gunzipSync(file)
   }
   else throw Error('Unknown local cache reading error')
 }
@@ -56,6 +63,7 @@ async function getFileContents (params) {
 
 module.exports = {
   getFolders,
+  getTimeFolders,
   getFiles,
   getFileContents
 }

@@ -28,7 +28,7 @@ function teardown () {
 /** Get all files from test cache. */
 function allFiles () {
   const globPattern = globJoin(testingCache, '**', '*.*')
-  const filePaths = glob(globPattern)
+  const filePaths = glob(globPattern, { nodir: true })
   return filePaths.map(s => s.replace(testingCache + path.sep, ''))
 }
 
