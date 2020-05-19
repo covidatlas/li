@@ -69,8 +69,11 @@ module.exports = {
                 }
 
                 const data = []
-                for (const region of Object.keys(casesByRegion)) {
-                    if (region === "Cała Polska") continue
+                const validRegions = Object.keys(casesByRegion).
+                    filter(r => r !== '').
+                    filter(r => r !== 'Cała Polska').
+                    filter(r => !r.match(/^http/))
+                for (const region of validRegions) {
                     data.push({
                         state: getIso2FromName({ country, name: region, isoMap }),
                         cases: casesByRegion[region],
