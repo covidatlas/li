@@ -1,5 +1,6 @@
 const parse = require('../_lib/parse.js')
 const maintainers = require('../_lib/maintainers.js')
+const transform = require('../_lib/transform.js')
 
 const isoMap = require('./mapping.json')
 
@@ -13,39 +14,38 @@ module.exports = {
         url: 'http://www.mz.gov.pl/'
     },
     scrapers: [
-        // TODO (scraper) PL: 2020-03-18 scraper
-        // {
-        //     startDate: '2020-03-18',
-        //     crawl: [
-        //         {
-        //             type: 'csv',
-        //             url: 'https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-pl.csv'
-        //         }
-        //     ],
-        //     scrape (data, date) {
-        //         const casesByRegion = {}
-        //         const deathsByRegion = {}
-        //
-        //         for (const item of data) {
-        //             const {datetime, nuts_2} = item;
-        //             if (datetime.dateIsBeforeOrEqualTo(datetime, date) && nuts_2) {
-        //                 casesByRegion[nuts_2] = parse.number(item.cases)
-        //                 deathsByRegion[nuts_2] = parse.number(item.deaths)
-        //             }
-        //         }
-        //
-        //         const states = []
-        //         for (const region of Object.keys(casesByRegion)) {
-        //             states.push({
-        //                 state: mapping[region],
-        //                 cases: casesByRegion[region]
-        //             })
-        //         }
-        //
-        //         if (states.length > 0) states.push(transform.sumData(states))
-        //         return states
-        //     }
-        // },
+        {
+            startDate: '2020-03-18',
+            crawl: [
+                {
+                    type: 'csv',
+                    url: 'https://raw.githubusercontent.com/covid19-eu-zh/covid19-eu-data/master/dataset/covid-19-pl.csv'
+                }
+            ],
+            scrape (data, date) {
+                const casesByRegion = {}
+                const deathsByRegion = {}
+
+                for (const item of data) {
+                    const { datetime, nuts_2 } = item
+                if ((datetime <= date) && nuts_2) {
+                        casesByRegion[nuts_2] = parse.number(item.cases)
+                        deathsByRegion[nuts_2] = parse.number(item.deaths)
+                    }
+                }
+
+                const states = []
+                for (const region of Object.keys(casesByRegion)) {
+                    states.push({
+                        state: isoMap[region],
+                        cases: casesByRegion[region]
+                    })
+                }
+
+                if (states.length > 0) states.push(transform.sumData(states))
+                return states
+            }
+        },
         {
             startDate: '2020-04-13',
             crawl: [
