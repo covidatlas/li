@@ -1,6 +1,7 @@
 const parse = require('../_lib/parse.js')
 const maintainers = require('../_lib/maintainers.js')
 const transform = require('../_lib/transform.js')
+const spacetime = require('spacetime')
 
 const isoMap = require('./mapping.json')
 
@@ -25,12 +26,12 @@ module.exports = {
             scrape (data, date) {
                 const casesByRegion = {}
                 const deathsByRegion = {}
-
                 for (const item of data) {
-                    const { datetime, nuts_2 } = item
-                if ((datetime <= date) && nuts_2) {
-                        casesByRegion[nuts_2] = parse.number(item.cases)
-                        deathsByRegion[nuts_2] = parse.number(item.deaths)
+                    const dt = spacetime(item.datetime, 'Europe/Warsaw')
+                    const nuts_2 = item.nuts_2
+                    if (dt.isBefore(date) && nuts_2) {
+                        casesByRegion[nuts_2] = parseInt(item.cases, 10)
+                        deathsByRegion[nuts_2] = parse.number(item.deaths, 10)
                     }
                 }
 
