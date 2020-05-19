@@ -8,7 +8,8 @@ const testCache = require('../../_lib/testcache.js')
 test('scrape extracts data from cached file', async t => {
   await utils.setup()
 
-  utils.writeFakeSourceContent('fake/fake.json', { cases: 10, deaths: 20 })
+  const caseData = { cases: 10, deaths: 20, tested: 30, hospitalized: 40 }
+  utils.writeFakeSourceContent('fake/fake.json', caseData)
   await utils.crawl('fake')
   t.equal(1, testCache.allFiles().length, 'sanity check.')
 
@@ -25,8 +26,7 @@ test('scrape extracts data from cached file', async t => {
   // These fields should match exactly.
   // TODO (testing) Add extra fields here so we're sure nothing is lost.
   const expected = {
-    cases: 10,
-    deaths: 20,
+    ...caseData,
     country:
     'iso1:US',
     state: 'iso2:US-CA',
@@ -34,11 +34,9 @@ test('scrape extracts data from cached file', async t => {
     source: 'fake',
     priority: 0
   }
-  const prunedActual = Object.keys(expected).reduce((hsh, key) => {
-    hsh[key] = actual[0][key]
-    return hsh
-  }, {})
-  t.deepEqual(expected, prunedActual, 'exact key matches')
+  Object.keys(expected).forEach(key => {
+    t.equal(expected[key], actual[0][key], key)
+  })
 
   // Don't check content of these fields, just ensure that they exist and match pattern.
   const dateFields = [ 'dateSource', 'date', 'updated' ]

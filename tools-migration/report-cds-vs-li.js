@@ -47,7 +47,9 @@ matches.forEach(m => {
       date: datepart,
       cases: loc.cases,
       recovered: loc.recovered,
-      deaths: loc.deaths
+      deaths: loc.deaths,
+      tested: loc.tested,
+      hospitalized: loc.hospitalized
     }
     rawLiData.push(record)
   })
@@ -77,7 +79,9 @@ Object.keys(cdsJson).forEach(k => {
       date: datepart,
       cases: loc.dates[datepart].cases,
       recovered: loc.dates[datepart].recovered,
-      deaths: loc.dates[datepart].deaths
+      deaths: loc.dates[datepart].deaths,
+      tested: loc.dates[datepart].tested,
+      hospitalized: loc.dates[datepart].hospitalized
     }
     rawCdsData.push(record)
   })
@@ -105,7 +109,7 @@ function allUniqueValues (keyname) {
 console.log(`
 ===================================
 
-Table headers are: _c = cases, _r = recovered, _d = deaths.
+Table headers are: c = cases, r = recovered, d = deaths, t = tested, h = hosp'd
 The headers 'x=?' indicates if the corresponding fields were the same.
 
 ===================================
@@ -152,7 +156,9 @@ allUniqueValues('key').forEach(key => {
       date,
       ...getPair('cases', 'c'),
       ...getPair('recovered', 'r'),
-      ...getPair('deaths', 'd')
+      ...getPair('deaths', 'd'),
+      ...getPair('tested', 't'),
+      ...getPair('hospitalized', 'h')
     }
     combinedData.push(record)
   })

@@ -17,8 +17,11 @@ module.exports = {
       ],
       scrape (json) {
         return {
+          // TODO (testing) Add any fields that we need to check.
           cases: json.cases,
-          deaths: json.deaths
+          deaths: json.deaths,
+          tested: json.tested,
+          hospitalized: json.hospitalized
         }
       }
     }
