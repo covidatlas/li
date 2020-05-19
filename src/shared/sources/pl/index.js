@@ -80,6 +80,7 @@ module.exports = {
                         deaths: deathsByRegion[region]
                     })
                 }
+                if (data.length > 0) data.push(transform.sumData(data))
                 return data
             }
         }
