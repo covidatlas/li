@@ -22,6 +22,7 @@ slugify.extend({ 'ō': 'o' })
  */
 module.exports = function getIso2FromName (params) {
   const { isoMap, nameToCanonical, country, name } = params
+  assert(name && name.length > 0, `name must be non-empty string, got '${name}'`)
   const countryCode = country.replace('iso1:', '')
   const iso2WithinIso1 = Object.values(iso2).filter(item => item.iso2.startsWith(countryCode))
   const nameForMatching = (nameToCanonical || {})[name] || name
