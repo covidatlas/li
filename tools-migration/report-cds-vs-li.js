@@ -152,7 +152,7 @@ allUniqueValues('key').forEach(key => {
       return hsh
     }
 
-    const record = {
+    let record = {
       date,
       ...getPair('cases', 'c'),
       ...getPair('recovered', 'r'),
@@ -160,11 +160,40 @@ allUniqueValues('key').forEach(key => {
       ...getPair('tested', 't'),
       ...getPair('hospitalized', 'h')
     }
+
     combinedData.push(record)
   })
 
+  // Keep rows with any non-null cds or li value.
+  const hasData = record => {
+    const flds = Object.keys(record).filter(k => k.match(/^(cds|li)_.$/))
+    return flds.some(k => record[k] !== null)
+  }
+
+  function removeNullColumns (d) {
+    const headings = [ 'c', 'r', 'd', 't', 'h' ]
+    headings.forEach(c => {
+      const fields = [ `cds_${c}`, `li_${c}`, `${c}=?` ]
+      const hasData = d.filter(r => {
+        return fields.some(f => { return r[ f ] !== null && r[ f ] !== '' })
+      })
+      if (hasData.length === 0) {
+        d = d.map(row => {
+          fields.forEach(f => {
+            delete row[f]
+          })
+          return row
+        })
+      }
+    })
+    return d
+  }
+
   console.log()
   console.log(key)
-  console.table(combinedData)
+
+  const rowsRemoved = combinedData.filter(hasData)
+  const colsRemoved = removeNullColumns(rowsRemoved)
+  console.table(colsRemoved)
 })
 
