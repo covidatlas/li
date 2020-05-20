@@ -31,62 +31,46 @@ module.exports = {
           url: 'https://docs.google.com/spreadsheets/d/1CwZA4RPNf_hUrwzNLyGGNHRlh1cwl8vDHwIoae51Hac/gviz/tq?tqx=out:csv&sheet=timeseries',
         },
       ],
-      scrape (data, scrapeDate) {
+      scrape (data, date) {
+        let dateString = datetime.getYYYYMMDD(date)
 
-        let scrapeDateString = datetime.getYYYYMMDD(scrapeDate)
-        const lastDateInTimeseries = data[0].Date
-        const firstDateInTimeseries = data[data.length - 1].Date
-        if (scrapeDate > lastDateInTimeseries) {
-          console.error(
-            `  🚨 timeseries for Mercury News (CA): SCRAPE_DATE ${datetime.getYYYYMD(
-          scrapeDate
-        )} is newer than last sample time ${datetime.getYYYYMD(lastDateInTimeseries)}. Using last sample anyway`
-          )
-          scrapeDate = lastDateInTimeseries
-          scrapeDateString = datetime.getYYYYMMDD(scrapeDate)
+        const lastDate = data[0].Date
+        if (date > lastDate) {
+          const msg = `${dateString} is newer than last sample ${lastDate}`
+          console.error(`  🚨 ${msg}.   Using last sample anyway.`)
+          dateString = lastDate
         }
-        if (scrapeDate < firstDateInTimeseries) {
-          throw new Error(
-            `Timeseries starts at ${datetime.getYYYYMD(firstDateInTimeseries)}, but SCRAPE_DATE is ${datetime.getYYYYMD(
-          scrapeDate
-        )}`
-          )
+
+        const firstDate = data[data.length - 1].Date
+        if (date < firstDate) {
+          throw new Error(`Timeseries starts at ${firstDate}, but date is ${dateString}`)
         }
+
         const counties = []
-        for (const stateData of data) {
-          if (stateData.Date === scrapeDateString) {
-            const stateObj = { county: geography.addCounty(stateData.County) }
-            if (stateData['Cases Total'] !== '') {
-              stateObj.cases = parse.number(stateData['Cases Total'])
-            }
-            if (stateData['Tests Total'] !== '') {
-              stateObj.tested = parse.number(stateData['Tests Total'])
-            }
-            if (stateData['Recovered Total'] !== '') {
-              stateObj.recovered = parse.number(stateData['Recovered Total'])
-            }
-            if (stateData['Deaths Total'] !== '') {
-              stateObj.deaths = parse.number(stateData['Deaths Total'])
-            }
-            if (stateData['Hospital Confirmed Total'] !== '') {
-              stateObj.hospitalized = parse.number(stateData['Hospital Confirmed Total'])
-            }
-            if (stateData['ICU Total'] !== '') {
-              stateObj.icu = parse.number(stateData['ICU Total'])
-            }
-            counties.push(stateObj)
+        for (const stateData of data.filter(d => d.Date === dateString)) {
+          const record = { county: geography.addCounty(stateData.County) }
+          const propToField = {
+            cases: 'Cases Total',
+            tested: 'Tests Total',
+            recovered: 'Recovered Total',
+            deaths: 'Deaths Total',
+            hospitalized: 'Hospital Confirmed Total',
+            icu: 'ICU Total'
           }
+          for (const [ k, f ] of Object.entries(propToField)) {
+            if (stateData[k] !== '')
+              record[k] = parse.number(stateData[f])
+          }
+          counties.push(record)
         }
+
         if (counties.length === 0) {
-          throw new Error(`Timeseries does not contain a sample for SCRAPE_DATE ${datetime.getYYYYMD(scrapeDate)}`)
+          throw new Error(`Timeseries does not contain a sample for ${dateString}`)
         }
+
         counties.push(transform.sumData(counties))
         return counties
       }
-
     }
   ]
 }
-
-// TODO: fix 1999-09-09 start date
-// TODO: fix 1999-09-09 scrape and crawl
