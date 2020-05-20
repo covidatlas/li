@@ -108,13 +108,14 @@ content = content.replace('export default scraper;', '')
 content = content.replace(/^\s*[\r\n]/gm, '')
 content = content.replace('const scraper =', 'module.exports =')
 
-const requires = ` // Delete anything you don't need.
+const requires = `
 const srcShared = '../src/shared/'
-const assert = require('assert')
+// const assert = require('assert')
 const constants = require(srcShared + 'sources/_lib/constants.js')
 const datetime = require(srcShared + 'datetime/index.js')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
+const parse = require(srcShared + 'sources/_lib/parse.js')
 const sorter = require(srcShared + 'utils/sorter.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
 const { UNASSIGNED } = require(srcShared + 'sources/_lib/constants.js')
@@ -185,10 +186,13 @@ const sepAt = 'src/shared/scrapers/'
 const shortfname = sepAt + fname.split(sepAt)[1]
 newcontent.push(`// Migrated from coronadatascraper, ${shortfname}\n`)
 
+const fileDepth = fname.split(sepAt)[1].split('/').length
+
 // Dump some common headers.
 // Hacking src/shared so that the gen'd file has the right rel path for src/shared.
 // Yep, hacky hacky.
-newcontent.push(requires.replace('./src/shared/', '../src/shared/'))
+const newSrc = requires.replace("const srcShared = '../src/shared/'", `const srcShared = '${'../'.repeat(fileDepth)}'`)
+newcontent.push(newSrc)
 
 if (localImportMatches.length > 0) {
   todos.push('fix local imports')
@@ -230,4 +234,4 @@ if (fs.existsSync(fullPath)) {
   process.exit(0)
 }
 
-fs.writeFileSync(fullPath, newcontent.join('\n'))
+fs.writeFileSync(fullPath, newcontent.map(s => s.replace(/;$/, '')).join('\n'))
