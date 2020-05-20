@@ -5,7 +5,7 @@ const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
 
 module.exports = {
-  county: 'Mono County',
+  county: 'fips:06051',
   state: 'iso2:US-CA',
   country: 'iso1:US',
   maintainers: [ maintainers.jbencina, maintainers.jzohrab ],
@@ -62,6 +62,4 @@ module.exports = {
     }
   ]
 }
-
-// TODO: fix 0 start date
-// TODO: fix 0 scrape and crawl
+// TODO (scraper) broken, returning only nulls since 2020-03-22
