@@ -58,7 +58,7 @@ function printMatches (matches) {
     const matchesForGroup = matches.filter(m => m.group === g)
     const filesInGroup = matchesForGroup.map(m => m.name).sort().filter(unique)
     filesInGroup.forEach(f => {
-      console.log(`\n  ${f}`)
+      console.log(`\n  ${f.replace(process.cwd() + path.sep, '')}`)
       matchesForGroup.filter(m => m.name === f).forEach(m => {
         console.log(`    ${m.todo}`)
       })
@@ -71,7 +71,8 @@ const pattern = globJoin(process.cwd(), '**', '*.js')
 const options = {
   ignore: [
     globJoin('**', 'node_modules', '**'),
-    globJoin('**', 'tools', '**')
+    globJoin('**', 'tools', '**'),
+    globJoin('**', 'tools-migration', '**')
   ]
 }
 const matches = []
