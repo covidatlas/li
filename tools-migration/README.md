@@ -2,6 +2,27 @@
 
 These assume that you have the latest CDS and Li repos.
 
+Run these (hacky!) scripts in the Li root directory.
+
+## `prep-cds.js`: Migrate cache and generate timeseries for the given CDS scraper.
+
+Sample call:
+
+```
+node tools-migration/prep-cds.js US/CA/mono-county.js
+```
+
+## `port-li.js`: Do prelim port if no file, and run verification and reports.
+
+Sample call:
+
+```
+node tools-migration/port-li.js US/CA/mono-county.js
+```
+
+
+# Other helpers used by the above
+
 ## `migrate-cds-scraper.js`: Bootstrap migration of CDS scraper to li
 
 This is really hacky, and may not even work for some scrapers ... but
