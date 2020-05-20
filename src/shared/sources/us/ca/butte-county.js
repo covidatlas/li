@@ -51,7 +51,5 @@ module.exports = {
         }
       }
     }
-
-    // TODO (scrapers): hasn't returned data since '2020-03-24'
   ]
 }
