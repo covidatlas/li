@@ -179,9 +179,7 @@ allUniqueValues('key').forEach(key => {
       })
       if (hasData.length === 0) {
         d = d.map(row => {
-          fields.forEach(f => {
-            delete row[f]
-          })
+          fields.forEach(f => delete row[f])
           return row
         })
       }
@@ -191,9 +189,6 @@ allUniqueValues('key').forEach(key => {
 
   console.log()
   console.log(key)
-
-  const rowsRemoved = combinedData.filter(hasData)
-  const colsRemoved = removeNullColumns(rowsRemoved)
-  console.table(colsRemoved)
+  console.table(removeNullColumns(combinedData.filter(hasData)))
 })
 
