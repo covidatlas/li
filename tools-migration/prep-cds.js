@@ -39,7 +39,7 @@ if (!fs.existsSync(cdsScraper)) {
   process.exit(1)
 }
 
-const liKey = sourceKey(cdsScraper.replace('scrapers', 'sources'))
+const liKey = sourceKey(cdsScraper.replace('scrapers', 'sources').toLowerCase())
 
 // Run the generation in CDS
 console.log('got ' + locPath)
