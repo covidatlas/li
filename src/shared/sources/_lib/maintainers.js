@@ -17,6 +17,9 @@ module.exports = {
     state: 'CA',
     flag: '🇺🇸'
   },
+  chunder: {
+    github: 'chunder',
+  },
   paulboal: {
     name: 'Paul Boal',
     email: 'paul.boal@amitechsolutions.com',
