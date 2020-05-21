@@ -36,7 +36,6 @@ if (matches.length === 0) {
 const rawLiData = []
 
 matches.forEach(m => {
-  // console.log(m)
   const locations = JSON.parse(fs.readFileSync(m, 'utf-8'))
   // console.log(locations)
   locations.forEach(loc => {
@@ -93,16 +92,11 @@ Object.keys(cdsJson).forEach(k => {
 ///////////////////////////////////////////////////////
 // Combine and print
 
-// For filtering arrays
-function onlyUnique (value, index, self) {
-  return self.indexOf(value) === index
-}
-
 function allUniqueValues (keyname) {
   let all = rawLiData.map(d => d[keyname])
   all = all.concat(rawCdsData.map(d => d[keyname]))
-  all = all.filter(onlyUnique).sort()
-  return all
+  const s = new Set(all)
+  return Array.from(s)
 }
 
 
@@ -130,6 +124,8 @@ function getPriorDay (date) {
 }
 
 allUniqueValues('key').forEach(key => {
+  console.log()
+  console.log(key)
   const combinedData = []
 
   allDates.forEach(date => {
@@ -187,8 +183,6 @@ allUniqueValues('key').forEach(key => {
     return d
   }
 
-  console.log()
-  console.log(key)
   console.table(removeNullColumns(combinedData.filter(hasData)))
 })
 

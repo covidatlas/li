@@ -1,5 +1,6 @@
 const assertTotalsAreReasonable = require('./scraper-helpers/assert-totals-are-reasonable')
 const cumulateObjects = require('./scraper-helpers/cumulate-objects')
+const fipsCodes = require('./scraper-helpers/fips-codes')
 const getDataWithTestedNegativeApplied = require('./scraper-helpers/get-data-with-tested-negative-applied')
 const getIso2FromName = require('./scraper-helpers/get-iso2-from-name')
 const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-heading')
@@ -10,6 +11,7 @@ const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arr
 const scraperHelpers = {
   assertTotalsAreReasonable,
   cumulateObjects,
+  fipsCodes,
   getDataWithTestedNegativeApplied,
   getIso2FromName,
   getSchemaKeyFromHeading,
