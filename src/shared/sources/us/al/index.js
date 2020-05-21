@@ -125,28 +125,26 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: async function (client) {
+          url: async (client) => {
             const orgid = '4RQmZZ0yaZkGR1zy'
             const layer = 'COV19_Public_Dashboard_ReadOnly'
             const ret = await arcgis.urlFromOrgId(client, 7, orgid, layer)
             console.log(`Calling arcgis url ${ret}`)
-            return ret
+            return { url: ret }
           }
         },
       ],
       scrape (data) {
-
         let result = []
         for (const row of data) {
-          const county = geography.addCounty(row.CNTYNAME)
-          const cases = parse.number(row.CONFIRMED)
-          const deaths = parse.number(row.DIED)
-          // console.log(county, cases, deaths)
-          result.push({
-            county,
-            cases,
-            deaths
-          })
+          const record = {
+            county: geography.addCounty(row.CNTYNAME),
+            cases: parse.number(row.CONFIRMED),
+            deaths: parse.number(row.DIED)
+          }
+          if (counties.includes(record.county))
+            result.push(record)
+          // TODO (scraper) Push a warning if this is an invalid county
         }
         result = geography.addEmptyRegions(result, counties, 'county')
         result.push(transform.sumData(result))
