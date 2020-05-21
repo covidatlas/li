@@ -74,6 +74,15 @@ function writeFakeSourceContent (relPath, data) {
   fakeCrawlSites.writeFile(folder, filename, content)
 }
 
+/** Write a fake source path to relpath by copying the fixture. */
+function copyFixture (relPath, fixtureFilename) {
+  const parts = relPath.split('/')
+  const folder = parts.slice(0, parts.length - 1).join(path.sep)
+  const filename = parts.slice(parts.length - 1)[0]
+  fakeCrawlSites.copyFixture(folder, filename, fixtureFilename)
+}
+
+
 async function crawl (sourceKey) {
   const event = makeEventMessage({ source: sourceKey, _sourcesPath: sourcesPath })
   await crawlerHandler(event)
@@ -89,6 +98,7 @@ module.exports = {
   setup,
   teardown,
   writeFakeSourceContent,
+  copyFixture,
   crawl,
   scrape
 }
