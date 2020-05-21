@@ -72,6 +72,7 @@ function sumData (dataArray, object) {
     'deaths',
     'tested',
     'hospitalized',
+    'icu',
     'discharged'
   ]
   const summedData = { ...object }
