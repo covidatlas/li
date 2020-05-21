@@ -115,7 +115,7 @@ module.exports = {
           `Cases are not reasonable for date: ${date}`
         )
         return states
-      },
-    },
-  ],
+      }
+    }
+  ]
 }
