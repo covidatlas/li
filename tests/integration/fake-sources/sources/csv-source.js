@@ -5,6 +5,7 @@ module.exports = {
     name: 'Canadian COVID Rolling Task Force',
     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
   },
+  maintainers: [],
   scrapers: [
     {
       startDate: '2020-03-01',
