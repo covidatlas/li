@@ -39,6 +39,8 @@ module.exports = {
           deaths
         }
       }
+      // TODO (scrapers): this stopped returning data as at '2020-03-31', new page?
+      // Not implementing now, only porting.
     }
   ]
 }
