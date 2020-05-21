@@ -3,6 +3,7 @@ const iso2Codes = require('country-levels/iso2.json')
 const fipsCodes = require('country-levels/fips.json')
 const slugify = require('slugify')
 const { UNASSIGNED } = require('@architect/shared/sources/_lib/constants.js')
+const assert = require('assert')
 
 module.exports = function getLocationNames (locationIDs) {
 
@@ -17,6 +18,7 @@ module.exports = function getLocationNames (locationIDs) {
     let locationName = []
     for (const bit of bits) {
       const p = bit.split(':')
+      assert(p.length >= 2, `Expected at least 2 parts after split by : for ${p}`)
       const level = p[0]
       const id = p[1].toUpperCase()
 
