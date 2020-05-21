@@ -80,7 +80,7 @@ console.log('crawl done.  Generating raw files from cache')
 // Generate data
 const dest = `zz-${liKey}-out`
 runCommand(`rm -rf ${dest}`)
-runCommand(`node tools/gen-raw-files.js --date 2020-03-18 --source ${liKey} --output ${dest}`)
+runCommand(`node tools/gen-raw-files.js --date 2020-03-16 --source ${liKey} --output ${dest}`)
 report('data generated')
 
 // CDS files expected to be in zz-dist-${liKey} in that project's root dir.
