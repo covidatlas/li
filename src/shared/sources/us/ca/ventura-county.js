@@ -183,42 +183,19 @@ module.exports = {
         },
       ],
       scrape ($) {
-        const cases = parse.number(
-          $('td:contains("TOTAL CASES")')
+        function valueFor (heading) {
+          const v = $(`td:contains("${heading}")`)
             .first()
             .next()
             .text()
-        )
-        const deaths = parse.number(
-          $('td:contains("DEATHS")')
-            .first()
-            .next()
-            .text()
-        )
-        const recovered = parse.number(
-          $('td:contains("Recovered Cases")')
-            .first()
-            .next()
-            .text()
-        )
-        const tested = parse.number(
-          $('td:contains("People Tested")')
-            .first()
-            .next()
-            .text()
-        )
-        const hospitalized = parse.number(
-          $('td:contains("Hospitalized")')
-            .first()
-            .next()
-            .text()
-        )
+          return parse.number(v)
+        }
         return {
-          cases,
-          deaths,
-          recovered,
-          tested,
-          hospitalized
+          cases: valueFor('TOTAL CASES'),
+          deaths: valueFor('DEATHS'),
+          recovered: valueFor('Recovered Cases'),
+          tested: valueFor('People Tested'),
+          hospitalized: valueFor('Hospitalized')
         }
       }
     }
