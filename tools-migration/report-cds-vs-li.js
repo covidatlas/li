@@ -183,6 +183,8 @@ allUniqueValues('key').forEach(key => {
     return d
   }
 
-  console.table(removeNullColumns(combinedData.filter(hasData)))
+  const byDate = (a, b) => { return a.date < b.date ? -1 : 1 }
+
+  console.table(removeNullColumns(combinedData.filter(hasData)).sort(byDate))
 })
 
