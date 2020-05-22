@@ -35,14 +35,6 @@ function getScrapeDateField (cases, date) {
  * Data utils.
  */
 
-function _getRecovered (recovered, state, country) {
-  for (const location of recovered) {
-    if (location['Province/State'] === state && location['Country/Region'] === country) {
-      return location
-    }
-  }
-}
-
 function _rollup (locations) {
   // get all countries with states
   const countriesToRoll = new Set(locations.filter(l => l.state).map(l => l.country))
@@ -173,6 +165,21 @@ module.exports = {
       scrape ( { cases, deaths, recovered, isomapraw }, date, { iso2Codes }) {
 
         const isoMap = _createIsoMap(isomapraw, iso2Codes)
+
+        // Records can be joined across files via Country + Provice.
+        function makeKey (rec) {
+          return [ rec['Country/Region'], rec['Province/State'] ].join('+')
+        }
+
+        function keyedRecords (arr) {
+          return arr.reduce((hsh, rec) => {
+            hsh[ makeKey(rec) ] = rec
+            return hsh
+          }, {})
+        }
+        const keyedDeaths = keyedRecords(deaths)
+        const keyedRecovered = keyedRecords(recovered)
+
         const countries = []
 
         const scrapeDateString = getScrapeDateField(cases, date)
@@ -193,11 +200,12 @@ module.exports = {
           if (caseInfo[scrapeDateString])
             caseData.cases = parse.number(caseInfo[scrapeDateString])
 
-          const deathInfo = deaths.find(d => d.UID === caseInfo.UID)
+          const fileKey = makeKey(caseInfo)
+          const deathInfo = keyedDeaths[fileKey]
           if (deathInfo && deathInfo[scrapeDateString])
             caseData.deaths = parse.number(deathInfo[scrapeDateString])
 
-          const recoveredData = _getRecovered(recovered, state, country)
+          const recoveredData = keyedRecovered[fileKey]
           if (recoveredData && recoveredData[scrapeDateString]) {
             caseData.recovered = parse.number(recoveredData[scrapeDateString])
           }
