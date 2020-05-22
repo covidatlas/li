@@ -321,7 +321,10 @@ function getLocationData (sourceData, scrapeData) {
   let locationData = scrapeData.map(sd => {
     const src = sourceData.find(s => s._key === sd.source)
     assert(src, `Have source with key ${sd.source} to match scrape ${JSON.stringify(sd)}`)
-    return { ...sd, ...src }
+
+    // Order here is important: we want the src first, because for JHU
+    // the scrape data (country) overrides the source.
+    return { ...src, ...sd }
   })
   const cdsLocationKeys = [
     '_path',
