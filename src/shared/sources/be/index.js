@@ -1,4 +1,3 @@
-// const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const datetime = require('../../datetime/index.js')
