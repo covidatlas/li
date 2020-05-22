@@ -15,7 +15,7 @@ module.exports = {
   country: "iso1:US",
   state: "iso2:US-HI",
   priority: 1,
-  maintainers: [ maintainers.jholtz ],
+  maintainers: [ maintainers.jholt ],
   aggregate: "county",
   friendly: {
     name: "Hawaii Department of Health - Disease Outbreak Control Division",

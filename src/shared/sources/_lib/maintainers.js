@@ -58,6 +58,13 @@ module.exports = {
     email: 'jzohrab@gmail.com',
     flag: '🇨🇦'
   },
+  jholt: {
+    name: 'Jordan Holt',
+    email: 'jordholt@gmail.com',
+    github: 'Jord-Holt',
+    country: 'iso1:US',
+    flag: '🇺🇸'
+  },
   slezakbs: {
     name: 'Brendan Slezak',
     email: 'brendan.slezak@geospark.io',
