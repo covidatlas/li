@@ -5,6 +5,7 @@ const getDataWithTestedNegativeApplied = require('./scraper-helpers/get-data-wit
 const getIso2FromName = require('./scraper-helpers/get-iso2-from-name')
 const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-heading')
 const groupBy = require('./scraper-helpers/group-by')
+const iso2Codes = require('./scraper-helpers/iso2-codes')
 const normalizeTable = require('./scraper-helpers/normalize-table')
 const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arrays')
 
@@ -16,6 +17,7 @@ const scraperHelpers = {
   getIso2FromName,
   getSchemaKeyFromHeading,
   groupBy,
+  iso2Codes,
   normalizeTable,
   transposeArrayOfArrays,
 }
