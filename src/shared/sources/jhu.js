@@ -11,22 +11,24 @@ const transform = require(srcShared + 'sources/_lib/transform.js')
  * field names. */
 function getScrapeDateField (cases, date) {
   // The data has a number of fields, some dates d/m/yy, some not.
-  const dates = Object.keys(cases[0]).filter(k => k.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/))
+  let scrapeDate = datetime.getYYYYMMDD(date)
 
-  let scrapeDate = datetime.getYYYYMD(date)
-  const lastDate = datetime.getYYYYMD(new Date(`${dates[ dates.length - 1 ]} 12:00:00`))
+  const dates = Object.keys(cases[0]).filter(k => k.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/))
+  const firstDate = datetime.getYYYYMMDD(new Date(`${dates[ 0 ]} 12:00:00`))
+  const lastDate = datetime.getYYYYMMDD(new Date(`${dates[ dates.length - 1 ]} 12:00:00`))
+
   if (scrapeDate > lastDate) {
     const msg = `  🚨 ${scrapeDate} > last sample ${lastDate}. Using last sample`
-    console.error(msg)
+    console.log(msg)
     scrapeDate = lastDate
   }
-  const firstDate = datetime.getYYYYMD(new Date(`${dates[ 0 ]} 12:00:00`))
   if (scrapeDate < firstDate) {
     throw new Error(`Timeseries starts later than ${scrapeDate}`)
   }
 
   const parts = scrapeDate.split('-').map(s => parseInt(s, 10))
-  return [ parts[1], parts[2], parts[0] - 2000 ].join('/')
+  const ret = [ parts[1], parts[2], parts[0] - 2000 ].join('/')
+  return ret
 }
 
 /**
