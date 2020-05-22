@@ -9,6 +9,29 @@ const transform = require(srcShared + 'sources/_lib/transform.js')
 const { UNASSIGNED } = require(srcShared + 'sources/_lib/constants.js')
 
 
+/** Convert the date to a JHU-format m/d/yy, which they use for their
+ * field names. */
+function getScrapeDateField (cases, date) {
+  // The data has a number of fields, some dates d/m/yy, some not.
+  const dates = Object.keys(cases[0]).filter(k => k.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/))
+
+  let scrapeDate = datetime.getYYYYMMDD(date)
+  const lastDate = datetime.getYYYYMMDD(new Date(`${dates[ dates.length - 1 ]} 12:00:00`))
+  if (scrapeDate > lastDate) {
+    const msg = `  🚨 ${scrapeDate} > last sample ${lastDate}. Using last sample`
+    console.error(msg)
+    scrapeDate = lastDate
+  }
+  const firstDate = datetime.getYYYYMMDD(new Date(`${dates[ 0 ]} 12:00:00`))
+  if (scrapeDate < firstDate) {
+    throw new Error(`Timeseries starts later than ${scrapeDate}`)
+  }
+
+  const parts = scrapeDate.split('-').map(s => parseInt(s, 10))
+  return [ parts[1], parts[2], parts[0] - 2000 ].join('/')
+}
+
+
 module.exports = {
   maintainers: [ maintainers.lazd, maintainers.jzohrab ],
   timeseries: true,
@@ -43,23 +66,7 @@ module.exports = {
       scrape ( { cases, deaths }, date, { fipsCodes } ) {
         let regions = []
 
-        // The data has a number of fields, some dates d/m/yy, some not.
-        const dates = Object.keys(cases[0]).filter(k => k.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/))
-
-        let scrapeDate = datetime.getYYYYMD(date)
-        const lastDate = datetime.getYYYYMD(new Date(`${dates[ dates.length - 1 ]} 12:00:00`))
-        if (scrapeDate > lastDate) {
-          const msg = `  🚨 ${scrapeDate} > last sample ${lastDate}. Using last sample`
-          console.error(msg)
-          scrapeDate = lastDate
-        }
-        const firstDate = datetime.getYYYYMD(new Date(`${dates[ 0 ]} 12:00:00`))
-        if (scrapeDate < firstDate) {
-          throw new Error(`Timeseries starts later than ${scrapeDate}`)
-        }
-
-        const parts = scrapeDate.split('-').map(s => parseInt(s, 10))
-        const dateMDY = [ parts[1], parts[2], parts[0] - 2000 ].join('/')
+        const dateMDY = getScrapeDateField(cases, date)
 
         const skippedNoFips = []
         const stateLocations = {}
@@ -67,7 +74,7 @@ module.exports = {
           // Get location info
           const caseInfo = cases[index]
           const deathInfo = deaths.find(d => d.UID === caseInfo.UID)
-          assert.equal(caseInfo.UID, deathInfo.UID, 'UID should be the same')
+          assert(deathInfo, `Have death UID ${caseInfo.UID}`)
 
           const fips = caseInfo.FIPS.replace(/\.0$/, '').padStart(5, '0')
           if ([ '00000', '88888', '99999' ].includes(fips)) {
@@ -122,7 +129,7 @@ module.exports = {
         // remove unassigned counties once we have summed them up
         regions = regions.filter(r => r.county !== UNASSIGNED)
         if (regions.length === 0) {
-          throw new Error(`Timeseries does not contain a sample for ${scrapeDate}`)
+          throw new Error(`Timeseries does not contain a sample for ${dateMDY}`)
         }
 
         if (skippedNoFips.length > 0) {
