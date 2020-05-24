@@ -4,7 +4,7 @@ const utils = require('../utils.js')
 const test = require('tape')
 const testCache = require('../../_lib/testcache.js')
 
-test.only('crawl saves paginated results to cache as separate files', async t => {
+test('crawl saves paginated results to cache as separate files', async t => {
   await utils.setup()
 
   const page1 = {
