@@ -27,8 +27,10 @@ module.exports = {
       scrape (json) {
         const result = []
         for (let i = 0; i <= json.length; ++i) {
-          json[i].forEach(rec => {
-            result.push( { date: rec.date, cases: rec.cases, page: i } )
+          json[i].forEach(body => {
+            body.records.forEach(rec => {
+              result.push( { date: rec.date, cases: rec.cases, page: i } )
+            })
           })
         }
         return result
