@@ -29,21 +29,24 @@ module.exports = async function crawl (event) {
     // TODO maybe want to make this Promise.all once things are stable
     for (let crawl of scraper.crawl) {
       let { type, url } = crawl
+
+      const _name = scraper.crawl.length > 1 ? crawl.name : 'default'
+      const baseResult = {
+        // Caching metadata
+        _sourceKey,
+        _name,
+        // Payload
+        type
+      }
+
       if (typeof url !== 'string') {
         const result = await url(crawler.client)
         Object.assign(crawl, result)
       }
 
       const response = await crawler(type, crawl)
-      const data = response.body
-      const result = {
-        // Caching metadata
-        _sourceKey,
-        _name: scraper.crawl.length > 1 ? crawl.name : 'default',
-        // Payload
-        data,
-        type
-      }
+
+      const result = { ...baseResult, data: response.body }
 
       results.push(result)
     }
