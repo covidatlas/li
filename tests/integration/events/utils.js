@@ -91,11 +91,42 @@ async function scrape (sourceKey) {
   return fullResult
 }
 
+function validateResults (t, fullResult, expected) {
+  t.ok(fullResult, 'Have fullResult')
+  if (!fullResult)
+    return
+
+  const actual = fullResult[0].data
+  t.ok(actual, 'Have data')
+  if (!actual)
+    return
+
+  t.equal(expected.length, actual.length, `Result length; got actual = ${JSON.stringify(actual, null, 2)}`)
+
+  // Only look at fields in actual record where the keys match those
+  // in expected.
+  function pruneActual (actualRec, expectedRec) {
+    return Object.keys(expectedRec).reduce((hsh, key) => {
+      hsh[key] = actualRec[key]
+      return hsh
+    }, {})
+  }
+
+  const maxLen = Math.min(expected.length, actual.length)
+  const inspectActual = actual.
+        slice(0, maxLen).
+        map((rec, index) => pruneActual(rec, expected[index]))
+  expected.slice(0, maxLen).forEach((rec, index) => {
+    t.deepEqual(rec, inspectActual[index], `${index} exact key matches`)
+  })
+}
+
 module.exports = {
   setup,
   teardown,
   writeFakeSourceContent,
   copyFixture,
   crawl,
-  scrape
+  scrape,
+  validateResults
 }

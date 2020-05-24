@@ -15,16 +15,7 @@ test('scrape of multiple files', async t => {
   t.equal(2, testCache.allFiles().length, '2 files saved after crawl.')
 
   const fullResult = await utils.scrape('multiple-urls')
-  const actual = fullResult[0].data
-  t.ok(actual, 'Have data')
-  t.equal(1, actual.length, '1 record in returned data')
-
-  const expected = { cases: 111, deaths: 222 }
-  const prunedActual = Object.keys(expected).reduce((hsh, key) => {
-    hsh[key] = actual[0][key]
-    return hsh
-  }, {})
-  t.deepEqual(expected, prunedActual, 'exact key matches')
+  utils.validateResults(t, fullResult, [ { cases: 111, deaths: 222 } ])
 
   await utils.teardown()
   t.end()
