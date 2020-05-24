@@ -40,7 +40,7 @@ test('system timezone', t => {
 })
 
 // Leaving this in to make sure timezone tests are working.
-// If enabled, this `yarn test:tz` will fail for any timezones east of GMT, e.g. `Australia/Sydney`
+// If enabled, this test may fail for any timezones east of GMT, e.g. `Australia/Sydney`
 test.skip('heisenbug', t => {
   t.equal(new Date('3/16/20').toISOString().substring(0, 10), '2020-03-16', 'Fails east of GMT')
   t.end()
