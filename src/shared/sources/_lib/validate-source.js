@@ -72,7 +72,7 @@ function validateSource (source) {
     // Ok, now let's go into the crawler(s)
     let crawlerNames = {}
     for (const crawler of crawl) {
-      const { type, data, url, timeout } = crawler
+      const { type, data, url, paginated, timeout } = crawler
 
       // Crawl type
       requirement(allowed.some(a => a === type), datedError(
@@ -88,8 +88,19 @@ function validateSource (source) {
         ))
       }
 
+      requirement(url || paginated, datedError('Require url or paginated'))
+      requirement(([ url, paginated ].filter(s => s).length === 1), datedError('Require url or paginated, not both'))
+
       // Crawl URL
-      requirement(is.string(url) || is.function(url), datedError('Crawler url must be a string or function'))
+      if (url) {
+        requirement(is.string(url) || is.function(url), datedError('Crawler url must be a string or function'))
+      }
+      if (paginated) {
+        requirement(
+          is.function(paginated) && paginated.constructor.name === 'AsyncFunction',
+          datedError('Crawler paginated must be an async function')
+        )
+      }
 
       // Crawl name keys
       if (crawl.length === 1) {
