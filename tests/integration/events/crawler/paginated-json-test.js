@@ -62,7 +62,7 @@ test('pagination saves nothing if file is missing', async t => {
   t.end()
 })
 
-test.only('paginated files are named correctly', async t => {
+test('paginated files are named correctly', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)

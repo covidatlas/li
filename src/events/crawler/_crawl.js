@@ -54,8 +54,8 @@ module.exports = async function crawl (event) {
           return crawler(type, crawlOpts)
         }
         const bodies = await paginated(paginatedClient)
-        bodies.forEach(body => {
-          const result = { ...baseResult, data: body }
+        bodies.forEach((body, page) => {
+          const result = { ...baseResult, data: body, page }
           results.push(result)
         })
       }
