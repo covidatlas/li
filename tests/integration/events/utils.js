@@ -36,25 +36,22 @@ async function setup () {
  * is thrown.  If unhandled, this crashes the Node process,
  * including tape, so we'll ignore just these errors for the sake of
  * testing. */
-function ignoreSandboxUncaughtExceptions () {
-  process.on('uncaughtException', err => {
-    const ignoreExceptions = [
-      `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
-      `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`
-    ]
-    if (ignoreExceptions.includes(err.message)) {
-      // const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
-      // console.error(msg)
-    }
-    else
-      throw err
-  })
-}
+process.on('uncaughtException', err => {
+  const ignoreExceptions = [
+    `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
+    `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`
+  ]
+  if (ignoreExceptions.includes(err.message)) {
+    // const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
+    // console.error(msg)
+  }
+  else
+    throw err
+})
 
 async function teardown () {
   fakeCrawlSites.deleteAllFiles()
   testCache.teardown()
-  ignoreSandboxUncaughtExceptions()
   await sandbox.end()
 }
 
