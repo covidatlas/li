@@ -65,4 +65,14 @@ This project uses data from [ISO-3166 Country and Dependent Territories Lists wi
 
 ## Attribution
 
-Please cite this project if you use it in your visualization or reporting.
+Please cite this project if you use it in visualization, reporting, or any derivative works that benefit from it.
+
+
+## About the name
+
+This project's namesake, Li, was given [in honor and observance of Dr. Li Wenliang](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30382-2/fulltext).
+
+
+## Thank you
+
+COVID Atlas would also like to acknowledge the services provided by our [hosting partner AWS](https://aws.amazon.com/).
