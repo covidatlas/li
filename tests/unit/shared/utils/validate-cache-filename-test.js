@@ -20,6 +20,26 @@ test('Date parsed correctly', t => {
   t.pass('We good')
 })
 
+test('Filename can have page counter after the cache key', t => {
+  t.plan(1)
+  for (let i = 0; i < 13; i++) {
+    const filename = `2020-04-11t21_00_00.000z-default-${i}-117bb.html.gz`
+    validate(filename)
+  }
+  t.pass('We good')
+})
+
+test('Filename page counter must be a number', t => {
+  t.plan(1)
+  try {
+    const filename = `2020-04-11t21_00_00.000z-default-BAD-117bb.html.gz`
+    validate(filename)
+    t.fail('should have thrown')
+  } catch (err) {
+    t.pass('Caught bad cache filename, err = ' + err)
+  }
+})
+
 test('Filenames (with file paths) with Bad cache filename throws', t => {
   t.plan(1)
   try {

@@ -8,7 +8,7 @@ const { extensions } = require('../sources/_lib/crawl-types.js')
  * so this exists (for now) to help keep things tight.
  */
 module.exports = function validateCacheFilename (filename) {
-  const check = /^\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz]-[a-z]+-[a-h0-9]{5}\..*$/
+  const check = /^\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz]-[a-z]+(-\d+)?-[a-h0-9]{5}\..*$/
 
   // Check general shape
   if (!check.test(filename)) {
@@ -20,7 +20,7 @@ module.exports = function validateCacheFilename (filename) {
   const parts = filename.split('/')
   // If there are folders, skip to the filename
   const fileparts = parts[parts.length - 1].split('-')
-  const ext = fileparts[4].split('.')[1]
+  const ext = fileparts.splice(-1)[0].split('.')[1]
   if (!exts.some(a => a === ext)) {
     throw new Error(`Bad cache extension: ${filename}`)
   }
