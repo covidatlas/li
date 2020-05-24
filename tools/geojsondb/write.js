@@ -1,13 +1,15 @@
 #! /usr/bin/env node
 
+// process.env.ARC_CLOUDFORMATION = 'LiStaging'
+// process.env.AWS_REGION = 'us-west-1'
+// process.env.AWS_PROFILE = 'covidatlas'
+// process.env.NODE_ENV = 'staging'
+
 const arc = require('@architect/functions')
 const { join } = require('path')
 
 const filename = 'geojson-db-payload.json'
 const payload = require(join(__dirname, filename))
-
-// process.env.ARC_CLOUDFORMATION = 'CovidAtlasStaging'
-// process.env.NODE_ENV = 'staging'
 
 ;(async () => {
   console.time('Populating GeoJSON DB')
