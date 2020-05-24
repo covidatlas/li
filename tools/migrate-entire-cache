@@ -1,0 +1,14 @@
+# Assumes we've got Li and CDS installed in the same parent dir
+printf "\nDropping into CDS"
+cd ../coronadatascraper/coronadatascraper-cache
+
+printf "\nPulling down the cache"
+git pull origin master
+
+printf "\nMigrating entire CDS cache to Li"
+cd ..
+node tools/generate-v1-cache.js --dest ../li/migrated-cache/
+
+printf "\nPublishing to S3"
+cd ../li
+npm run migrate:publish

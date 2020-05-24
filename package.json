@@ -10,6 +10,7 @@
     "test": "tape 'tests/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
     "test:unit": "tape 'tests/unit/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
     "test:integration": "tape 'tests/integration/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
+    "migrate:all": "./tools/migrate-entire-cache",
     "migrate:latest": "./tools/migrate-latest-cache",
     "migrate:publish": "AWS_PROFILE=covidatlas ./tools/publish-migrated-cache",
     "migration:status": "node tools/report-migration-status.js",
