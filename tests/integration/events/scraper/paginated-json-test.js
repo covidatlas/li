@@ -28,7 +28,7 @@ async function doCrawl (t) {
   }
 }
 
-test('scrape gets all pages of data', async t => {
+test.only('scrape gets all pages of data', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
@@ -44,6 +44,7 @@ test('scrape gets all pages of data', async t => {
   }
   catch (err) {
     t.fail(err)
+    t.fail(err.stack)
   }
 
   const expected = [
