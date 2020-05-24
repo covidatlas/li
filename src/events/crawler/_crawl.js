@@ -53,16 +53,19 @@ module.exports = async function crawl (event) {
           const crawlOpts = { ...crawl, url, ...options }
           return crawler(type, crawlOpts)
         }
-        const responses = await paginated(paginatedClient)
-        responses.forEach(response => {
-          const result = { ...baseResult, data: response.body }
+        const bodies = await paginated(paginatedClient)
+        bodies.forEach(body => {
+          const result = { ...baseResult, data: body }
           results.push(result)
         })
       }
     }
+    console.log(JSON.stringify(results, null, 2))
 
-    if (results.length !== scraper.crawl.length) {
-      throw Error(`Failed to crawl all requested 'get' sources`)
+    const names = results.map(r => r._name)
+    const uniqueNames = Array.from(new Set(names))
+    if (uniqueNames.length !== scraper.crawl.length) {
+      throw Error(`Failed to crawl all requested 'get' sources, only got ${uniqueNames.join()}`)
     }
 
     /**
