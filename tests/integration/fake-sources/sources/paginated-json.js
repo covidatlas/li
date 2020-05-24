@@ -11,6 +11,7 @@ module.exports = {
       startDate: '2020-03-01',
       crawl: [
         {
+          name: 'cases',
           type: 'json',
           paginated: async client => {
             const result = []
@@ -22,14 +23,19 @@ module.exports = {
             }
             return result
           }
-        }
+        },
+        {
+          name: 'deaths',
+          type: 'json',
+          url: 'http://localhost:5555/tests/fake-source-urls/paginated-json/deaths.json'
+        },
       ],
-      scrape (json) {
+      scrape ({ cases, deaths }) {
         const result = []
-        for (let i = 0; i <= json.length; ++i) {
-          json[i].forEach(body => {
+        for (let i = 0; i <= cases.length; ++i) {
+          cases[i].forEach(body => {
             body.records.forEach(rec => {
-              result.push( { date: rec.date, cases: rec.cases, page: i } )
+              result.push( { date: rec.date, cases: rec.cases, deaths: deaths.deaths, page: i } )
             })
           })
         }
