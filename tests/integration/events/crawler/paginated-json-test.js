@@ -62,7 +62,7 @@ test('pagination saves nothing if file is missing', async t => {
   t.end()
 })
 
-test('paginated files are named correctly', async t => {
+test.only('paginated files are named correctly', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
@@ -78,12 +78,12 @@ test('paginated files are named correctly', async t => {
   }
 
   const cachedFiles = testCache.allFiles()
-  function haveMatchingCacheFile (pattern) {
+  t.haveMatchingCacheFile = pattern => {
     const match = cachedFiles.find(f => f.match(pattern))
     t.ok(match, `expected match for ${pattern} in ${cachedFiles.join()}`)
   }
-  haveMatchingCacheFile(/default-0-/)
-  haveMatchingCacheFile(/default-1-/)
+  t.haveMatchingCacheFile(/default-0-/)
+  t.haveMatchingCacheFile(/default-1-/)
 
   await utils.teardown()
   t.end()
