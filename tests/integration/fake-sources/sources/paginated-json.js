@@ -1,3 +1,5 @@
+const assert = require('assert')
+
 module.exports = {
   country: 'iso1:US',
   state: 'CA',
@@ -31,6 +33,7 @@ module.exports = {
         },
       ],
       scrape ({ cases, deaths }) {
+        assert(Array.isArray(cases, 'cases are paginated, should be an Array.'))
         const result = []
         for (let i = 0; i <= cases.length; ++i) {
           cases[i].forEach(body => {
