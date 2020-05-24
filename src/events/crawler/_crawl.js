@@ -60,7 +60,7 @@ module.exports = async function crawl (event) {
         })
       }
     }
-    console.log(JSON.stringify(results, null, 2))
+    // console.log(JSON.stringify(results, null, 2))
 
     const names = results.map(r => r._name)
     const uniqueNames = Array.from(new Set(names))
