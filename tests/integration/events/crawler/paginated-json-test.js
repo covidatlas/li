@@ -4,7 +4,7 @@ const utils = require('../utils.js')
 const test = require('tape')
 const testCache = require('../../_lib/testcache.js')
 
-test('crawl saves paginated results to cache as separate files', async t => {
+test.only('crawl saves paginated results to cache as separate files', async t => {
   await utils.setup()
 
   const page1 = {
@@ -20,7 +20,14 @@ test('crawl saves paginated results to cache as separate files', async t => {
   utils.writeFakeSourceContent('paginated-json/page2.json', page2)
 
   t.equal(0, testCache.allFiles().length, 'No files in cache.')
-  await utils.crawl('fake')
+  try {
+    await utils.crawl('paginated-json')
+    t.pass('crawl succeeded')
+  }
+  catch (err) {
+    t.fail(err)
+  }
+
   t.equal(2, testCache.allFiles().length, 'have both files after crawl.')
 
   await utils.teardown()
