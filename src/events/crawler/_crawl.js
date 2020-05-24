@@ -1,4 +1,5 @@
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
+const assert = require('assert')
 const crawler = require('./crawler')
 const cache = require('./cache')
 
@@ -54,6 +55,7 @@ module.exports = async function crawl (event) {
           return crawler(type, crawlOpts)
         }
         const bodies = await paginated(paginatedClient)
+        assert(Array.isArray(bodies), `pagination must return an array, but got ${typeof(bodies)}`)
         bodies.forEach((body, page) => {
           const result = { ...baseResult, data: body, page }
           results.push(result)
