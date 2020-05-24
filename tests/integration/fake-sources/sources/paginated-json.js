@@ -16,8 +16,8 @@ module.exports = {
             const result = []
             let currentUrl = 'http://localhost:5555/tests/fake-source-urls/paginated-json/page1.json'
             while (currentUrl) {
-              let { body } = await client( { url: body.nextUrl } )
-              body = JSON.parse(`body`)
+              let { body } = await client( { url: currentUrl } )
+              body = JSON.parse(body)
               result.push(body)
               currentUrl = body.nextUrl
             }

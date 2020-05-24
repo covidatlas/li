@@ -28,7 +28,7 @@ module.exports = async function crawl (event) {
     const results = []
     // TODO maybe want to make this Promise.all once things are stable
     for (let crawl of scraper.crawl) {
-      let { type, url } = crawl
+      let { type, url, paginated } = crawl
 
       const _name = scraper.crawl.length > 1 ? crawl.name : 'default'
       const baseResult = {
@@ -39,16 +39,26 @@ module.exports = async function crawl (event) {
         type
       }
 
-      if (typeof url !== 'string') {
-        const result = await url(crawler.client)
-        Object.assign(crawl, result)
+      if (url) {
+        if (typeof url !== 'string') {
+          const result = await url(crawler.client)
+          Object.assign(crawl, result)
+        }
+        const response = await crawler(type, crawl)
+        const result = { ...baseResult, data: response.body }
+        results.push(result)
       }
-
-      const response = await crawler(type, crawl)
-
-      const result = { ...baseResult, data: response.body }
-
-      results.push(result)
+      if (paginated) {
+        async function paginatedClient (url, options = {}) {
+          const crawlOpts = { ...crawl, url, ...options }
+          return crawler(type, crawlOpts)
+        }
+        const responses = await paginated(paginatedClient)
+        responses.forEach(response => {
+          const result = { ...baseResult, data: response.body }
+          results.push(result)
+        })
+      }
     }
 
     if (results.length !== scraper.crawl.length) {
