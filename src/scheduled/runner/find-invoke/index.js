@@ -1,4 +1,5 @@
 const arc = require('@architect/functions')
+// eslint-disable-next-line
 const sorter = require('@architect/shared/utils/sorter.js')
 
 /**
