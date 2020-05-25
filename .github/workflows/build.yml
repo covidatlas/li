@@ -88,6 +88,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Deploy to staging
+        if: github.ref == 'refs/heads/master'
         run: npx arc deploy
         env:
           CI: true
