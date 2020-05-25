@@ -90,7 +90,7 @@ test('paginated files are named correctly', async t => {
 /** The paginated set of files all get the same datetime stamp at the
  * start of the filename.  This _vastly_ simplifies fetching the files
  * from the cache during scrape. */
-test.only('paginated files in one crawl are all given the same datetime', async t => {
+test('paginated files in one crawl are all given the same datetime', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)

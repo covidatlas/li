@@ -25,10 +25,33 @@ async function doCrawl (t) {
   }
   catch (err) {
     t.fail(err)
+    t.fail(err.stack)
   }
 }
 
-test.only('scrape gets all pages of data', async t => {
+test.only('scrape completes successfully', async t => {
+  await utils.setup()
+
+  utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
+  utils.writeFakeSourceContent('paginated-json/page2.json', lastPage)
+  utils.writeFakeSourceContent('paginated-json/deaths.json', { deaths: 5 })
+  await doCrawl(t)
+  t.equal(3, testCache.allFiles().length, 'sanity check, all files after crawl.')
+
+  try {
+    await utils.scrape('paginated-json')
+    t.pass('scrape succeeded')
+  }
+  catch (err) {
+    t.fail(err)
+    t.fail(err.stack)
+  }
+
+  await utils.teardown()
+  t.end()
+})
+
+test('scrape gets all pages of data', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
@@ -61,5 +84,6 @@ test.only('scrape gets all pages of data', async t => {
 
 // TODO tests for paginated
 // scrape gets latest set of paginated files
+// scrape gets correct set of paginated files
 // timeseries scrape gets latest set of paginated files
 // lots of pages (> 10) should still work for selecting all the pages
