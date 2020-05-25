@@ -27,7 +27,7 @@ status      # Status updater
 
 @scheduled
 runner rate(2 hours)            # Regularly invokes crawls and scrapes
-# regen-timeseries rate(12 hours) # Regularly regenerates timeseries sources
+regen-timeseries rate(2 hours)  # Regularly regenerates timeseries sources
 
 
 @storage-public

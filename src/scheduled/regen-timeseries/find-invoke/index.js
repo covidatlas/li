@@ -9,11 +9,12 @@ module.exports = async function findNextInvoke (sources) {
 
   // Ensure retired sources don't make their way into the pool
   const isActiveSource = key => sources.some(s => s._sourceKey === key)
+
   // Maybe swap this later for a query, scan should prob be fine forever tho
   let invokes = await data.invokes.scan({})
   invokes = invokes.Items.filter(i => i.type === type && isActiveSource(i.key))
 
-  // Add entries for the new kids
+  // Add entries for any new kids recently added to the source set
   const missing = sources.filter(s => !invokes.some(i => i.key === s._sourceKey))
   if (missing.length) {
     for (const source of missing) {

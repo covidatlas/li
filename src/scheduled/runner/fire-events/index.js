@@ -24,8 +24,8 @@ module.exports = async function fireEvents (task, sources) {
       queue += 1000
     })
   })
+
   return Promise.all(events).then(() => {
     console.log(`Published ${counter} of ${sources.length} ${task} events`)
   })
-
 }
