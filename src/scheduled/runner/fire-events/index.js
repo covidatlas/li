@@ -15,4 +15,5 @@ module.exports = async function fireEvents (task, sources) {
     }, queue)
     queue += 1000
   }
+  console.log(`Publishing ${sources.length} ${task} events`)
 }
