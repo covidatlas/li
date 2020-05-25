@@ -6,7 +6,7 @@ const arc = require('@architect/functions')
 async function getLocations () {
   const data = await arc.tables()
   const result = await data.locations.scan({})
-  const locations = result.Items.map(i => i.name)
+  const locations = result.Items.map(i => i.slug)
   return {
     json: locations,
     headers: {
