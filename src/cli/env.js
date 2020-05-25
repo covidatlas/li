@@ -7,11 +7,15 @@ module.exports = function env () {
   process.env.AWS_REGION = 'us-west-1'
   process.env.ARC_CLOUDFORMATION = 'LiStaging'
 
-  net.createServer()
-    .once('error', () => { /* noop */ })
-    .once('listening', function () {
-      console.log('Please start the sandbox in another terminal: npm start')
-      process.exit(1)
-    })
-    .listen(3333)
+  const isLocal = process.env.NODE_ENV === 'testing' || process.env.ARC_LOCAL
+
+  if (isLocal) {
+    net.createServer()
+      .once('error', () => { /* noop */ })
+      .once('listening', function () {
+        console.log('Please start the sandbox in another terminal: npm start')
+        process.exit(1)
+      })
+      .listen(3333)
+  }
 }
