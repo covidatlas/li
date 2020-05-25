@@ -6,17 +6,18 @@ const testCache = require('../../_lib/testcache.js')
 
 const firstPage = {
   records: [
-    { date: 'Jan 1', cases: 1 },
-    { date: 'Jan 2', cases: 2 }
+    { counter: 'a1', cases: 1 },
+    { counter: 'a2', cases: 2 }
   ],
   nextUrl: 'http://localhost:5555/tests/fake-source-urls/paginated-json/page2.json'
 }
 
 const lastPage = {
   records: [
-    { date: 'Jan 3', cases: 3 }
+    { counter: 'a3', cases: 3 }
   ]
 }
+
 
 async function doCrawl (t) {
   try {
@@ -29,7 +30,7 @@ async function doCrawl (t) {
   }
 }
 
-test.only('scrape completes successfully', async t => {
+test('scrape completes successfully', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
@@ -71,9 +72,9 @@ test('scrape gets all pages of data', async t => {
   }
 
   const expected = [
-    { date: 'Jan 1', cases: 1, deaths: 5 },
-    { date: 'Jan 2', cases: 2, deaths: 5 },
-    { date: 'Jan 2', cases: 3, deaths: 5 }
+    { counter: 'a1', cases: 1, deaths: 5 },
+    { counter: 'a2', cases: 2, deaths: 5 },
+    { counter: 'a3', cases: 3, deaths: 5 }
   ]
   utils.validateResults(t, fullResult, expected)
 

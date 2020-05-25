@@ -38,7 +38,7 @@ module.exports = {
         const result = []
         for (let i = 0; i < cases.length; i++) {
           cases[i].records.forEach(rec => {
-            result.push( { date: rec.date, cases: rec.cases, deaths: deaths.deaths, page: i } )
+            result.push( { counter: rec.counter, cases: rec.cases, deaths: deaths.deaths, page: i } )
           })
         }
         return result
