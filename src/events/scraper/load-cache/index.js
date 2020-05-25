@@ -38,6 +38,11 @@ async function load (params, useS3) {
       tz
     })
 
+    // Remove duplicate filenames.
+    const fileset = new Set(files)
+    files = Array.from(fileset)
+
+    // TODO: move parts of this into separate modules and add tests.
     if (!timeseries && files.length) {
       /**
        * If date is earlier than we have cached, bail
