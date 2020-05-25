@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'testing'
 
 const utils = require('../utils.js')
 const test = require('tape')
+const path = require('path')
 const testCache = require('../../_lib/testcache.js')
 
 const firstPage = {
@@ -81,6 +82,31 @@ test('paginated files are named correctly', async t => {
   t.haveMatchingCacheFile(/cases-0-/)
   t.haveMatchingCacheFile(/cases-1-/)
   t.haveMatchingCacheFile(/deaths-.{5}.json/)
+
+  await utils.teardown()
+  t.end()
+})
+
+/** The paginated set of files all get the same datetime stamp at the
+ * start of the filename.  This _vastly_ simplifies fetching the files
+ * from the cache during scrape. */
+test.only('paginated files in one crawl are all given the same datetime', async t => {
+  await utils.setup()
+
+  utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
+  utils.writeFakeSourceContent('paginated-json/page2.json', lastPage)
+  utils.writeFakeSourceContent('paginated-json/deaths.json', { deaths: 5 })
+  await doCrawl(t)
+
+  const cachedFiles = testCache.allFiles()
+
+  function datetimeStamp (pattern) {
+    const f = cachedFiles.find(f => f.match(pattern))
+    t.ok(f, `match for ${pattern}`)
+    const datetimeLength = 24  // = '2020-05-24t23_39_57.562z'.length
+    return path.basename(f).slice(0, datetimeLength)
+  }
+  t.equal(datetimeStamp(/cases-0-/), datetimeStamp(/cases-1-/), 'timestamps equal')
 
   await utils.teardown()
   t.end()
