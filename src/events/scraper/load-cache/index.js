@@ -2,6 +2,8 @@ const sorter = require('@architect/shared/utils/sorter.js')
 const datetime = require('@architect/shared/datetime/index.js')
 const getDateBounds = require('./_get-date-bounds.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
+const parseCacheFilename = require('@architect/shared/utils/parse-cache-filename.js')
+const assert = require('assert')
 
 const local = require('./_load-local.js')
 const s3 = require('./_load-s3.js')
@@ -72,13 +74,25 @@ async function load (params, useS3) {
       throw Error(msg)
     }
 
+    const parsedFilenames = files.reduce((arr, f) => {
+      const { datetime, name, page } = parseCacheFilename(f)
+      arr.push( { filename: f, datetime, name, page } )
+      return arr
+    }, [])
+
     let cache = []
     for (const crawl of scraper.crawl) {
       // We may have multiple crawls for a single scraper (each with a unique name key)
       // Disambiguate and match them so we are getting back the correct data sources
-      const { name='default' } = crawl
-      const matchName = file => name === file.split('-')[3] // Skips over 8601Z ts
-      const matches = files.filter(matchName)
+      const { name='default', paginated } = crawl
+
+      function matchNameAndPage (file) {
+        const p = parsedFilenames.find(e => e.filename === file)
+        assert(p, `Missing filename ${file} in parsed`)
+        return (p.name === name) && ((p.page || 0) === 0)
+      }
+
+      const matches = files.filter(matchNameAndPage)
 
       // Fall back to S3 cache
       if (!matches.length) {
@@ -87,12 +101,32 @@ async function load (params, useS3) {
       }
 
       // We may have multiple files for this day, choose the last one
-      // TODO we may want to do more here, including:
-      // - analysis of contents (e.g. stale files, etc.)
-      // - attempting to scrape this file, and if it doesn't work, trying a previous scrape from the same day?
       const file = matches[matches.length - 1]
 
-      crawl.content = await loader.getFileContents({ _sourceKey, keys, file })
+      // TODO: move this into separate module and add tests.
+      // Get all pages have the same datetime and name.
+      function allPagesInSet (firstPage, parsedFilenames) {
+        const p = parsedFilenames.find(e => e.filename === firstPage)
+        assert(p, `Missing filename ${firstPage} in parsed`)
+        const pages = parsedFilenames.
+          filter(f =>
+            (f.datetime === p.datetime) &&
+            (f.name === p.name) &&
+            (f.page !== undefined)
+        ).sort((a, b) => a.page - b.page).
+              map(f => f.filename)
+        return pages
+      }
+
+      let getContent
+      if (!paginated) {
+        getContent = [ loader.getFileContents({ _sourceKey, keys, file }) ]
+      }
+      else {
+        getContent = allPagesInSet(file, parsedFilenames).
+          map(file => loader.getFileContents({ _sourceKey, keys, file }))
+      }
+      crawl.pages = await Promise.all(getContent)
       cache.push(crawl)
     }
     if (cache !== 'miss') {
