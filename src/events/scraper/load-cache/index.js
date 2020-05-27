@@ -76,7 +76,7 @@ async function load (params, useS3) {
 
     const parsedFilenames = files.reduce((arr, f) => {
       const { datetime, name, page } = parseCacheFilename(f)
-      arr.push( { filename: f, datetime, name, page } )
+      arr.push( { filename: f, datetime, name, page: (page || 0) } )
       return arr
     }, [])
 
@@ -115,6 +115,7 @@ async function load (params, useS3) {
             (f.page !== undefined)
         ).sort((a, b) => a.page - b.page).
               map(f => f.filename)
+        console.log(`all pages in set = ${pages.join()}`)
         return pages
       }
 
