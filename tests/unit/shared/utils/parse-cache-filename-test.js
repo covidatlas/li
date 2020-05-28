@@ -123,6 +123,7 @@ const files = [
   'D2-cat-2',  // bad set
   'D2-cat-3',
   'D2-dog-0',  // first in set
+  'bad-file-here'  // ignore this!
 ].map(properCacheName)
 
 test('matchName returns all matches', t => {
