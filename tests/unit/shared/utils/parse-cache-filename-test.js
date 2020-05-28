@@ -125,7 +125,7 @@ const files = [
   'D2-dog-0',  // first in set
 ].map(properCacheName)
 
-test.only('matchName returns all matches', t => {
+test('matchName returns all matches', t => {
   const testCases = [
     [ 'apple', [ 'D1-apple', 'D2-apple' ], 'regular key' ],
     [ 'bear', [ 'D1-bear', 'D2-bear' ], 'regular key 2' ],

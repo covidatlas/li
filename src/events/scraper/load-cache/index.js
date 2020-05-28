@@ -75,7 +75,7 @@ async function load (params, useS3) {
     }
 
     const parsedFilenames = files.reduce((arr, f) => {
-      const { datetime, name, page } = parseCacheFilename(f)
+      const { datetime, name, page } = parseCacheFilename.parse(f)
       arr.push( { filename: f, datetime, name, page: (page || 0) } )
       return arr
     }, [])
@@ -86,13 +86,7 @@ async function load (params, useS3) {
       // Disambiguate and match them so we are getting back the correct data sources
       const { name='default', paginated } = crawl
 
-      function matchNameAndPage (file) {
-        const p = parsedFilenames.find(e => e.filename === file)
-        assert(p, `Missing filename ${file} in parsed`)
-        return (p.name === name) && ((p.page || 0) === 0)
-      }
-
-      const matches = files.filter(matchNameAndPage)
+      const matches = parseCacheFilename.matchName(name, files)
 
       // Fall back to S3 cache
       if (!matches.length) {
