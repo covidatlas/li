@@ -90,15 +90,12 @@ async function load (params, useS3) {
       // We may have multiple files for this day, choose the last one
       const file = matches[matches.length - 1]
 
-      let getContent
-      if (!paginated) {
-        getContent = [ loader.getFileContents({ _sourceKey, keys, file }) ]
-      }
-      else {
-        getContent = parseCacheFilename.matchPaginatedSet(file, files).
-          map(file => loader.getFileContents({ _sourceKey, keys, file }))
-      }
-      crawl.pages = await Promise.all(getContent)
+      let fileset = [ file ]
+      if (paginated)
+        fileset = parseCacheFilename.matchPaginatedSet(file, files)
+
+      const allContent = fileset.map(file => loader.getFileContents({ _sourceKey, keys, file }))
+      crawl.pages = await Promise.all(allContent)
       cache.push(crawl)
     }
     if (cache !== 'miss') {
