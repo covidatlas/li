@@ -22,6 +22,19 @@ test('parsing', t => {
   t.end()
 })
 
+test('filename does not have to end with gz', t => {
+  const filename = '2020-04-11t21_00_00.000z-default-117bb.html'
+  const p = parse(filename)
+  const expected = {
+    datetime: '2020-04-11t21_00_00.000z',
+    name: 'default',
+    sha: '117bb',
+    extension: 'html'
+  }
+  t.deepEqual(p, expected)
+  t.end()
+})
+
 test('Filename can have page counter after the cache key', t => {
   const baseExpected = {
     datetime: '2020-04-11t21_00_00.000z',
@@ -69,15 +82,6 @@ test('Filenames (with file paths) with Bad cache filename throws', t => {
     t.pass('Caught bad cache filename')
   }
   t.end()
-})
-
-test('Filenames with bad / missing extension throws', t => {
-  const badexts = [ '', 'htm', 'UpperCase', '123' ]
-  t.plan(badexts.length)
-  badexts.forEach(n => {
-    const filename = `2020-04-11t21_00_00.000z-default-117bb.${n}`
-    t.throws(() => parse(filename), `${n} ext throws`)
-  })
 })
 
 test('Filenames (with file paths) with bad keys throws', t => {

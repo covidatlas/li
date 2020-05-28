@@ -5,7 +5,7 @@ const assert = require('assert')
  * to during cache load, prior to scraping.
  */
 function parse (filename) {
-  const re = /^(\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz])-([a-z]+)(-\d+)?-([a-h0-9]{5})\.([a-z]+)\..*$/
+  const re = /^(\d{4}-\d{2}-\d{2}t\d{2}_\d{2}_\d{2}\.\d{3}[Zz])-([a-z]+)(-\d+)?-([a-h0-9]{5})\.([a-z]+)(\..*)?$/
 
   if (!re.test(filename)) {
     throw new Error(`Bad cache filename: ${filename}`)

@@ -2,6 +2,8 @@ process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
 const utils = require('../utils.js')
+const fs = require('fs')
+const path = require('path')
 const testCache = require('../../_lib/testcache.js')
 
 
@@ -44,6 +46,30 @@ test('scrape extracts data from cached file', async t => {
     const dateRe = /^\d\d\d\d-\d\d-\d\d/
     t.ok(actual[0][f].match(dateRe), `${f} matches ${dateRe}`)
   })
+
+  await utils.teardown()
+  t.end()
+})
+
+
+test('cached file does not have to be compressed when working locally', async t => {
+  await utils.setup()
+
+  const caseData = { cases: 10, deaths: 20, tested: 30, hospitalized: 40 }
+  utils.writeFakeSourceContent('fake/fake.json', caseData)
+  await utils.crawl('fake')
+  t.equal(1, testCache.allFiles().length, 'sanity check.')
+
+  // Replace the .gz file with a non-gz file, same content.
+  const f = path.join(testCache.testingCache, testCache.allFiles()[0])
+  t.match(f, /\.gz$/, 'file is .gz')
+  fs.unlinkSync(f)
+
+  fs.writeFileSync(f.replace('.gz', ''), JSON.stringify(caseData))
+  t.equal(1, testCache.allFiles().length, 'sanity check #2.')
+
+  const fullResult = await utils.scrape('fake')
+  utils.validateResults(t, fullResult, [ caseData ] )
 
   await utils.teardown()
   t.end()
