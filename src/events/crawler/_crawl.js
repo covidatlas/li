@@ -50,11 +50,8 @@ module.exports = async function crawl (event) {
         results.push(result)
       }
       if (paginated) {
-        async function paginatedClient (url, options = {}) {
-          const crawlOpts = { ...crawl, url, ...options }
-          return crawler(type, crawlOpts)
-        }
-        const bodies = await paginated(paginatedClient)
+        const pc = crawler.makePaginatedClient(type, crawl)
+        const bodies = await paginated(pc)
         assert(Array.isArray(bodies), `pagination must return an array, but got ${typeof(bodies)}`)
         bodies.forEach((body, page) => {
           const result = { ...baseResult, data: body, page }
