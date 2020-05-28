@@ -32,6 +32,19 @@ async function doCrawl (t) {
   }
 }
 
+async function doScrape (t) {
+  let fullResult
+  try {
+    fullResult = await utils.scrape('paginated-json')
+    t.pass('scrape succeeded')
+  }
+  catch (err) {
+    t.fail(err)
+    t.fail(err.stack)
+  }
+  return fullResult
+}
+
 test('scrape completes successfully', async t => {
   await utils.setup()
 
@@ -41,14 +54,7 @@ test('scrape completes successfully', async t => {
   await doCrawl(t)
   t.equal(3, testCache.allFiles().length, 'sanity check, all files after crawl.')
 
-  try {
-    await utils.scrape('paginated-json')
-    t.pass('scrape succeeded')
-  }
-  catch (err) {
-    t.fail(err)
-    t.fail(err.stack)
-  }
+  await doScrape(t)
 
   await utils.teardown()
   t.end()
@@ -63,15 +69,7 @@ test('scrape gets all pages of data', async t => {
   await doCrawl(t)
   t.equal(3, testCache.allFiles().length, 'all files after crawl.')
 
-  let fullResult
-  try {
-    fullResult = await utils.scrape('paginated-json')
-    t.pass('scrape succeeded')
-  }
-  catch (err) {
-    t.fail(err)
-    t.fail(err.stack)
-  }
+  let fullResult = await doScrape(t)
 
   const expected = [
     { counter: 'a1', cases: 1, deaths: 5 },
@@ -104,15 +102,7 @@ test('scrape can handle a cached first page with no pagination number', async t 
   const f = path.join(testCache.testingCache, cachedCases[0])
   fs.renameSync(f, f.replace('-cases-0-', '-cases-'))
 
-  let fullResult
-  try {
-    fullResult = await utils.scrape('paginated-json')
-    t.pass('scrape succeeded')
-  }
-  catch (err) {
-    t.fail(err)
-    t.fail(err.stack)
-  }
+  let fullResult = await doScrape(t)
 
   const expected = [
     { counter: 'a3', cases: 3, deaths: 5 }
@@ -123,31 +113,21 @@ test('scrape can handle a cached first page with no pagination number', async t 
   t.end()
 })
 
-test.only('can scrape many pages', async t => {
+test('can scrape many pages', async t => {
   await utils.setup()
 
-  function makeFile (n) {
-    const content = {
-      records: [ { counter: 'a' + n, cases: n } ]
-    }
+  function makeCaseFile (n) {
+    const content = { records: [ { counter: 'a' + n, cases: n } ] }
     if (n <= 19)
       content.nextUrl = `page${n + 1}.json`
     utils.writeFakeSourceContent(`paginated-json/page${n}.json`, content)
   }
-  for (let i = 1; i <= 20; i++) {
-    makeFile(i)
-  }
+  for (let i = 1; i <= 20; i++)
+    makeCaseFile(i)
   utils.writeFakeSourceContent('paginated-json/deaths.json', { deaths: 5 })
   await doCrawl(t)
 
-  let fullResult
-  try {
-    fullResult = await utils.scrape('paginated-json')
-    t.pass('scrape succeeded')
-  }
-  catch (err) {
-    t.fail(err)
-  }
+  let fullResult = await doScrape(t)
 
   const expected = [ ...Array(20).keys() ].
         map(n => { return { counter: 'a' + (n + 1), cases: (n + 1) } })
