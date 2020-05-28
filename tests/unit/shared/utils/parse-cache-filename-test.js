@@ -126,15 +126,17 @@ const files = [
 ].map(properCacheName)
 
 test.only('matchName returns all matches', t => {
-  const expected = [ 'D1-apple', 'D2-apple' ].map(properCacheName)
-  t.deepEqual(matchName('apple', files), expected)
-  t.end()
-})
-
-test('matchName return first page in set', t => {
-  t.end()
-})
-
-test('matchName returns empty if no matches', t => {
+  const testCases = [
+    [ 'apple', [ 'D1-apple', 'D2-apple' ], 'regular key' ],
+    [ 'bear', [ 'D1-bear', 'D2-bear' ], 'regular key 2' ],
+    [ 'cat', [ 'D1-cat-0' ], 'paged, only first page is returned' ],
+    [ 'dog', [ 'D1-dog', 'D2-dog-0' ], 'paged, first returned, incl. no page number' ]
+  ]
+  testCases.forEach(c => {
+    const [ key, expected, msg ] = [ ...c ]
+    const actual = matchName(key, files)
+    console.log(actual.join())
+    t.deepEqual(actual, expected.map(properCacheName), msg)
+  })
   t.end()
 })
