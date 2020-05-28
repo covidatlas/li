@@ -136,8 +136,3 @@ test('can scrape many pages', async t => {
   await utils.teardown()
   t.end()
 })
-
-// TODO tests for paginated
-// scrape gets latest set of paginated files
-// scrape gets correct set of paginated files
-// timeseries scrape gets latest set of paginated files
