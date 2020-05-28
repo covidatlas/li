@@ -3,7 +3,6 @@ const datetime = require('@architect/shared/datetime/index.js')
 const getDateBounds = require('./_get-date-bounds.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
 const parseCacheFilename = require('@architect/shared/utils/parse-cache-filename.js')
-const assert = require('assert')
 
 const local = require('./_load-local.js')
 const s3 = require('./_load-s3.js')
@@ -74,12 +73,6 @@ async function load (params, useS3) {
       throw Error(msg)
     }
 
-    const parsedFilenames = files.reduce((arr, f) => {
-      const { datetime, name, page } = parseCacheFilename.parse(f)
-      arr.push( { filename: f, datetime, name, page: (page || 0) } )
-      return arr
-    }, [])
-
     let cache = []
     for (const crawl of scraper.crawl) {
       // We may have multiple crawls for a single scraper (each with a unique name key)
@@ -97,28 +90,12 @@ async function load (params, useS3) {
       // We may have multiple files for this day, choose the last one
       const file = matches[matches.length - 1]
 
-      // TODO: move this into separate module and add tests.
-      // Get all pages have the same datetime and name.
-      function allPagesInSet (firstPage, parsedFilenames) {
-        const p = parsedFilenames.find(e => e.filename === firstPage)
-        assert(p, `Missing filename ${firstPage} in parsed`)
-        const pages = parsedFilenames.
-          filter(f =>
-            (f.datetime === p.datetime) &&
-            (f.name === p.name) &&
-            (f.page !== undefined)
-        ).sort((a, b) => a.page - b.page).
-              map(f => f.filename)
-        console.log(`all pages in set = ${pages.join()}`)
-        return pages
-      }
-
       let getContent
       if (!paginated) {
         getContent = [ loader.getFileContents({ _sourceKey, keys, file }) ]
       }
       else {
-        getContent = allPagesInSet(file, parsedFilenames).
+        getContent = parseCacheFilename.matchPaginatedSet(file, files).
           map(file => loader.getFileContents({ _sourceKey, keys, file }))
       }
       crawl.pages = await Promise.all(getContent)
