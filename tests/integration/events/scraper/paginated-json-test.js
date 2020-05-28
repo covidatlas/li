@@ -11,7 +11,7 @@ const firstPage = {
     { counter: 'a1', cases: 1 },
     { counter: 'a2', cases: 2 }
   ],
-  nextUrl: 'http://localhost:5555/tests/fake-source-urls/paginated-json/page2.json'
+  nextUrl: 'page2.json'
 }
 
 const lastPage = {
@@ -123,8 +123,41 @@ test('scrape can handle a cached first page with no pagination number', async t 
   t.end()
 })
 
+test.only('can scrape many pages', async t => {
+  await utils.setup()
+
+  function makeFile (n) {
+    const content = {
+      records: [ { counter: 'a' + n, cases: n } ]
+    }
+    if (n <= 19)
+      content.nextUrl = `page${n + 1}.json`
+    utils.writeFakeSourceContent(`paginated-json/page${n}.json`, content)
+  }
+  for (let i = 1; i <= 20; i++) {
+    makeFile(i)
+  }
+  utils.writeFakeSourceContent('paginated-json/deaths.json', { deaths: 5 })
+  await doCrawl(t)
+
+  let fullResult
+  try {
+    fullResult = await utils.scrape('paginated-json')
+    t.pass('scrape succeeded')
+  }
+  catch (err) {
+    t.fail(err)
+  }
+
+  const expected = [ ...Array(20).keys() ].
+        map(n => { return { counter: 'a' + (n + 1), cases: (n + 1) } })
+  utils.validateResults(t, fullResult, expected)
+
+  await utils.teardown()
+  t.end()
+})
+
 // TODO tests for paginated
 // scrape gets latest set of paginated files
 // scrape gets correct set of paginated files
 // timeseries scrape gets latest set of paginated files
-// lots of pages (> 10) should still work for selecting all the pages

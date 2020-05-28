@@ -10,7 +10,7 @@ const firstPage = {
     { date: 'Jan 1', cases: 1 },
     { date: 'Jan 2', cases: 2 }
   ],
-  nextUrl: 'http://localhost:5555/tests/fake-source-urls/paginated-json/page2.json'
+  nextUrl: 'page2.json'
 }
 
 const lastPage = {

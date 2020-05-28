@@ -17,9 +17,11 @@ module.exports = {
           type: 'json',
           paginated: async client => {
             const result = []
-            let currentUrl = 'http://localhost:5555/tests/fake-source-urls/paginated-json/page1.json'
+            const baseUrl = 'http://localhost:5555/tests/fake-source-urls/paginated-json'
+            let currentUrl = 'page1.json'
             while (currentUrl) {
-              let { body } = await client( { url: currentUrl } )
+              const url = `${baseUrl}/${currentUrl}`
+              let { body } = await client( { url } )
               result.push(body)
               currentUrl = JSON.parse(body).nextUrl
             }
