@@ -2,7 +2,7 @@ const { join } = require('path')
 const test = require('tape')
 
 const sut = join(process.cwd(), 'src', 'shared', 'utils', 'parse-cache-filename.js')
-const parse = require(sut)
+const { parse } = require(sut)
 
 // This tests the filenames of files coming out of the cache
 // To see how we ensure the filenames going into the cache are correct
