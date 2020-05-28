@@ -88,8 +88,8 @@ function validateSource (source) {
         ))
       }
 
-      requirement(url || paginated, datedError('Require url or paginated'))
-      requirement(([ url, paginated ].filter(s => s).length === 1), datedError('Require url or paginated, not both'))
+      requirement(url || paginated, datedError('Crawler must have either url or paginated'))
+      requirement(!(url && paginated), datedError('Crawler must have either url or paginated, but not both'))
 
       // Crawl URL
       if (url) {

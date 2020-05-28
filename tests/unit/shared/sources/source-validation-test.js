@@ -91,7 +91,7 @@ test('validateSource catches problems', t => {
     '2020-03-02: Duplicate crawler name \'cases\'; names must be unique',
     '2020-03-02: Invalid crawler.data \'trash\'; must be one of: table, list, paragraph',
     '2020-03-01: Invalid crawler.type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
-    '2020-03-01: Require url or paginated, not both',
+    '2020-03-01: Crawler must have either url or paginated, but not both',
     '2020-03-01: Crawler paginated must be an async function',
     'Scraper must contain a startDate',
     '2020-03-03: Single crawler must not have a name key',
