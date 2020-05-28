@@ -24,6 +24,22 @@ function parse (filename) {
 }
 
 
+/** Helper: parse a bunch of filenames. */
+function parseFilenames (files) {
+  return files.reduce((arr, f) => {
+    const { datetime, name, page } = parse(f)
+    arr.push( { filename: f, datetime, name, page: (page || 0) } )
+    return arr
+  }, [])
+}
+
+function matchName (name, files) {
+  const parsed = parseFilenames(files)
+  const ret = parsed.filter(p => (p.name === name) && ((p.page || 0) === 0))
+  return ret.map(p => p.filename)
+}
+
 module.exports = {
-  parse
+  parse,
+  matchName
 }

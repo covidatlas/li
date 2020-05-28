@@ -2,7 +2,7 @@ const { join } = require('path')
 const test = require('tape')
 
 const sut = join(process.cwd(), 'src', 'shared', 'utils', 'parse-cache-filename.js')
-const { parse } = require(sut)
+const { parse, matchName } = require(sut)
 
 // This tests the filenames of files coming out of the cache
 // To see how we ensure the filenames going into the cache are correct
@@ -97,5 +97,44 @@ test('Filenames (with file paths) with missing or bad sha throws', t => {
     const f = join('folder', 'subfolder', s)
     t.throws(() => parse(f), `${n} sha throws`)
   })
+  t.end()
+})
+
+
+/**
+ * Match name tests.
+ */
+
+function properCacheName (s) {
+  const tmp = s.replace('D1', '2020-01-01t01_00_00.000z').
+        replace('D2', '2020-22-22t22_22_22.000z')
+  return `${tmp}-aaaaa.html.gz`
+}
+
+const files = [
+  'D1-apple',
+  'D1-bear',
+  'D1-cat-0',  // first in set
+  'D1-cat-1',
+  'D1-dog',    // first in set
+  'D1-dog-1',
+  'D2-apple',
+  'D2-bear',
+  'D2-cat-2',  // bad set
+  'D2-cat-3',
+  'D2-dog-0',  // first in set
+].map(properCacheName)
+
+test.only('matchName returns all matches', t => {
+  const expected = [ 'D1-apple', 'D2-apple' ].map(properCacheName)
+  t.deepEqual(matchName('apple', files), expected)
+  t.end()
+})
+
+test('matchName return first page in set', t => {
+  t.end()
+})
+
+test('matchName returns empty if no matches', t => {
   t.end()
 })
