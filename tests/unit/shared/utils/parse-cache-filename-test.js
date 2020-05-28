@@ -2,7 +2,7 @@ const { join } = require('path')
 const test = require('tape')
 
 const sut = join(process.cwd(), 'src', 'shared', 'utils', 'parse-cache-filename.js')
-const { parse, matchName } = require(sut)
+const { parse, matchName, matchPaginatedSet } = require(sut)
 
 // This tests the filenames of files coming out of the cache
 // To see how we ensure the filenames going into the cache are correct
@@ -105,6 +105,8 @@ test('Filenames (with file paths) with missing or bad sha throws', t => {
  * Match name tests.
  */
 
+// Create a proper cache file name from an abbreviation.
+// e.g. `D1-apple` => `2020-01-01t01_00_00.000z-apple--aaaaa.html.gz`
 function properCacheName (s) {
   const tmp = s.replace('D1', '2020-01-01t01_00_00.000z').
         replace('D2', '2020-22-22t22_22_22.000z')
@@ -117,7 +119,7 @@ const files = [
   'D1-cat-0',  // first in set
   'D1-cat-1',
   'D1-dog',    // first in set
-  'D1-dog-1',
+  'D1-dog-2',
   'D2-apple',
   'D2-bear',
   'D2-cat-2',  // bad set
@@ -138,6 +140,31 @@ test('matchName returns all matches', t => {
     const actual = matchName(key, files)
     console.log(actual.join())
     t.deepEqual(actual, expected.map(properCacheName), msg)
+  })
+  t.end()
+})
+
+test('matchPaginatedSet returns all files in the set', t => {
+  const testCases = [
+    [ 'D1-apple', [ 'D1-apple' ], 'not paginated, but returns it as if it was' ],
+    [ 'D1-cat-0', [ 'D1-cat-0', 'D1-cat-1' ], 'All files returned' ],
+    [ 'D1-dog', [ 'D1-dog', 'D1-dog-2' ], 'All files returned' ],
+    [ 'D2-dog-0', [ 'D2-dog-0' ], 'returned when page 0 specified' ]
+  ]
+  testCases.forEach(c => {
+    const [ f, expected, msg ] = [ ...c ]
+    const filename = properCacheName(f)
+    const actual = matchPaginatedSet(filename, files)
+    console.log(actual.join())
+    t.deepEqual(actual, expected.map(properCacheName), msg)
+  })
+  t.end()
+})
+
+test('matchPaginatedSet throws if unknown file specified', t => {
+  const testCases = [ 'unknown', 'D1-cat' ].map(properCacheName)
+  testCases.forEach(filename => {
+    t.throws(() => matchPaginatedSet(filename, files))
   })
   t.end()
 })

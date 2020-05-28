@@ -1,3 +1,5 @@
+const assert = require('assert')
+
 /**
  * The cache filename has several significant parse which are referred
  * to during cache load, prior to scraping.
@@ -45,7 +47,25 @@ function matchName (name, files) {
   return ret.map(p => p.filename)
 }
 
+/** Get all paginated pages that have the same datetime and name. */
+function matchPaginatedSet (firstPage, files) {
+  const parsed = parseFilenames(files)
+  const p = parsed.find(e => e.filename === firstPage)
+  assert(p, `Missing filename ${firstPage} in parsed`)
+  const pages = parsed.
+        filter(f =>
+               (f.datetime === p.datetime) &&
+               (f.name === p.name) &&
+               (f.page !== undefined)
+              ).sort((a, b) => a.page - b.page).
+        map(f => f.filename)
+  console.log(`all pages in set = ${pages.join()}`)
+  return pages
+}
+
+
 module.exports = {
   parse,
-  matchName
+  matchName,
+  matchPaginatedSet
 }
