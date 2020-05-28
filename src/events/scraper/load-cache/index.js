@@ -43,7 +43,6 @@ async function load (params, useS3) {
     const fileset = new Set(files)
     files = Array.from(fileset)
 
-    // TODO: move parts of this into separate modules and add tests.
     if (!timeseries && files.length) {
       /**
        * If date is earlier than we have cached, bail
@@ -124,3 +123,34 @@ async function loadCache (params) {
 }
 
 module.exports = loadCache
+
+// TODO (refactor) Change API to take the loader, and add tests.
+// Passing in the loader object rather than a boolean should clarify flow.
+// Can also standardize on throwing instead of returning false, e.g:
+
+/*
+
+async function load(params, loader) { ... }
+
+async function loadCache(params) {
+  if (isLocal) {
+    try {
+      let result = await load(params, localLoader)
+      return result
+    }
+    catch {
+      ... cache miss
+    }
+  }
+
+  // S3 load
+  try {
+    let result = await load(params, S3Loader)
+    return result
+  }
+  catch {
+    ... failure
+  }
+}
+
+*/
