@@ -12,10 +12,13 @@ function goodCounties (rec) {
     'Pea Patch County',
     'Reedy Island County',
     'DE/NJ County',
-    'Statewide County',
-    'Unknown County'
+    'Statewide County'
   ]
   return !badCounties.includes(rec.county)
+}
+
+function removeUnknown (rec) {
+  return (rec.county !== 'Unknown County')
 }
 
 module.exports = {
@@ -76,7 +79,7 @@ module.exports = {
         }
         let results = counties.filter(goodCounties)
         results.push(transform.sumData(results))
-        return results
+        return results.filter(removeUnknown)
       }
     },
     {
@@ -106,7 +109,7 @@ module.exports = {
         }
         let results = counties.filter(goodCounties)
         results.push(transform.sumData(results))
-        return results
+        return results.filter(removeUnknown)
       }
     }
   ]
