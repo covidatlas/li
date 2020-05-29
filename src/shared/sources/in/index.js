@@ -68,10 +68,9 @@ module.exports = {
         states.push(summedData)
 
         const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
+        const [ , ...nonHeaderRows ] = normalizedTable
         const casesFromTotalRow = parse.number(
-          normalizedTable.find(
-            row => row.some(cell => cell === 'Total number of confirmed cases in India')
-          )[indexForCases]
+          nonHeaderRows.find((row) => row.some((cell) => cell.startsWith("Total")))[indexForCases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states

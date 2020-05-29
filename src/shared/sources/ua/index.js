@@ -7,9 +7,12 @@ const transform = require('../_lib/transform.js')
 const country = `iso1:UA`
 
 const isoMap = { // Non-unique gets mapped straight to ISO2
-  'Kyiv': 'iso2:UA-30',
-  'Kyivska': 'iso2:UA-32',
-  'Chernivetska': 'iso2:UA-77',
+  Kyiv: 'iso2:UA-30',
+  Kyivska: 'iso2:UA-32',
+}
+
+const nameToCanonical = { // Name differences get mapped to the canonical names
+  Chernivet: 'Chernivtsi Oblast',
 }
 
 module.exports = {
@@ -20,10 +23,11 @@ module.exports = {
     name: 'National Security and Defense Council of Ukraine',
     url: 'https://www.rnbo.gov.ua/en/',
   },
+  timeseries: true,
   maintainers: [ maintainers.ciscorucinski, maintainers.camjc ],
   scrapers: [
     {
-      startDate: '2020-01-01',
+      startDate: '2020-01-22',
       crawl: [
         {
           type: 'json',
@@ -41,12 +45,14 @@ module.exports = {
         for (const state of $.ukraine) {
           states.push({
             state: getIso2FromName({
-              country, name: state.label.en
+              country,
+              name: state.label.en
                 .replace('nska', '')
                 .replace('skа', '')
                 .replace('ska', '')
-                .replace('zka', '')
-              , isoMap
+                .replace('zka', ''),
+              isoMap,
+              nameToCanonical
             }),
             cases: parse.number(state.confirmed),
             deaths: parse.number(state.deaths),

@@ -4,6 +4,7 @@ const parse = require('../../_lib/parse.js')
 
 const schemaKeysByHeadingFragment = {
   'confirmed cases': 'cases',
+  'active cases': 'cases',
   'people recovered': 'recovered',
   'tests conducted': 'tested'
 }
