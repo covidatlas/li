@@ -3,6 +3,7 @@
 const glob = require('glob')
 const path = require('path')
 const fs = require('fs')
+const assert = require('assert')
 const lib = path.join(__dirname, '..', 'src', 'shared', 'sources', '_lib')
 const sourceKey = require(path.join(lib, 'source-key.js'))
 const sourceMap = require(path.join(lib, 'source-map.js'))
@@ -260,6 +261,8 @@ if (reportType === 'summary') {
 }
 
 if (reportType === 'report') {
+  let msg = 'sanity check, ensure can be pasted cleanly to google sheet'
+  assert.equal(144, output.length, msg)
   console.log(Object.keys(output[0]).join('|'))
   output.map(r => console.log(Object.values(r).join('|')))
 }
