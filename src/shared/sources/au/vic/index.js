@@ -11,7 +11,9 @@ const makeAbsoluteUrl = currentArticleHref => {
 }
 
 const paragraphMatcher = ({ $, selector, regex }) => {
-  const paragraph = $(selector).text()
+  const paragraph = $(selector)
+    .text()
+    .replace(/\u00a0/g, " ") // Replace &nbsp; chars with normal spaces
   const matches = paragraph.match(regex) || {}
   const { dataPoint } = matches.groups || {}
   return dataPoint ? parse.number(dataPoint) : undefined
@@ -57,7 +59,7 @@ module.exports = {
           }),
           recovered: paragraphMatcher({
             $,
-            selector: `.page-content p:contains("people have recovered")`,
+            selector: `.page-content p:contains("have recovered")`,
             regex: /(?<dataPoint>[\d,]+) people have recovered/
           }),
           tested: paragraphMatcher({

@@ -32,8 +32,10 @@ module.exports = {
         const casesByState = {}
 
         for (const item of $) {
-          const itemDate = datetime.parse(item['﻿TimeStamp'].replace(/\//g, '-'))
-          if (itemDate === date) {
+          const itemDate = datetime.parse(
+            item["TimeStamp"].replace(/\//g, "-")
+          )
+          if (itemDate.startsWith(date)) {
             casesByState[item.CountyName] = parse.number(item.ConfirmedCovidCases)
           }
         }

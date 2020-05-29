@@ -3,10 +3,14 @@ const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
-const country = 'iso1:IT'
+const country = 'iso1:CZ'
 
 // Yes, there is a weird character here, it is intentional
-const dateKey = '﻿datum'
+const dateKeyForCasesCsv = '﻿datum_hlaseni'
+const dateKeyForTestCSV = '﻿datum'
+
+const regionKey = "kraj"
+const testsKey = "testy_celkem"
 
 module.exports = {
   aggregate: 'state',
@@ -37,15 +41,15 @@ module.exports = {
         const casesByRegion = {}
 
         for (const item of cases) {
-          if (item[dateKey] === date) {
-            casesByRegion[item.kraj] = 1 + (casesByRegion[item.kraj] || 0)
+          if (item[dateKeyForCasesCsv] === date) {
+            casesByRegion[item[regionKey]] = 1 + (casesByRegion[item[regionKey]] || 0)
           }
         }
 
         let numTests
         for (const item of tested) {
-          if (item[dateKey] === date) {
-            numTests = parse.number(item.testy_celkem)
+          if (item[dateKeyForTestCSV] === date) {
+            numTests = parse.number(item[testsKey])
           }
         }
 
