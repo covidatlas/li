@@ -82,9 +82,3 @@ module.exports = {
     },
   ],
 }
-
-// TODO: delete unused requires
-// TODO: fix 0 start date
-// TODO: fix 0 scrape and crawl
-// TODO: fix 2020-03-19 scrape and crawl
-// TODO: fix 2020-03-20 scrape and crawl
