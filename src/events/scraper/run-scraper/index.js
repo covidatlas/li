@@ -7,6 +7,7 @@ const getSchemaKeyFromHeading = require('./scraper-helpers/get-schema-key-from-h
 const groupBy = require('./scraper-helpers/group-by')
 const iso2Codes = require('./scraper-helpers/iso2-codes')
 const normalizeTable = require('./scraper-helpers/normalize-table')
+const pdfUtils = require('./scraper-helpers/pdf-utils.js')
 const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arrays')
 
 const scraperHelpers = {
@@ -19,6 +20,7 @@ const scraperHelpers = {
   groupBy,
   iso2Codes,
   normalizeTable,
+  pdfUtils,
   transposeArrayOfArrays,
 }
 
