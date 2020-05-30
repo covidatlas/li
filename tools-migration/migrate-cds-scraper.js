@@ -85,7 +85,7 @@ function stringize (obj, level = 0) {
 // Things to fix, printed at the end.
 const todos = []
 
-const fname = process.argv[2]
+const fname = process.argv[2].replace(/\\/g, '/')
 if (!fs.existsSync(fname)) {
   console.log(`No file ${fname}, quitting.`)
   process.exit(0)
