@@ -264,7 +264,7 @@ module.exports = {
         }
         data.push({ ...rawStateData, aggregate: 'county' })
         const result = geography.addEmptyRegions(data, _counties, 'county')
-        console.table(result)
+        // console.table(result)
         return result
       }
     },
@@ -285,7 +285,7 @@ module.exports = {
               map(p => p.replace(/\n/g, ' ')).
               filter(p => p.includes(label))
         assert.equal(p.length, 1, `Have 1 paragraph containing ${label}`)
-        console.log(JSON.stringify(p.join()))
+        // console.log(JSON.stringify(p.join()))
 
         // County-level
         let rawcounty = p[0].split(':')[1]

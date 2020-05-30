@@ -243,6 +243,7 @@ module.exports = {
         })
         regions = geography.addEmptyRegions(regions, _counties, 'county')
         regions.push(transform.sumData(regions))
+        // console.log(regions)
         return regions
       }
     }
