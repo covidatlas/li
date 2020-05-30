@@ -3,28 +3,53 @@ const test = require('tape')
 const sutpath = '../../../../../../src/events/scraper/run-scraper/scraper-helpers/property-table-columns.js'
 const { propertyColumnIndices } = require(sutpath)
 
-test.only('returns indices for exact text matches', t => {
-  const headings = [ 'county', 'cases' ]
+let headings = [ 'county', 'cases' ]
+
+function assertIndicesEqual (t, mapping, expected) {
+  const actual = propertyColumnIndices(headings, mapping)
+  t.deepEqual(actual, expected)
+}
+
+test('returns indices for exact text matches', t => {
   const mapping = {
     county: 'county',
     cases: 'cases'
   }
-  const actual = propertyColumnIndices(headings, mapping)
   const expected = {
     county: 0,
     cases: 1
   }
-  t.deepEqual(actual, expected)
+  assertIndicesEqual(t, mapping, expected)
   t.end()
 })
 
+test('headings can be ignored', t => {
+  const mapping = {
+    county: 'county'
+  }
+  const expected = {
+    county: 0
+  }
+  assertIndicesEqual(t, mapping, expected)
+  t.end()
+})
 
-// Returns indices, exact text matches
-// headings can be ignored
+test('can use regexes', t => {
+  const mapping = {
+    county: /COUNTY/i,
+    cases: /ase/
+  }
+  const expected = {
+    county: 0,
+    cases: 1
+  }
+  assertIndicesEqual(t, mapping, expected)
+  t.end()
+})
+
 // fails if no match found
 // fails if ambiguous
 // indices, array of text matches
-// indices, regex
 // indices, array of text or regexes
 // fails if ambiguous text or regex
 // fails if match not found

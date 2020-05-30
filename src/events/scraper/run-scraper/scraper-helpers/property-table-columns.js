@@ -10,6 +10,8 @@ function findUniqueMatch (headings, matchers) {
     matchers.forEach(m => {
       if (is.string(m) && headings[i] === m)
         indices.push(i)
+      if (is.regexp(m) && headings[i].match(m))
+        indices.push(i)
     })
   }
   return indices[0]
