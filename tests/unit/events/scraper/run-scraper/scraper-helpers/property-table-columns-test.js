@@ -52,7 +52,7 @@ test('fails if no match', t => {
     county: /nomatch/,
     cases: 'cases'
   }
-  const re = /No match for county in headings/
+  const re = /No matches for county \(\/nomatch\/\) in headings county; cases/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
@@ -62,7 +62,7 @@ test('fails if ambiguous match', t => {
     county: /c/,
     cases: /c/
   }
-  const re = /Multiple matches for county in headings/
+  const re = /Multiple matches for county \(\/c\/\) in headings county; cases/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
@@ -72,7 +72,7 @@ test('fails if ambiguous match due to bad headings', t => {
   const mapping = {
     cases: 'cases'
   }
-  const re = /Multiple matches for cases in headings/
+  const re = /Multiple matches for cases \(cases\) in headings cases; cases/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
@@ -96,7 +96,7 @@ test('array of matchers fails if matches multiple columns', t => {
   const mapping = {
     cases: [ 'apples', 'dogs' ]
   }
-  const re = /Multiple matches for cases in headings/
+  const re = /Multiple matches for cases \(apples; dogs\) in headings apples; bats; cats; dogs/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })

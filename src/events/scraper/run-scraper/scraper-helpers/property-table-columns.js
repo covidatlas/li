@@ -12,10 +12,11 @@ function findUniqueMatch (headings, key, matchers) {
         indices.push(i)
     })
   }
+  const errMsg = `matches for ${key} (${matchers.join('; ')}) in headings ${headings.join('; ')}`
   if (indices.length === 0)
-    throw new Error(`No match for ${key} in headings`)
+    throw new Error(`No ${errMsg}`)
   if (indices.length > 1)
-    throw new Error(`Multiple matches for ${key} in headings`)
+    throw new Error(`Multiple ${errMsg}`)
   return indices[0]
 }
 
