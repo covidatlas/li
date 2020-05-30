@@ -47,7 +47,17 @@ test('can use regexes', t => {
   t.end()
 })
 
-// fails if no match found
+test('fails if no match', t => {
+  const mapping = {
+    county: /nomatch/,
+    cases: 'cases'
+  }
+  const re = /No match for county in headings/
+  t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
+  t.end()
+})
+
+
 // fails if ambiguous
 // indices, array of text matches
 // indices, array of text or regexes
