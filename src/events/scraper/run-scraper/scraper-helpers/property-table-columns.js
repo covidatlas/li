@@ -16,6 +16,8 @@ function findUniqueMatch (headings, key, matchers) {
   }
   if (indices.length === 0)
     throw new Error(`No match for ${key} in headings`)
+  if (indices.length > 1)
+    throw new Error(`Multiple matches for ${key} in headings`)
   return indices[0]
 }
 

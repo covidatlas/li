@@ -57,6 +57,16 @@ test('fails if no match', t => {
   t.end()
 })
 
+test('fails if ambiguous match', t => {
+  const mapping = {
+    county: /c/,
+    cases: /c/
+  }
+  const re = /Multiple matches for county in headings/
+  t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
+  t.end()
+})
+
 
 // fails if ambiguous
 // indices, array of text matches
