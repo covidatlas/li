@@ -4,6 +4,7 @@ const srcShared = "../../../"
 const geography = require(srcShared + "sources/_lib/geography/index.js")
 const parse = require(srcShared + "sources/_lib/parse.js")
 const transform = require(srcShared + "sources/_lib/transform.js")
+const constants = require(srcShared + 'sources/_lib/constants.js')
 
 module.exports = {
   state: "iso2:US-IA",
@@ -69,8 +70,11 @@ module.exports = {
           if (countyName === "Obrien") {
             countyName = "O'Brien"
           }
+          countyName = geography.addCounty(countyName)
+          if (countyName.match(/Pending/))
+            countyName = constants.UNASSIGNED
           counties.push({
-            county: geography.addCounty(countyName),
+            county: countyName,
             cases: parse.number(county.Confirmed || 0),
             deaths: parse.number(county.Deaths || 0),
             recovered: parse.number(county.Recovered || 0),
