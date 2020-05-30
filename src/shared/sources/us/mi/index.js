@@ -138,29 +138,28 @@ module.exports = {
         }
         const indices = propertyTableColumns.propertyColumnIndices(headings, mappings)
 
-        let counties = []
-        const unassignedObj = {
-          county: constants.UNASSIGNED,
-          deaths: 0,
-          cases: 0
-        }
-
-        const $trs = $table.find('tbody > tr')
+        // Convert table to raw data, ignoring total rows.
         const rawData = []
+        const $trs = $table.find('tbody > tr')
         $trs.each((index, tr) => {
-          const $tr = $(tr)
-          const tds = $tr.find('td').toArray().map(td => $(td).text().trim())
-          rawData.push(propertyTableColumns.createHash(indices, tds))
+          const tds = $(tr).find('td').toArray().map(td => $(td).text().trim())
+          const row = propertyTableColumns.createHash(indices, tds)
+          if (![ 'County', 'Totals', 'Grand Total', 'Total' ].includes(row.county))
+            rawData.push(row)
         })
-
-        function goodCounties (r) {
-          return ![ 'County', 'Totals', 'Grand Total', 'Total' ].includes(r.county)
-        }
 
         function fixCounty (text) {
           // Ignore asterisks (that indicate footnotes).
-          return text.replace(/\*/g, '').
-            replace('St ', 'St. ')
+          let s = text.replace(/\*/g, '')
+
+          // MDOC = Michigan Dept of Corrections
+          // FCI = Federal Correctional Institute
+          const unknown = [ 'Out of State', 'Other', 'Not Reported', 'Unknown' ]
+          if (unknown.includes(s) || s.match(/MDOC/) || s.match(/FCI/))
+            return constants.UNASSIGNED
+
+          // Final fixes
+          return s.replace('St ', 'St. ')
         }
 
         function parseNum (text) {
@@ -169,7 +168,6 @@ module.exports = {
         }
 
         const data = rawData.
-              filter(goodCounties).
               map(r => {
                 return {
                   county: fixCounty(r.county),
@@ -178,20 +176,9 @@ module.exports = {
                 }
               })
 
-        data.forEach(rowData => {
-          function belongsInUnassigned (county) {
-            const unknownCounties = [ 'Out of State', 'Other', 'Not Reported', 'Unknown' ]
-            return unknownCounties.includes(county) ||
-              county.match(/MDOC/) ||   // Michigan Dept of Corrections
-              county.match(/FCI/)       // Federal Correctional Institute
-          }
+        let counties = []
 
-          if (belongsInUnassigned(rowData.county)) {
-            unassignedObj.cases += rowData.cases
-            unassignedObj.deaths += rowData.deaths
-            return
-          }
-
+        data.filter(d => d.county !== constants.UNASSIGNED).forEach(rowData => {
           // Remember these to add them to Wayne County instead
           // TODO: Handling of Detroit seems brittle.
           if (rowData.county === DetroitCity) {
@@ -221,7 +208,15 @@ module.exports = {
           })
 
         })
-        counties.push(unassignedObj)
+
+        // Handle unassigned.
+        const unassigned = data.filter(d => d.county === constants.UNASSIGNED).
+              reduce((hsh, r) => {
+                hsh.cases += r.cases
+                hsh.deaths += r.deaths
+                return hsh
+              }, { cases: 0, deaths: 0 })
+        counties.push({ county: constants.UNASSIGNED, ...unassigned })
 
         counties = geography.addEmptyRegions(counties, _counties, 'county')
         counties.push(transform.sumData(counties))
@@ -230,4 +225,3 @@ module.exports = {
     }
   ]
 }
-
