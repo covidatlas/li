@@ -8,6 +8,7 @@ const groupBy = require('./scraper-helpers/group-by')
 const iso2Codes = require('./scraper-helpers/iso2-codes')
 const normalizeTable = require('./scraper-helpers/normalize-table')
 const pdfUtils = require('./scraper-helpers/pdf-utils.js')
+const propertyTableColumns = require('./scraper-helpers/property-table-columns.js')
 const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arrays')
 
 const scraperHelpers = {
@@ -21,6 +22,7 @@ const scraperHelpers = {
   iso2Codes,
   normalizeTable,
   pdfUtils,
+  propertyTableColumns,
   transposeArrayOfArrays,
 }
 
