@@ -47,6 +47,20 @@ function propertyColumnIndices (headings, mapping) {
   return result
 }
 
+/** Helper method: make a hash. */
+function createHash (propertyIndices, arr) {
+  return Object.entries(propertyIndices).reduce((hsh, pair) => {
+    const [ key, i ] = pair
+    if (i > (arr.length - 1)) {
+      const msg = `${key} (index ${i}) out of range for ${JSON.stringify(arr)}`
+      throw new Error(msg)
+    }
+    hsh[key] = arr[i]
+    return hsh
+  }, {})
+}
+
 module.exports = {
-  propertyColumnIndices
+  propertyColumnIndices,
+  createHash
 }

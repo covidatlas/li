@@ -1,7 +1,7 @@
 const test = require('tape')
 
 const sutpath = '../../../../../../src/events/scraper/run-scraper/scraper-helpers/property-table-columns.js'
-const { propertyColumnIndices } = require(sutpath)
+const { propertyColumnIndices, createHash } = require(sutpath)
 
 let headings = [ 'county', 'cases' ]
 
@@ -109,5 +109,28 @@ test('fails if multiple matchers match the same column', t => {
   }
   const re = /Multiple matches for same heading/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
+  t.end()
+})
+
+
+test('createHash creates a hash', t => {
+  const mapping = {
+    cases: 0,
+    deaths: 4
+  }
+  const raw = [ 'abc', 1, 2, 'def', 'xxx' ]
+  t.deepEqual( { cases: 'abc', deaths: 'xxx' }, createHash(mapping, raw) )
+  t.end()
+})
+
+
+test('createHash throws if index out of range', t => {
+  const mapping = {
+    cases: 0,
+    deaths: 4
+  }
+  const raw = [ 'abc', 1, 2 ]
+  const msg = "deaths (index 4) out of range for ['abc', 1, 2]"
+  t.throws(() => { createHash(mapping, raw) }, msg)
   t.end()
 })
