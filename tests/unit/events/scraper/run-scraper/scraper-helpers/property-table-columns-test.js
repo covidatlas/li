@@ -77,6 +77,19 @@ test('fails if ambiguous match due to bad headings', t => {
   t.end()
 })
 
+test('can use array of matchers', t => {
+  headings = [ 'apples', 'bats', 'cats', 'dogs' ]
+  const mapping = {
+    cases: [ 'apples', 'ants' ],
+    deaths: [ /^d/, 'elephants' ]
+  }
+  const expected = {
+    cases: 0,
+    deaths: 3
+  }
+  assertIndicesEqual(t, mapping, expected)
+  t.end()
+})
 
 // fails if ambiguous
 // indices, array of text matches
