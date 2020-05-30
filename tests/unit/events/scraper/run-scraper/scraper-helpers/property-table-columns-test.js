@@ -91,8 +91,23 @@ test('can use array of matchers', t => {
   t.end()
 })
 
-// fails if ambiguous
-// indices, array of text matches
-// indices, array of text or regexes
-// fails if ambiguous text or regex
-// fails if match not found
+test('array of matchers fails if matches multiple columns', t => {
+  headings = [ 'apples', 'bats', 'cats', 'dogs' ]
+  const mapping = {
+    cases: [ 'apples', 'dogs' ]
+  }
+  const re = /Multiple matches for cases in headings/
+  t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
+  t.end()
+})
+
+test('fails if multiple matchers match the same column', t => {
+  headings = [ 'apples', 'bats', 'cats', 'dogs' ]
+  const mapping = {
+    cases: [ 'apples' ],
+    deaths: [ /pples/, 'elephants' ]
+  }
+  const re = /Multiple matches for same heading/
+  t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
+  t.end()
+})

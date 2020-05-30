@@ -1,5 +1,3 @@
-// TODO
-
 const is = require('is')
 
 function findUniqueMatch (headings, key, matchers) {
@@ -21,12 +19,31 @@ function findUniqueMatch (headings, key, matchers) {
   return indices[0]
 }
 
-/** Find indexes for property columns in a table's headings. */
+/** Find indexes for property columns in a table's headings.
+ *
+ * Example:
+ *
+ *  const headings = [ 'apples', 'bats', 'cats', 'dogs' ]
+ *
+ *  const mapping = {
+ *    cases: [ 'apples', 'ants' ],
+ *    deaths: [ /^d/, 'elephants' ]
+ *  }
+ *
+ *  This returns {
+ *    cases: 0,
+ *    deaths: 3
+ *  }
+ */
 function propertyColumnIndices (headings, mapping) {
   const result = {}
   Object.keys(mapping).forEach(k => {
     result[k] = findUniqueMatch(headings, k, mapping[k])
   })
+  const indices = Object.values(result)
+  const uniqueIndices = Array.from(new Set(indices))
+  if (indices.length !== uniqueIndices.length)
+    throw new Error('Multiple matches for same heading')
   return result
 }
 
