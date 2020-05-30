@@ -67,6 +67,16 @@ test('fails if ambiguous match', t => {
   t.end()
 })
 
+test('fails if ambiguous match due to bad headings', t => {
+  headings = [ 'cases', 'cases' ]
+  const mapping = {
+    cases: 'cases'
+  }
+  const re = /Multiple matches for cases in headings/
+  t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
+  t.end()
+})
+
 
 // fails if ambiguous
 // indices, array of text matches
