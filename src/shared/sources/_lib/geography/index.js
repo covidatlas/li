@@ -3,6 +3,8 @@ const usStates = require('./us-states.json')
 /**
  * Append ' County' to the end of a string, if not already present
  */
+// TODO (refactor) Don't add 'county' if the county is constants.UNASSIGNED
+// - need to check all sources that use this, ensure they don't handle UNASSIGNED specifically
 function addCounty (county, suffix = 'County') {
   const norm = str => str.replace(/ /g, '').toLowerCase()
   if (!norm(county).endsWith(norm(suffix))) {

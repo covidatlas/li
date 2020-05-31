@@ -6,11 +6,13 @@ const country = 'iso1:SA'
 
 const sum = (items) => items.map(stateAttribute => stateAttribute.cases).reduce((a, b) => a + b, 0)
 
-const nameToCanonical = { // Name differences get mapped to the canonical names
-  'Mecca': 'Makka',
-  'Medina': 'Madinah',
-  'Hail': 'Hayel',
-  'Jouf': 'Jawf',
+const nameToCanonical = {
+  // Name differences get mapped to the canonical names
+  Mecca: "Makka",
+  Medina: "Madinah",
+  Hail: "Hayel",
+  Jouf: "Jawf",
+  "Al Jouf": "Al Jawf",
 }
 
 module.exports = {

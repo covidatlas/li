@@ -14,11 +14,10 @@ module.exports = async function findNextInvoke () {
 
   const tasks = [ 'crawler', 'scraper' ]
 
-  // This will likely need to be rewritten if the task runner ever takes on more than just crawling and scraping
   const timestamps = invokes.map(i => i.lastInvoke)
   const sorted = sorter(timestamps)
-  const last = invokes.find(i => i.lastInvoke === sorted[0])
-  const task = last ? last.key : tasks[0]
+  const last = invokes.findIndex(i => i.lastInvoke === sorted[sorted.length - 1])
+  const task = tasks[last + 1] || tasks[0]
 
   await data.invokes.put({
     type,

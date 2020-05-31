@@ -49,7 +49,7 @@ const getSchemaKeyFromHeading = ({ heading, schemaKeysByHeadingFragment }) => {
     const slugFragment = slugify(headingFragment, slugifyOptions)
     return slugHeading.includes(slugFragment)
   })
-  const foundSchemaKeys = Object.values(foundItems)
+  const foundSchemaKeys = [ ...new Set(Object.values(foundItems)) ]
   assert.strictEqual(foundSchemaKeys.length, 1,
     `no single match found for ${slugHeading} in ${JSON.stringify(schemaKeysByHeadingFragment)}}`
   )

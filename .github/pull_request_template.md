@@ -3,8 +3,7 @@ Hi there!  Some things to double-check prior to submission:
 
 - did you recently update this branch with upstream master,
   to ensure everything works together?
-- did you `yarn lint` ?
-- did you `yarn test` ?
+- did you `npm test` ?
 - have you added any new tape tests to verify your change?
 - did you update any relevant documentation?
 

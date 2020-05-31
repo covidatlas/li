@@ -1,9 +1,9 @@
-const assert = require('assert')
 const maintainers = require('../../_lib/maintainers.js')
 const parse = require('../../_lib/parse.js')
 
 const schemaKeysByHeadingFragment = {
   'confirmed cases': 'cases',
+  'active cases': 'active',
   'people recovered': 'recovered',
   'tests conducted': 'tested'
 }
@@ -40,7 +40,6 @@ module.exports = {
             data[key] = parse.number(value)
           }
         })
-        assert(data.cases > 0, 'Cases are not reasonable')
         return data
       }
     }

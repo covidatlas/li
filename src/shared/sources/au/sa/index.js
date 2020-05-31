@@ -113,6 +113,10 @@ module.exports = {
         const dataByRegion = attributes.map(
           (attributesForRegion) => pickBy(attributesForRegion, (value, key) => key.includes(date.replace(/-/g, '')))
         )
+        assert(
+          dataByRegion.some((datum) => Object.keys(datum).length > 0),
+          `No data for date: ${date}`
+        )
 
         const schemaKeysByHeadingFragment = {
           positive: 'cases',

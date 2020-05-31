@@ -4,6 +4,7 @@ const datetime = require('@architect/shared/datetime/index.js')
 
 module.exports = async function fireEvents (source) {
   const { scrapers } = source
+  let counter = 0
 
   let earliest = sorter(scrapers.map(s => s.startDate))[0]
 
@@ -18,17 +19,28 @@ module.exports = async function fireEvents (source) {
 
   // The return of el cheapo queue
   let queue = 0
-  for (const date of dates) {
-    // Invoke the timeseries scraper many times
-    setTimeout(async () => {
-      await arc.events.publish({
-        name: 'scraper',
-        payload: {
-          date,
-          source: source._sourceKey
-        }
-      })
-    }, queue)
-    queue += 1000
-  }
+  const events = dates.map(date => {
+    return new Promise ((resolve, reject) => {
+      setTimeout(() => {
+        arc.events.publish({
+          name: 'scraper',
+          payload: {
+            date,
+            source: source._sourceKey
+          }
+        }, function done (err) {
+          if (err) return reject(err)
+          else {
+            counter++
+            return resolve()
+          }
+        })
+      }, queue)
+      queue += 1000
+    })
+  })
+
+  return Promise.all(events).then(() => {
+    console.log(`Published ${counter} of ${dates.length} regeneration eents`)
+  })
 }

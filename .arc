@@ -25,9 +25,9 @@ regenerator # Regenerates a source from cache
 status      # Status updater
 
 
-# @scheduled
-# runner rate(2 hour)           # Regularly invokes crawls and scrapes
-# regen-timeseries rate(12 hour) # Regularly regenerates timeseries sources
+@scheduled
+runner rate(2 hours)            # Regularly invokes crawls and scrapes
+regen-timeseries rate(2 hours)  # Regularly regenerates timeseries sources
 
 
 @storage-public
