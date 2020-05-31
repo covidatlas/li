@@ -59,9 +59,10 @@ if (sourceKeys.length === 0) {
 /** While crawl and scrape are separate operations, we're combining
  * them for this test because the live crawl feeds directly into the
  * scrape of the same data.  A failed crawl should just be a warning,
- * because the external site is down, but a successful crawl and a
- * failed scrape should be a failure, because it means that the scrape
- * no longer works. */
+ * because the external site is down.  A successful crawl and a failed
+ * scrape should also be a warning: the scrape no longer works, but
+ * that is a problem for that source only and not for the system as a
+ * whole.. */
 test('Live crawl and scrape', async t => {
   await sandbox.start({ port: 5555, quiet: true })
   testCache.setup()
@@ -69,23 +70,18 @@ test('Live crawl and scrape', async t => {
   t.plan(sourceKeys.length + 2)
 
   for (const key of sourceKeys) {
-    let crawlCompleted = false
+    let currentStep = null
     try {
+      currentStep = 'crawl'
       await crawl({ source: key })
-      crawlCompleted = true
+      currentStep = 'scrape'
       const data = await scrape({ source: key })
       // TODO (testing): verify the returned data struct conforms to schema.
       t.pass(`${key} succeeded (${data.length} record${data.length > 1 ? 's' : ''})`)
     } catch (err) {
-      if (!crawlCompleted) {
-        const msg = `Warning: Live ${key} crawl failed: ${err}`
-        console.log(msg)
-        t.pass(`${msg}`)
-      }
-      else {
-        // This was a scrape error, and could be a legit problem.
-        t.fail(`${key} scrape failed: ${err}`)
-      }
+      const msg = `Warning: Live ${key} ${currentStep} failed: ${err}`
+      console.log(msg)
+      t.pass(`${msg}`)
     }
   }
   testCache.teardown()
