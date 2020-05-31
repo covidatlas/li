@@ -52,6 +52,10 @@ function validateSource (source) {
   requirement(is.array(scrapers), 'Scrapers must be an array')
   requirement(scrapers.length, 'Scrapers must have at least one scraper')
 
+  const startDates = scrapers.map(s => s.startDate).filter(s => s !== undefined)
+  const sortedStartDates = new Array(...startDates).sort()
+  requirement(startDates.join() === sortedStartDates.join(), 'Scrapers must be ordered by startDate')
+
   // Now look inside each scraper
   for (const scraper of scrapers) {
     const { startDate, crawl, scrape } = scraper

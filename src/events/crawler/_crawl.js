@@ -17,9 +17,9 @@ module.exports = async function crawl (event) {
     console.time(timeLabel)
 
     /**
-     * Select the current scraper from the source's available scrapers
+     * Select the current scraper from the source's available scrapers.
+     * Scrapers are guaranteed to be in startDate order.
      */
-    // TODO actually calculate latest start date; this hack works for now
     const scraper = scrapers[scrapers.length - 1]
 
     /**
