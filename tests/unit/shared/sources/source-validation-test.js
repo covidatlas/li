@@ -55,12 +55,12 @@ test('validateSource catches problems', t => {
         async /* should by sync */ scrape (data) { return { cases: data.infected } }
       },
       {
-        startDate: '2020-03-03',
+        startDate: '2020-03-02',
         crawl: [ { name: 'default' /* omit name */, type: 'csv', url: 'https://somedata.csv' } ]
         // Warning: missing scrape method
       },
       {
-        startDate: '2020-03-02',
+        startDate: '2020-03-03',
         crawl: [
           { name: 'cases', type: 'csv', data: 'trash', url: 'https://somedata.csv' },
           { name: 'cases' /* dup. name */, type: 'page', url: 'https://somedata.html' }
@@ -75,7 +75,7 @@ test('validateSource catches problems', t => {
   const result = validateSource(invalidSource)
 
   const expectedWarnings = [
-    '2020-03-03: Missing scrape method; please add scrape logic ASAP!',
+    '2020-03-02: Missing scrape method; please add scrape logic ASAP!',
     'Missing maintainers, please list one or more!'
   ]
   t.deepEqual(result.warnings.sort(), expectedWarnings.sort(), 'expected warnings caught')
@@ -83,15 +83,46 @@ test('validateSource catches problems', t => {
   const expectedErrors = [
     '(missing startDate): Async scraper; scrapers should only contain synchronous logic.',
     'Country must be a properly formatted ISO key (e.g. \'iso1:US\')',
-    '2020-03-02: Duplicate crawler name \'cases\'; names must be unique',
-    '2020-03-02: Invalid crawler.data \'trash\'; must be one of: table, list, paragraph',
+    '2020-03-03: Duplicate crawler name \'cases\'; names must be unique',
+    '2020-03-03: Invalid crawler.data \'trash\'; must be one of: table, list, paragraph',
     '2020-03-01: Invalid crawler.type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
     'Scraper must contain a startDate',
-    '2020-03-03: Single crawler must not have a name key',
+    '2020-03-02: Single crawler must not have a name key',
     '(missing startDate): Single crawler must not have a name key'
   ]
   t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'expected errors caught')
 })
+
+
+test('source scrapers must be ordered by startDate', t => {
+
+  const src = {
+    country: 'iso1:US',
+    state: 'iso2:CA',
+    scrapers: [
+      {
+        startDate: '2020-03-01',
+        crawl: [ { type: 'csv', url: 'https://d.csv' } ],
+        scrape (data) { return data.cases }
+      },
+      {
+        startDate: '2020-03-03',
+        crawl: [ { type: 'csv', url: 'https://d.csv' } ],
+        scrape (data) { return data.cases }
+      }
+    ]
+  }
+
+  let result = validateSource(src)
+  t.equal(result.errors.length, 0, 'no errors')
+
+  src.scrapers[0].startDate = '2020-05-05'
+  result = validateSource(src)
+  t.equal(result.errors[0], 'Scrapers must be ordered by startDate')
+
+  t.end()
+})
+
 
 // Test the actual scrapers
 let warnings = []
