@@ -21,7 +21,8 @@ module.exports = {
           cases: json.cases,
           deaths: json.deaths,
           tested: json.tested,
-          hospitalized: json.hospitalized
+          hospitalized: json.hospitalized,
+          icu: json.icu
         }
       }
     }
