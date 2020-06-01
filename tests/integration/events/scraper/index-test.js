@@ -8,7 +8,7 @@ const testCache = require('../../_lib/testcache.js')
 test('scrape extracts data from cached file', async t => {
   await utils.setup()
 
-  const caseData = { cases: 10, deaths: 20, tested: 30, hospitalized: 40 }
+  const caseData = { cases: 10, deaths: 20, tested: 30, hospitalized: 40, icu: 50 }
   utils.writeFakeSourceContent('fake/fake.json', caseData)
   await utils.crawl('fake')
   t.equal(1, testCache.allFiles().length, 'sanity check.')
