@@ -23,10 +23,10 @@ module.exports = {
         }
       ],
       scrape ( { cases, deaths } ) {
-        return {
+        return [ {
           cases: cases.count,
           deaths: deaths.count
-        }
+        } ]
       }
     }
   ]

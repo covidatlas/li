@@ -46,7 +46,12 @@ test('validateSource catches problems', t => {
     scrapers: [
       {
         startDate: '2020-03-01',
-        crawl: [ { type: 'text' /* bad type */, url: 'https://somedata.csv' } ],
+        crawl: [
+          { type: 'text' /* bad type */,
+            url: 'https://somedata.csv',
+            /* Can't have url and paginated, pag. must be async. */
+            paginated: client => { return [ client.get(123) ] }
+          } ],
         scrape (data) { return { cases: data.cases } }
       },
       {
@@ -86,6 +91,8 @@ test('validateSource catches problems', t => {
     '2020-03-03: Duplicate crawler name \'cases\'; names must be unique',
     '2020-03-03: Invalid crawler.data \'trash\'; must be one of: table, list, paragraph',
     '2020-03-01: Invalid crawler.type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
+    '2020-03-01: Crawler must have either url or paginated, but not both',
+    '2020-03-01: Crawler paginated must be an async function',
     'Scraper must contain a startDate',
     '2020-03-02: Single crawler must not have a name key',
     '(missing startDate): Single crawler must not have a name key'

@@ -19,19 +19,17 @@ module.exports = async function parseCache (cache) {
 
   const parsed = []
   for (const hit of cache) {
-    let { content, options } = hit
-    // Convert non-binaries out of the buffer
-    let result
-    if (hit.type !== 'pdf') {
-      content = content.toString()
-      result = parse[hit.type]({ content, options })
-    }
-    else {
-      result = await parse[hit.type]({ content })
-    }
+    let { pages, options } = hit
+
+    const parsePromises = pages.
+          map(p => (hit.type !== 'pdf') ? p.toString() : p).
+          map(content => parse[hit.type]({ content, options }))
+    const results = await Promise.all(parsePromises)
+    const result = hit.paginated ? results : results[ 0 ]
+
     const name = hit.name || 'default'
     parsed.push({ [name]: result })
   }
-  return parsed
 
+  return parsed
 }
