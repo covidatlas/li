@@ -1,6 +1,8 @@
 const arc = require('@architect/functions')
 
-module.exports = async function upsertLocations (locations) {
+module.exports = async function upsertLocations (params) {
+  const { locations, source } = params
+
   const data = await arc.tables()
 
   // Iterate and upsert locations
@@ -15,12 +17,21 @@ module.exports = async function upsertLocations (locations) {
     if (!loc) {
       console.log(`Creating new location: ${slug} / ${locationID}`)
       location.created = now
+      location.sources = [ source ]
       await data.locations.put(location)
     }
     // Update the, uh, 'updated' timestamp
     else {
       location.created = loc.created
       location.updated = now
+      // Idempotently add to the known sources for this location
+      if (!loc.sources) {
+        location.sources = [ source ]
+      }
+      else {
+        let sources = loc.sources.concat([ source ])
+        location.sources = [ ... new Set(sources) ]
+      }
       await data.locations.put(location)
     }
   }

@@ -6,6 +6,7 @@ const write = require('./write/index.js')
  * Scrape a source, report the results
  */
 async function scrapeSource (event) {
+  const { source } = event
   try {
     const data = await scrape(event)
 
@@ -17,14 +18,17 @@ async function scrapeSource (event) {
     // Fire locations update
     await arc.events.publish({
       name: 'locations',
-      payload: { locationIDs }
+      payload: {
+        source,
+        locationIDs
+      }
     })
 
     // Alert status to a successful crawl
     await arc.events.publish({
       name: 'status',
       payload: {
-        source: event.source,
+        source,
         event: 'scraper',
         status: 'success'
       }
@@ -39,7 +43,7 @@ async function scrapeSource (event) {
       arc.events.publish({
         name: 'status',
         payload: {
-          source: event.source,
+          source,
           event: 'scraper',
           status: 'failed'
         }

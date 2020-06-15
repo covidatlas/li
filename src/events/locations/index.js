@@ -6,7 +6,7 @@ const upsertLocations = require('./upsert/index.js')
 
 async function updateLocations (event) {
   try {
-    let { locationIDs } = event
+    let { source, locationIDs } = event
     console.time('Update locations')
 
     /**
@@ -22,7 +22,7 @@ async function updateLocations (event) {
     /**
      * Upsert location data
      */
-    await upsertLocations(locations)
+    await upsertLocations({ locations, source })
 
     console.timeEnd('Update locations')
   }
