@@ -4,7 +4,7 @@ const parse = require('../_lib/parse.js')
 
 const country = `iso1:TW`
 
-const schemaKeysByHeading = {
+const propertyMap = {
   送驗: 'tested',
   排除: null, // Negative Tests
   確診: 'cases',
@@ -35,9 +35,9 @@ module.exports = {
       scrape ($) {
         const data = {}
         for (const [ heading, value ] of Object.entries($['0'])) {
-          const schemaKey = schemaKeysByHeading[heading]
-          if (schemaKey) {
-            data[schemaKey] = parse.number(value)
+          const prop = propertyMap[heading]
+          if (prop) {
+            data[prop] = parse.number(value)
           }
         }
         assert(data.cases > 0, 'Cases are not reasonable')

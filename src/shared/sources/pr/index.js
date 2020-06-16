@@ -1,17 +1,20 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
-const parse = require('../_lib/parse.js')
 
 const country = 'iso1:PR'
 
-const schemaKeysByHeadingFragment = {
-  'muertes​': 'deaths',
-  prueba: 'tested',
-  realizadas: 'tested',
-  '​casos postivos': 'cases',
-  confirmados: 'cases',
-  'en proceso': null,
-  negativos: null
+const mapping = {
+  deaths: 'muertes​',
+  tested: 'pruebas realizadas',
+  cases: [ '​casos postivos', 'confirmados' ],
+
+  // "prueba" = "test", but in (all of?) the PR data, the "tested"
+  // values (prueba molecular, prueba serologica) are only used to
+  // further break down how the positive cases were found.  e.g,:
+  //
+  // CASOS POSTIVOS ÚNICOS; PRUEBA MOLECULAR; PRUEBA SEROLÓGICA
+  // 4,985; 1,364; 3,621
+  null: [ 'en proceso', 'negativos', 'pruebas en proceso', 'prueba molecular', 'prueba serologica', 'casos probables' ]
 }
 
 module.exports = {
@@ -31,26 +34,12 @@ module.exports = {
           url: 'http://www.salud.gov.pr/Pages/coronavirus.aspx'
         }
       ],
-      scrape ($, date, { getSchemaKeyFromHeading, normalizeTable }) {
-        const normalizedTable = normalizeTable({ $, tableSelector: 'table:contains("MUERTES")' })
-
-        const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({
-            heading: heading,
-            schemaKeysByHeadingFragment
-          })
-        })
-
-        const dataRow = normalizedTable[normalizedTable.length - 1]
-
-        const data = {}
-        dataRow.forEach((value, columnIndex) => {
-          const key = dataKeysByColumnIndex[columnIndex]
-          data[key] = parse.number(value.replace('.', ''))
-        })
-
+      scrape ($, date, { normalizeKey }) {
+        const tbl = $('table:contains("MUERTES")')
+        const headings = $(tbl).find('th').toArray().map(th => $(th).text())
+        const propColIndices = normalizeKey.propertyColumnIndices(headings, mapping)
+        const dataRow = $(tbl).find('tr').eq(1).find('td').toArray().map(td => $(td).text())
+        const data = normalizeKey.createHash(propColIndices, dataRow, { numeric: s => s.replace('.', '') })
         assert(data.cases > 0, 'Cases are not reasonable')
         return data
       }

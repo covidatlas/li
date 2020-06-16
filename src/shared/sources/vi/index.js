@@ -22,14 +22,12 @@ module.exports = {
             'https://doh.vi.gov/covid19usvi'
         }
       ],
-      scrape ($, date, { getDataWithTestedNegativeApplied, getSchemaKeyFromHeading }) {
-        const schemaKeysByHeadingFragment = {
-          update: null,
-          'attention deficit': null,
-          pending: null,
-          death: 'deaths',
-          negative: 'testedNegative',
-          positive: 'cases',
+      scrape ($, date, { getDataWithTestedNegativeApplied, normalizeKey }) {
+        const mapping = {
+          null: [ 'update', 'attention deficit', 'pending' ],
+          deaths: 'death',
+          testedNegative: 'negative',
+          cases: 'positive',
           recovered: 'recovered'
         }
         const $paragraphs = $('.block-content p')
@@ -45,7 +43,7 @@ module.exports = {
               .text()
               .toLowerCase()
             const [ heading, valueIncludingParenthetical ] = text.split(':')
-            const key = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
+            const key = normalizeKey.normalizeKey( heading, mapping )
             const [ valueWithSlash ] = valueIncludingParenthetical.split('(')
             const [ value ] = valueWithSlash.split('/')
             if (key) {
@@ -68,13 +66,11 @@ module.exports = {
             'https://doh.vi.gov/covid19usvi'
         }
       ],
-      scrape ($, date, { getDataWithTestedNegativeApplied, getSchemaKeyFromHeading }) {
-        const schemaKeysByHeadingFragment = {
-          active: null,
+      scrape ($, date, { getDataWithTestedNegativeApplied, normalizeKey }) {
+        const mapping = {
+          null: [ 'active', 'negative', 'pending' ],
           deaths: 'deaths',
-          negative: null,
-          pending: null,
-          positive: 'cases',
+          cases: 'positive',
           recovered: 'recovered',
           tested: 'tested'
         }
@@ -85,7 +81,7 @@ module.exports = {
           const heading = $(paragraph)
             .find('.views-label')
             .text()
-          const key = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
+          const key = normalizeKey.normalizeKey( heading, mapping )
           if (key) {
             const value = $(paragraph)
               .find('.field-content')

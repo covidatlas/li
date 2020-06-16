@@ -6,13 +6,12 @@ const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:NZ'
 
-const schemaKeysByHeadingFragment = {
-  total: null,
-  'last 24 hours': null,
-  deceased: 'deaths',
+const mapping = {
+  state: 'dhb',
+  deaths: 'deceased',
   recovered: 'recovered',
-  active: 'cases',
-  dhb: 'state'
+  cases: 'active',
+  null: [ 'total', 'last 24 hours' ]
 }
 
 const nameToCanonical = { // Name differences get mapped to the canonical names
@@ -48,42 +47,40 @@ module.exports = {
             'https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-current-situation/covid-19-current-cases'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, normalizeKey, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: 'table:contains("Total cases by DHB")' })
 
-        const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[0], mapping)
 
         const dataRows = normalizedTable.slice(1, -1)
-
         const statesCount = 20
         assert.equal(dataRows.length, statesCount, 'Wrong number of rows found')
 
         const states = []
         dataRows.forEach(row => {
-          const stateData = {}
-          row.forEach((value, columnIndex) => {
-            const key = dataKeysByColumnIndex[columnIndex]
-            stateData[key] = value
-          })
-          states.push({
-            state: getIso2FromName({ country, name: stateData.state, nameToCanonical }),
-            cases: parse.number(stateData.cases),
-            deaths: parse.number(stateData.deaths),
-            recovered: parse.number(stateData.recovered)
-          })
+          const stateData = normalizeKey.createHash(propColIndices, row)
+          if (stateData.deaths === undefined)
+            stateData.deaths = 0
+          stateData.state = getIso2FromName({ country, name: stateData.state, nameToCanonical })
+          states.push(stateData)
         })
+        // TODO (scrapers) NZ scraper handles (unassigned) states incorrectly, needs to aggregate
+        // Currently, NZ contains multiple rows for (unassigned) for each date, b/c multiple states
+        // are mapped to (unassigned) with the nameToCanonical mapping.  e.g.,
+        //
+        // iso1:NZ/iso2:(unassigned)/undefined
+        // date; cases; recovered; deaths
+        // 2020-04-16; 43; 46; 2
+        // 2020-04-16; 48; 61; 0
+        // We should filter these out and summarize them.
+        // See us-mi source for example.
 
         const summedData = transform.sumData(states)
         states.push(summedData)
 
-        const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const tableWithoutHeadingRow = normalizedTable.slice(1)
         const casesFromTotalRow = parse.number(
-          tableWithoutHeadingRow.find(row => row.some(cell => cell === 'Total'))[indexForCases]
+          tableWithoutHeadingRow.find(row => row.some(cell => cell === 'Total'))[propColIndices.cases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states
