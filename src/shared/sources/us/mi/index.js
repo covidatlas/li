@@ -5,7 +5,6 @@ const assert = require('assert')
 const constants = require(srcShared + 'sources/_lib/constants.js')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
-const parse = require(srcShared + 'sources/_lib/parse.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
 
 const DetroitCity = 'Detroit City'
@@ -117,7 +116,7 @@ module.exports = {
           url: 'https://www.michigan.gov/coronavirus/0,9753,7-406-98163-520743--,00.html',
         },
       ],
-      scrape ($, date, { propertyTableColumns } ) {
+      scrape ($, date, { normalizeKey } ) {
 
         // The webpage breaks out Detroit, which is in Wayne County.
         // The table does not include Detroit's numbers in the Wayne County totals.
@@ -136,14 +135,14 @@ module.exports = {
           cases: /cases/i,
           deaths: /deaths/i
         }
-        const indices = propertyTableColumns.propertyColumnIndices(headings, mappings)
+        const indices = normalizeKey.propertyColumnIndices(headings, mappings)
 
         // Convert table to raw data, ignoring total rows.
         const rawData = []
         const $trs = $table.find('tbody > tr')
         $trs.each((index, tr) => {
           const tds = $(tr).find('td').toArray().map(td => $(td).text().trim())
-          const row = propertyTableColumns.createHash(indices, tds)
+          const row = normalizeKey.createHash(indices, tds)
           if (![ 'County', 'Totals', 'Grand Total', 'Total' ].includes(row.county))
             rawData.push(row)
         })
@@ -158,29 +157,29 @@ module.exports = {
           if (unknown.includes(s) || s.match(/MDOC/) || s.match(/FCI/))
             return constants.UNASSIGNED
 
-          // Final fixes
-          return s.replace('St ', 'St. ')
-        }
+          // TODO (scrapers) Detroit handling is far too hacky.
+          if (s === 'Detroit City')
+            return s
 
-        function parseNum (text) {
-          const p = parse.number(text)
-          return Number.isNaN(p) ? 0 : p
+          // Final fixes
+          return geography.addCounty(s.replace('St ', 'St. '))
         }
 
         const data = rawData.
               map(r => {
                 return {
                   county: fixCounty(r.county),
-                  cases: parseNum(r.cases),
-                  deaths: parseNum(r.deaths)
+                  cases: r.cases,
+                  deaths: r.deaths
                 }
               })
 
         let counties = []
 
         data.filter(d => d.county !== constants.UNASSIGNED).forEach(rowData => {
+
           // Remember these to add them to Wayne County instead
-          // TODO: Handling of Detroit seems brittle.
+          // TODO (scraper) Handling of Detroit is completely brittle.
           if (rowData.county === DetroitCity) {
             detroitCases = rowData.cases
             detroitDeaths = rowData.deaths
@@ -220,6 +219,7 @@ module.exports = {
 
         counties = geography.addEmptyRegions(counties, _counties, 'county')
         counties.push(transform.sumData(counties))
+
         return counties
       }
     }

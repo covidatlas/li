@@ -3,12 +3,12 @@ const datetime = require('../../../datetime/index.js')
 const maintainers = require('../../_lib/maintainers.js')
 const parse = require('../../_lib/parse.js')
 
-const schemaKeysByHeadingFragment = {
-  'confirmed case': 'cases',
+const mapping = {
+  cases: 'confirmed case',
   deaths: 'deaths',
   icu: 'icu',
-  'cases cleared': 'recovered',
-  type: null
+  recovered: 'cases cleared',
+  ignore: 'type'
 }
 
 const firstUrl =
@@ -72,27 +72,16 @@ module.exports = {
           }
         }
       ],
-      scrape ($, date, { getSchemaKeyFromHeading, normalizeTable, transposeArrayOfArrays }) {
+      scrape ($, date, { normalizeKey, normalizeTable, transposeArrayOfArrays }) {
         const normalizedTable = transposeArrayOfArrays(
           normalizeTable({ $, tableSelector: 'table:first-of-type' })
         )
         assert(normalizedTable.length > 0)
 
         const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
-
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[headingRowIndex], mapping)
         const dataRow = normalizedTable[normalizedTable.length - 1]
-
-        const data = {}
-        dataRow.forEach((value, columnIndex) => {
-          const key = dataKeysByColumnIndex[columnIndex]
-          if (key) {
-            data[key] = parse.number(value)
-          }
-        })
+        const data = normalizeKey.createHash(propColIndices, dataRow)
 
         assert(data.cases > 0, 'Cases are not reasonable')
         return data
@@ -106,7 +95,7 @@ module.exports = {
           url: 'https://dpc.geohub.sa.gov.au/server/rest/services/Hosted/DHW_COVID_19_PositiveCases_POLY/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&outSR=&having=&gdbVersion=&historicMoment=&returnDistinctValues=false&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&multipatchOption=xyFootprint&resultOffset=&resultRecordCount=&returnTrueCurves=false&returnCentroid=false&sqlFormat=none&resultType=&f=pjson'
         }
       ],
-      scrape ($, date, { cumulateObjects, getSchemaKeyFromHeading }) {
+      scrape ($, date, { cumulateObjects, normalizeKey }) {
         assert($.features.length > 0, 'features are unreasonable')
         const attributes = $.features.map(({ attributes }) => attributes)
 
@@ -118,14 +107,14 @@ module.exports = {
           `No data for date: ${date}`
         )
 
-        const schemaKeysByHeadingFragment = {
-          positive: 'cases',
+        const mapping = {
+          cases: 'positive',
           active: 'active'
         }
 
         const data = {}
         for (const [ heading, value ] of Object.entries(cumulateObjects(dataByRegion))) {
-          const key = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
+          const key = normalizeKey.normalizeKey(heading, mapping)
           if (!data[key]) {
             data[key] = 0
           }

@@ -1,14 +1,12 @@
 const assert = require('assert')
 const maintainers = require('../../_lib/maintainers.js')
-const parse = require('../../_lib/parse.js')
 
-const schemaKeysByHeadingFragment = {
-  'cases to date': 'cases',
-  'total confirmed': 'cases',
-  'recovered cases': 'recovered',
+const mapping = {
+  cases: [ 'cases to date', 'total confirmed' ],
+  recovered: 'recovered cases',
   active: 'active',
   deaths: 'deaths',
-  hhs: null,
+  ignore: 'hhs'
 }
 
 module.exports = {
@@ -37,25 +35,12 @@ module.exports = {
           }
         }
       ],
-      scrape ($, date, { getSchemaKeyFromHeading, normalizeTable }) {
+      scrape ($, date, { normalizeKey, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: '#content table' })
-
         const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
-
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[headingRowIndex], mapping)
         const dataRow = normalizedTable.find(row => row.some(cell => cell === 'Total'))
-
-        const data = {}
-        dataRow.forEach((value, columnIndex) => {
-          const key = dataKeysByColumnIndex[columnIndex]
-          if (key) {
-            data[key] = parse.number(value)
-          }
-        })
-
+        const data = normalizeKey.createHash(propColIndices, dataRow)
         assert(data.cases > 0, 'Cases are not reasonable')
         return data
       }

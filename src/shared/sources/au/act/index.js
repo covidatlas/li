@@ -2,11 +2,11 @@ const assert = require('assert')
 const maintainers = require('../../_lib/maintainers.js')
 const parse = require('../../_lib/parse.js')
 
-const schemaKeysByHeadingFragment = {
-  'confirmed case': 'cases',
-  negative: 'testedNegative',
+const mapping = {
+  cases: 'confirmed case',
+  testedNegative: 'negative',
   recovered: 'recovered',
-  'lives lost': 'deaths'
+  deaths: 'lives lost'
 }
 
 module.exports = {
@@ -28,7 +28,7 @@ module.exports = {
           url: 'https://www.health.act.gov.au/about-our-health-system/novel-coronavirus-covid-19'
         }
       ],
-      scrape ($, date, { getDataWithTestedNegativeApplied, getSchemaKeyFromHeading }) {
+      scrape ($, date, { getDataWithTestedNegativeApplied, normalizeKey }) {
         const $table = $('.statuscontent')
         const $trs = $table.find('div')
         const data = {
@@ -38,7 +38,7 @@ module.exports = {
         $trs.each((index, tr) => {
           const $tr = $(tr)
           const [ heading, value ] = $tr.text().split(': ')
-          const key = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
+          const key = normalizeKey.normalizeKey(heading, mapping)
           if (key) {
             data[key] = parse.number(value)
           }
@@ -58,27 +58,17 @@ module.exports = {
         }
       ],
       scrape ($, date, {
-        getDataWithTestedNegativeApplied, getSchemaKeyFromHeading, transposeArrayOfArrays, normalizeTable
+        getDataWithTestedNegativeApplied, normalizeKey, transposeArrayOfArrays, normalizeTable
       }) {
         const normalizedTable = transposeArrayOfArrays(
           normalizeTable({ $, tableSelector: 'h2:contains("Cases") + table' })
         )
 
         const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[headingRowIndex], mapping)
 
         const dataRow = normalizedTable[normalizedTable.length - 1]
-
-        const data = {}
-        dataRow.forEach((value, columnIndex) => {
-          const key = dataKeysByColumnIndex[columnIndex]
-          if (key) {
-            data[key] = parse.number(value)
-          }
-        })
+        let data = normalizeKey.createHash(propColIndices, dataRow)
 
         assert(data.cases > 0, 'Cases are not reasonable')
         return getDataWithTestedNegativeApplied(data)
@@ -94,27 +84,17 @@ module.exports = {
         }
       ],
       scrape ($, date, {
-        getDataWithTestedNegativeApplied, getSchemaKeyFromHeading, transposeArrayOfArrays, normalizeTable
+        getDataWithTestedNegativeApplied, normalizeKey, transposeArrayOfArrays, normalizeTable
       }) {
         const normalizedTable = transposeArrayOfArrays(
           normalizeTable({ $, tableSelector: '.spf-article-card--tabular table' })
         )
 
         const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[headingRowIndex], mapping)
 
         const dataRow = normalizedTable[normalizedTable.length - 1]
-
-        const data = {}
-        dataRow.forEach((value, columnIndex) => {
-          const key = dataKeysByColumnIndex[columnIndex]
-          if (key) {
-            data[key] = parse.number(value)
-          }
-        })
+        let data = normalizeKey.createHash(propColIndices, dataRow)
 
         assert(data.cases > 0, 'Cases are not reasonable')
         return getDataWithTestedNegativeApplied(data)
