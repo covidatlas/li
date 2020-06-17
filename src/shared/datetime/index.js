@@ -6,6 +6,7 @@ const { getDate, today } = require('./_today.js')
 const now = require('./_now.js')
 const parse = require('./_parse.js')
 const looksLike = require('./_looks-like.js')
+const { add, subtract } = require('./_math.js')
 
 module.exports = {
   cast,
@@ -26,5 +27,7 @@ module.exports = {
   scrapeDateIs,
   scrapeDateIsAfter,
   scrapeDateIsBefore,
-  today
+  today,
+  add,
+  subtract
 }

@@ -4,11 +4,12 @@ const args = require('./src/cli/args.js')
 const makeNice = require('./src/cli/make-nice.js')
 const arc = require('@architect/functions')
 
+const runReport = require('./src/scheduled/report/index.js').handler
 const timeseriesRegenerator = require('./src/scheduled/regen-timeseries/index.js').handler
 const taskRunner = require('./src/scheduled/runner/index.js').handler
 
 let { date, utc } = args
-let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
+let { crawl, scrape, regenerate, regenTimeseries, report, runner } = makeNice(args)
 
 ;(async () => {
   if (crawl) {
@@ -40,6 +41,9 @@ let { crawl, scrape, regenerate, regenTimeseries, runner } = makeNice(args)
         }
       })
     }, 3000)
+  }
+  if (report) {
+    await runReport()
   }
   if (regenTimeseries) {
     await timeseriesRegenerator()
