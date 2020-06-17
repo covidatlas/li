@@ -8,7 +8,7 @@ const mapping = {
   deaths: 'deaths',
   icu: 'icu',
   recovered: 'cases cleared',
-  null: 'type'
+  ignore: 'type'
 }
 
 const firstUrl =

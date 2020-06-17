@@ -14,7 +14,10 @@ const mapping = {
   //
   // CASOS POSTIVOS ÚNICOS; PRUEBA MOLECULAR; PRUEBA SEROLÓGICA
   // 4,985; 1,364; 3,621
-  null: [ 'en proceso', 'negativos', 'pruebas en proceso', 'prueba molecular', 'prueba serologica', 'casos probables' ]
+  ignore: [
+    'casos probables', 'en proceso', 'negativos',
+    'pruebas en proceso', 'prueba molecular', 'prueba serologica'
+  ]
 }
 
 module.exports = {

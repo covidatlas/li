@@ -10,7 +10,7 @@ const mapping = {
 
   // pasien dalam pengawasan: "People in monitoring"
   // orang dalam pemantauan: "Patients under supervision"
-  null: [ 'jumlah pdp', 'jumlah odp' ]
+  ignore: [ 'jumlah pdp', 'jumlah odp' ]
 }
 
 module.exports = {

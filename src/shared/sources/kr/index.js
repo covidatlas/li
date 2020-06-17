@@ -7,7 +7,7 @@ const { UNASSIGNED } = require('../_lib/constants.js')
 const country = 'iso1:KR'
 
 const mapping = {
-  null: [ 'daily change', 'imported cases', 'local outbreak', 'isolated', 'incidence' ],
+  ignore: [ 'daily change', 'imported cases', 'local outbreak', 'isolated', 'incidence' ],
   state: 'city/province',
   cases: 'confirmed cases',
   deaths: 'deceased',

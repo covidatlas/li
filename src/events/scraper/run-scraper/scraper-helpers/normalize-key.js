@@ -31,7 +31,7 @@ const _validProperties = {
 
   // Use when we want to discard the heading/column.
   ignore: [
-    null
+    'ignore'
   ]
 }
 
@@ -45,7 +45,7 @@ function _validateMappingKeys (mapping) {
   }, [])
 
   const badKeys = Object.keys(mapping).
-    filter(k => k !== 'null').
+    filter(k => k !== 'ignore').
     filter(k => !validProperties.includes(k))
   assert(badKeys.length === 0, `Invalid keys in mapping: ${badKeys.join()}`)
 }
@@ -74,8 +74,7 @@ function _propertyForHeading (heading, mapping) {
   if (props.length === 0)
     throw new Error(`No matches for ${heading} in mapping`)
 
-  // Mapping to a null is valid ... this just means "ignore".
-  const realProps = props.filter(p => p && p !== 'null')
+  const realProps = props.filter(p => p !== 'ignore')
   if (realProps.length === 0)
     return null
   if (realProps.length > 1)
@@ -96,12 +95,12 @@ function _propertyForHeading (heading, mapping) {
  *
  *  This returns { cases: 0, deaths: 3 }
  *
- * If the key in mapping is 'null', the field matching it
+ * If the key in mapping is 'ignore', the field matching it
  * will be ignored:
  *
  *  const mapping = {
  *    cases: [ 'apples', 'ants' ],
- *    null: [ /^d/, 'elephants' ]
+ *    ignore: [ /^d/, 'elephants' ]
  *  }
  *
  *  This returns { cases: 0 }

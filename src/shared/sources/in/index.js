@@ -9,7 +9,7 @@ const mapping = {
   deaths: 'death',
   cases: 'total confirmed cases',
   recovered: 'cured',
-  null: 's. no.'
+  ignore: 's. no.'
 }
 
 const nameToCanonical = { // Name differences get mapped to the canonical names

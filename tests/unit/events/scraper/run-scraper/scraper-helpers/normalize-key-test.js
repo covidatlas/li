@@ -41,10 +41,10 @@ test('unmapped heading throws', t => {
   t.end()
 })
 
-test('can map a key to null', t => {
+test('can map a key to ignore', t => {
   const mapping = {
     cases: [ 'case', 'positive' ],
-    null: [ 'other', 'another' ]
+    ignore: [ 'other', 'another' ]
   }
   assertNormalizedKeyEquals(t, 'positive cases', mapping, 'cases')
   assertNormalizedKeyEquals(t, 'cases', mapping, 'cases')
@@ -106,10 +106,10 @@ test('all headings must be mapped', t => {
   t.end()
 })
 
-test('can ignore headings by mapping them to null', t => {
+test('can ignore headings by mapping them to ignore', t => {
   const mapping = {
     county: 'county',
-    null: 'cases'
+    ignore: 'cases'
   }
   const expected = {
     county: 0
@@ -118,10 +118,10 @@ test('can ignore headings by mapping them to null', t => {
   t.end()
 })
 
-test('can use null mapping as catch-all for unmapped headings', t => {
+test('can use ignore mapping as catch-all for unmapped headings', t => {
   const mapping = {
     county: 'county',
-    null: /.*/
+    ignore: /.*/
   }
   const headings = [ 'county', 'something', 'else', 'here' ]
   const expected = {

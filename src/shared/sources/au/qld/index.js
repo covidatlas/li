@@ -6,7 +6,7 @@ const mapping = {
   recovered: 'recovered cases',
   active: 'active',
   deaths: 'deaths',
-  null: 'hhs'
+  ignore: 'hhs'
 }
 
 module.exports = {

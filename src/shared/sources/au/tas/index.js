@@ -2,7 +2,7 @@ const assert = require('assert')
 const maintainers = require('../../_lib/maintainers.js')
 
 const mapping = {
-  null: [ 'Cases in Tasmania', 'New cases', 'Active' ],
+  ignore: [ 'Cases in Tasmania', 'New cases', 'Active' ],
   cases: 'Total cases',
   recovered: 'Recovered',
   deaths: 'Deaths'

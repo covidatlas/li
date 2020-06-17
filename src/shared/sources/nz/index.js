@@ -11,7 +11,7 @@ const mapping = {
   deaths: 'deceased',
   recovered: 'recovered',
   cases: 'active',
-  null: [ 'total', 'last 24 hours' ]
+  ignore: [ 'total', 'last 24 hours' ]
 }
 
 const nameToCanonical = { // Name differences get mapped to the canonical names

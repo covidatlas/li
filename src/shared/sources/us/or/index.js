@@ -85,7 +85,7 @@ module.exports = {
           cases: [ 'cases', 'positive' ],
           deaths: 'deaths',
           testedNegative: 'negative',
-          null: 'percent'
+          ignore: 'percent'
         }
         const propertyColIndices = normalizeKey.propertyColumnIndices(headings, mapping)
 

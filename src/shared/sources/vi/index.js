@@ -24,7 +24,7 @@ module.exports = {
       ],
       scrape ($, date, { getDataWithTestedNegativeApplied, normalizeKey }) {
         const mapping = {
-          null: [ 'update', 'attention deficit', 'pending' ],
+          ignore: [ 'update', 'attention deficit', 'pending' ],
           deaths: 'death',
           testedNegative: 'negative',
           cases: 'positive',
@@ -68,7 +68,7 @@ module.exports = {
       ],
       scrape ($, date, { getDataWithTestedNegativeApplied, normalizeKey }) {
         const mapping = {
-          null: [ 'active', 'negative', 'pending' ],
+          ignore: [ 'active', 'negative', 'pending' ],
           deaths: 'deaths',
           cases: 'positive',
           recovered: 'recovered',
