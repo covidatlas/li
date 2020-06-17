@@ -15,7 +15,7 @@ get /get/headless
 # API (api.covidatlas.com)
 get /locations
 get /locations/:location
-
+get /status
 
 @events
 crawler     # Crawls our sources
