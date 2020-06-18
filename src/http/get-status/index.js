@@ -1,13 +1,10 @@
 const arc = require('@architect/functions')
 
-/**
- * Returns an array of statuses currently in the system
- */
-// TODO status monitoring
-// Ref https://github.com/covidatlas/li/issues/234
-// Should provide the source data for a simple page
-// | source | status (up || down) | last successful crawl | last successful scrape | error message (if status = down) |
-async function getStatus () {
+
+/** For each source, get scrape and crawl status, and last successful
+ * datetime. */
+async function statusSummaryJson () {
+
   const data = await arc.tables()
 
   // Running log
@@ -53,6 +50,16 @@ async function getStatus () {
       status
     }
   })
+
+  return summary
+}
+
+/**
+ * Returns an array of statuses currently in the system, or html if ?format=html
+ */
+async function getStatus (request) {
+
+  const summary = await statusSummaryJson()
 
   // TODO (status) generate HTML using some kind of templating engine.
   // Hacking to get HTML output for now, to be replaced w/ whatever
