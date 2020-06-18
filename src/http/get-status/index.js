@@ -10,23 +10,8 @@ async function statusSummaryJson () {
   // Running log
   const statuses = await data.status.scan({}).then(result => result.Items)
 
-  // Past history.
-  // TODO: improve the query to only return the last success.
-  // This is returning the full data and then using lastSuccess() to get the last success.
-  const logs = await data['status-logs'].scan({}).then(result => result.Items)
-
-  function lastSuccess (source, e) {
-    const success = sl => (sl.source === source && sl.event === e && sl.status === 'success')
-    const successes = logs.filter(success)
-    if (successes.length === 0)
-      return null
-    const t = successes.map(s => s.ts).sort().slice(-1)[0]
-    return t.replace('T', ' ').replace(/\..+/, '')
-  }
-
   function eventDetails (source, e) {
     const currStatus = statuses.find(st => st.source === source && st.event === e) || {}
-    currStatus.last_success = lastSuccess(source, e)
     return [ 'status', 'consecutive', 'last_success' ].reduce((hsh, f) => {
       return { ...hsh, [`${e}_${f}`]: currStatus[f] || null }
     }, {} )
@@ -67,7 +52,10 @@ function statusSummaryHtml (summary) {
   ]
 
   const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
+  const shortDate = dt => dt.replace('T', ' ').replace(/\..+/, '')
   const trs = summary.map(d => {
+    d.crawler_last_success = shortDate(d.crawler_last_success || '')
+    d.scraper_last_success = shortDate(d.scraper_last_success || '')
     const tr = fields.map(f => `<td>${ d[f] || '&nbsp;' }</td>`).join('')
     return `<tr class='${d.status}'>${tr}</tr>`
   })
