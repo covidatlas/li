@@ -22,6 +22,9 @@ async function updateStatus (params) {
     let newStatus = Object.assign({}, lastStatus)
     newStatus.status = status
 
+    if (status === 'success')
+      newStatus.last_success = new Date().toISOString()
+
     /**
      * Refresh consecutive
      */
