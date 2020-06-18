@@ -54,16 +54,12 @@ async function statusSummaryJson () {
   return summary
 }
 
-/**
- * Returns an array of statuses currently in the system, or html if ?format=html
- */
-async function getStatus (request) {
+/** Html page table of summary. */
+// TODO (status) generate HTML using some kind of templating engine.
+// Hacking to get HTML output for now, to be replaced w/ whatever
+// templating method we choose.
+function statusSummaryHtml (summary) {
 
-  const summary = await statusSummaryJson()
-
-  // TODO (status) generate HTML using some kind of templating engine.
-  // Hacking to get HTML output for now, to be replaced w/ whatever
-  // templating method we choose.
   const fields = [
     'source', 'status',
     'crawler_status', 'crawler_consecutive', 'crawler_last_success',
@@ -76,7 +72,7 @@ async function getStatus (request) {
     return `<tr class='${d.status}'>${tr}</tr>`
   })
 
-  const response_body = `
+  return `
 <html>
 
 <style>
@@ -133,15 +129,31 @@ document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() =
 
 </html>`
 
+}
 
-  return {
+/**
+ * Returns an array of statuses currently in the system, or html if ?format=html
+ */
+async function getStatus (request) {
+  const summary = await statusSummaryJson()
+
+  // Default response is json.
+  const result = {
     statusCode: 200,
-    body: response_body,
+    body: JSON.stringify(summary, null, 2),
     headers: {
-      'Content-Type': 'text/html',
-      'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
+      'cache-control': 'max-age=300, s-maxage=300'
     }
   }
+
+  // Html if requested.
+  const format = request.queryStringParameters['format'] || ''
+  if (format.toLowerCase() === 'html') {
+    result.body = statusSummaryHtml(summary)
+    result.headers['Content-Type'] = 'text/html'
+  }
+
+  return result
 }
 
 exports.handler = arc.http.async(getStatus)
