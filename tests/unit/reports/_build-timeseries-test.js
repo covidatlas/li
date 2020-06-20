@@ -15,11 +15,13 @@ let records = []
 let expected = []
 
 /** Build timeseries for records, compare with expected. */
-function validateTimeseries (t, validateSources = false) {
+function validateTimeseries (t) {
   let actual = buildTimeseries(records)
 
-  if (!validateSources)
+  if (!expected[0].sources) {
+    console.log('warning: _build-timeseries-test.js not checking actual.sources')
     actual.forEach(a => delete a.sources)
+  }
 
   t.equal(JSON.stringify(actual), JSON.stringify(expected))
 }
@@ -49,7 +51,7 @@ test('single record builds single timeseries', t => {
     }
   ]
 
-  validateTimeseries(t, true)
+  validateTimeseries(t)
   t.end()
 })
 
