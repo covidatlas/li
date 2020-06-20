@@ -125,10 +125,46 @@ test('data from multiple sources are combined if fields are distinct', t => {
   t.end()
 })
 
+test('data from multiple sources are combined if fields are distinct', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
+    [ loc1, '2020-06-19', 'src2', { deaths: 20 } ]
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': { cases: 10, deaths: 20 }
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
+test('higher priority source overwrites lower priority source', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src2', { cases: 2222, deaths: 2222 }, 1 ],
+    [ loc1, '2020-06-19', 'src1', { cases: 1 } ],
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': { cases: 2222, deaths: 2222 }
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
 /*
 Tests:
-multiple sources are combined if fields don't overlap
-higher priority source overwrites same field of lower
 missing priority is assumed to be priority 0
 if equal priority and field values are equal, that's ok - pick any one
 multiple entries from same source on same date (should never happen)

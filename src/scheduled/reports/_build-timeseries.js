@@ -15,12 +15,21 @@ function onlyReportFields (obj) {
     reduce((hsh, entry) => Object.assign(hsh, entry), {})
 }
 
+/** Multiple sources of different priorities can return data.  Sort
+ * the highest to the last, because later records "win" when combining
+ * sources. */
+function byPriority (a, b) {
+  const getPriority = r => r.priority || 0
+  return getPriority(a) - getPriority(b)
+}
+
 function timeseriesForLocation (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
   const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
   return dates.reduce((hsh, d) => {
     const recs = locRecords.filter(lr => lr.date === d)
     const combinedRecord = recs.
+          sort(byPriority).
           map(onlyReportFields).
           reduce((hsh, rec) => {
             return Object.assign(hsh, rec)
