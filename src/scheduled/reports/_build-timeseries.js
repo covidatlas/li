@@ -21,23 +21,31 @@ function valueAndWarningForField (sortedRecords, f) {
   if (haveVals.length === 0)
     return { value: undefined }
   const maxPriority = Math.max(...haveVals.map(r => r.priority))
-  const candidates = haveVals.filter(r => r.priority === maxPriority)
+
+  const bySource = (a, b) => (a.source < b.name ? -1 : 1)
+  const candidates = haveVals.
+        filter(r => r.priority === maxPriority).
+        sort(bySource)
+
   if (candidates.length === 1)
-    return { value: candidates[0][f] }
+    return { value: candidates[0][f], source: candidates[0].source }
 
   // Multiple equal priority.
   const values = candidates.map(c => c[f])
   const max = Math.max(...values)
   const min = Math.min(...values)
+  const maxSource = candidates.find(c => c[f] === max).source
 
-  if (max === min)
-    return { value: max }
-
-  const conflicts = candidates.map(c => `${c.source}: ${c[f]}`).join(', ')
-  return {
+  const result = {
     value: max,
-    warning: `conflict (${conflicts})`
+    source: maxSource
   }
+
+  if (max !== min) {
+    const conflicts = candidates.map(c => `${c.source}: ${c[f]}`).join(', ')
+    result.warning = `conflict (${conflicts})`
+  }
+  return result
 }
 
 /** Create a combined value from all sources, using the source
