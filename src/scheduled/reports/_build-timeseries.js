@@ -63,7 +63,10 @@ function timeseriesAndWarningsForLocation (locationID, records) {
     const atDate = locRecords.filter(lr => lr.date === d)
     const combined = combinedRecord(atDate)
     hsh.timeseries[d] = combined.data
-    hsh.warnings[d] = combined.warnings
+
+    if (Object.keys(combined.warnings).length !== 0)
+      hsh.warnings[d] = combined.warnings
+
     return hsh
   }, { timeseries: {}, warnings: {} })
 }
@@ -96,10 +99,14 @@ function buildTimeseries (records) {
   const locationIDs = [ ...new Set(records.map(r => r.locationID)) ].sort()
   return locationIDs.map(locationID => {
     const tw = timeseriesAndWarningsForLocation(locationID, records)
-    return {
+    const result = {
       locationID,
-      ...tw
+      timeseries: tw.timeseries
     }
+    if (Object.keys(tw.warnings).length !== 0)
+      result.warnings = tw.warnings
+
+    return result
   })
 }
 

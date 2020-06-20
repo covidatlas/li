@@ -182,7 +182,7 @@ test('two sources with same priority and same value is ok, chooses later one', t
   t.end()
 })
 
-test.only('same priority but different values adds warning, uses larger value', t => {
+test('same priority but different values adds warning, uses larger value', t => {
   records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
     [ loc1, '2020-06-19', 'src2', { cases: 2 }, 1 ]
