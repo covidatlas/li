@@ -5,7 +5,7 @@ const sut = join(process.cwd(), 'src', 'scheduled', 'reports', '_build-timeserie
 const buildTimeseries = require(sut)
 
 
-test.only('single record builds single timeseries', t => {
+test('single record builds single timeseries', t => {
 
   const record = {
     cases: 10,
@@ -36,13 +36,37 @@ test.only('single record builds single timeseries', t => {
   t.end()
 })
 
+
+test('timeseries fails if missing required fields in any record', t => {
+
+  const minimalRecord = {
+    locationID: 'iso1:us#iso2:us-ca#fips:06007',
+    date: '2020-06-19',
+    source: 'json-source'
+  }
+
+  t.ok(buildTimeseries([ minimalRecord ]), 'can build with minimal record')
+
+  Object.keys(minimalRecord).forEach(k => {
+    const insufficient = Object.assign({}, minimalRecord)
+    delete insufficient[k]
+    const re = new RegExp(`1 records missing one or more fields locationID, date, source`)
+    t.throws(() => buildTimeseries([ insufficient ]), re)
+  })
+
+  t.end()
+})
+
 /*
 Tests:
 multiple dates
 multiple sources are combined if fields don't overlap
 higher priority source overwrites same field of lower
+missing priority is assumed to be priority 0
 if equal priority and field values are equal, that's ok - pick any one
+multiple entries from same source on same date (should never happen)
 if equal priority and field vals are not equal, print a warning (in the same report)
+no case data adds a warning?
 
 Rollup tests (separate module)
 if higher level is present, it's left alone
