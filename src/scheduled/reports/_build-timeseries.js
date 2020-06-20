@@ -92,6 +92,42 @@ function compressSources (fieldSourceHash) {
   }, {})
 }
 
+/** Collapse same source dates to string ranges.
+ *
+ * The generated timeseries for a given location contains 'sources'
+ * for each date
+ * (e.g. `"sources":{"2020-06-19":"src1","2020-06-20":"src1", ...}`.
+ *
+ * Since most sources for a given timeseries will likely stay constant
+ * over long periods of time, this will become tiresome.  We can
+ * compress this to the following:
+ *
+ * "sources":{"2020-06-19..2020-06-25":"src1"}
+ */
+function collapseSourceDates (dateSourceHash) {
+  const entries = Object.entries(dateSourceHash)
+  const e = entries[0]
+  let currRec = { firstDate: e[0], lastDate: e[0], sources: e[1] }
+
+  const arr = []
+  arr.push(currRec)
+  entries.forEach(p => {
+    const [ dt, sources ] = p
+    if (JSON.stringify(currRec.sources) === JSON.stringify(sources))
+      currRec.lastDate = dt
+    else {
+      currRec = { firstDate: dt, lastDate: dt, sources: sources }
+      arr.push(currRec)
+    }
+  })
+
+  const dateRangeString = (a, b) => (a === b) ? a : `${a}..${b}`
+  return arr.map(a => {
+    return { [dateRangeString(a.firstDate, a.lastDate)]: a.sources }
+  }).reduce((hsh, v) => Object.assign(hsh, v), {})
+
+}
+
 /** Get timeseries and any warnings for a locationID using the set of
  * records. */
 function locationDetails (locationID, records) {
@@ -143,7 +179,7 @@ function buildTimeseries (records) {
     const result = {
       locationID,
       timeseries: d.timeseries,
-      sources: d.sources
+      sources: collapseSourceDates(d.sources)
     }
     if (Object.keys(d.warnings).length !== 0)
       result.warnings = d.warnings

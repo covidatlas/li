@@ -66,7 +66,7 @@ function makeRecords (arr) {
   return arr.map(a => record(...a))
 }
 
-test('two dates from single source', t => {
+test.only('two dates from single source', t => {
   records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
     [ loc1, '2020-06-20', 'src1', { cases: 20 } ]
@@ -78,7 +78,11 @@ test('two dates from single source', t => {
       timeseries: {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { cases: 20 }
+      },
+      sources: {
+        '2020-06-19..2020-06-20': 'src1'
       }
+
     }
   ]
 
