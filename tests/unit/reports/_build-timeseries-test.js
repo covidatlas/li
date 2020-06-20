@@ -345,6 +345,73 @@ test('timeseries fails if missing required fields in any record', t => {
 })
 
 
+/**
+ * "Collapsing source" tests.
+ *
+ * When the same source is used multiple times for successive dates,
+ * they're 'collapsed' in the sources field of the results.
+ */
+
+test.only('combined data sources collapse correctly', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-17', 'src1', { cases: 1 } ],
+    [ loc1, '2020-06-18', 'src1', { cases: 1 } ],
+
+    [ loc1, '2020-06-19', 'src1', { cases: 1 } ],
+    [ loc1, '2020-06-19', 'src2', { deaths: 11 } ],
+    [ loc1, '2020-06-19', 'src3', { tested: 111 } ],
+
+    [ loc1, '2020-06-20', 'src1', { cases: 2 } ],
+    [ loc1, '2020-06-20', 'src2', { deaths: 22 } ],
+    [ loc1, '2020-06-20', 'src3', { tested: 222 } ],
+
+    [ loc1, '2020-06-21', 'src1', { cases: 3 } ],
+    [ loc1, '2020-06-21', 'src2', { deaths: 33 } ],
+    [ loc1, '2020-06-21', 'src3', { tested: 333 } ],
+
+    [ loc1, '2020-06-22', 'src3', { tested: 444 } ],
+    [ loc1, '2020-06-23', 'src3', { tested: 555 } ],
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-17': { cases: 1 },
+        '2020-06-18': { cases: 1 },
+        '2020-06-19': {
+          cases: 1,
+          deaths: 11,
+          tested: 111
+        },
+        '2020-06-20': {
+          cases: 2,
+          deaths: 22,
+          tested: 222
+        },
+        '2020-06-21': {
+          cases: 3,
+          deaths: 33,
+          tested: 333
+        },
+        '2020-06-22': { tested: 444 },
+        '2020-06-23': { tested: 555 }
+      },
+      sources: {
+        '2020-06-17..2020-06-18': 'src1',
+        '2020-06-19..2020-06-21': { src1: [ 'cases' ], src2: [ 'deaths' ], src3: [ 'tested' ] },
+        '2020-06-22..2020-06-23': 'src3'
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
+
+// TODO: add test with empty recordset, shouldn't bomb
+
 /*
 Rollup tests (separate module)
 if higher level is present, it's left alone
