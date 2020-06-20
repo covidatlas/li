@@ -4,13 +4,24 @@ const { join } = require('path')
 const sut = join(process.cwd(), 'src', 'scheduled', 'reports', '_build-timeseries.js')
 const buildTimeseries = require(sut)
 
-// Sample locations.
+/** Sample locations. */
 const loc1 = 'iso1:us#iso2:us-ca#fips:06007'
 const loc2 = 'iso1:us#iso2:us-ca#fips:06008'
 
-test('single record builds single timeseries', t => {
+/** Data for call to buildTimeseries. */
+let records = []
 
-  const record = {
+/** Expected response for buildTimeseries(records). */
+let expected = []
+
+/** Build timeseries for records, compare with expected. */
+function validateTimeseries (t) {
+  const actual = buildTimeseries(records)
+  t.equal(JSON.stringify(actual), JSON.stringify(expected))
+}
+
+test('single record builds single timeseries', t => {
+  records = [ {
     cases: 10,
     country: 'iso1:US',
     state: 'iso2:US-CA',
@@ -20,22 +31,18 @@ test('single record builds single timeseries', t => {
     date: '2020-06-19',
     source: 'us-ca-kings-county',
     priority: 1
-  }
-  const records = [ record ]
+  } ]
 
-  const expected = [
+  expected = [
     {
       locationID: loc1,
       timeseries: {
-        '2020-06-19': {
-          cases: 10
-        }
+        '2020-06-19': { cases: 10 }
       }
     }
   ]
 
-  const actual = buildTimeseries(records)
-  t.equal(JSON.stringify(actual), JSON.stringify(expected))
+  validateTimeseries(t)
   t.end()
 })
 
@@ -51,13 +58,12 @@ function makeRecords (arr) {
 }
 
 test('two dates from single source', t => {
-
-  const records = makeRecords([
+  records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
     [ loc1, '2020-06-20', 'src1', { cases: 20 } ]
   ])
 
-  const expected = [
+  expected = [
     {
       locationID: loc1,
       timeseries: {
@@ -67,21 +73,19 @@ test('two dates from single source', t => {
     }
   ]
 
-  const actual = buildTimeseries(records)
-  t.equal(JSON.stringify(actual), JSON.stringify(expected))
+  validateTimeseries(t)
   t.end()
 })
 
 test('multiple locations', t => {
-
-  const records = makeRecords([
+  records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
     [ loc1, '2020-06-20', 'src1', { cases: 20 } ],
     [ loc2, '2020-06-19', 'src1', { cases: 10 } ],
     [ loc2, '2020-06-20', 'src1', { deaths: 20 } ]
   ])
 
-  const expected = [
+  expected = [
     {
       locationID: loc1,
       timeseries: {
@@ -98,8 +102,7 @@ test('multiple locations', t => {
     }
   ]
 
-  const actual = buildTimeseries(records)
-  t.equal(JSON.stringify(actual), JSON.stringify(expected))
+  validateTimeseries(t)
   t.end()
 })
 
