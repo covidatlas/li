@@ -4,6 +4,8 @@ const { join } = require('path')
 const sut = join(process.cwd(), 'src', 'scheduled', 'reports', '_build-timeseries.js')
 const buildTimeseries = require(sut)
 
+// Sample locations.
+const loc1 = 'iso1:us#iso2:us-ca#fips:06007'
 
 test('single record builds single timeseries', t => {
 
@@ -12,17 +14,17 @@ test('single record builds single timeseries', t => {
     country: 'iso1:US',
     state: 'iso2:US-CA',
     county: 'fips:06007',
-    locationID: 'iso1:us#iso2:us-ca#fips:06007',
+    locationID: loc1,
     dateSource: '2020-06-19#json-source',
     date: '2020-06-19',
-    source: 'json-source',
+    source: 'us-ca-kings-county',
     priority: 1
   }
   const records = [ record ]
 
   const expected = [
     {
-      locationID: 'iso1:us#iso2:us-ca#fips:06007',
+      locationID: loc1,
       timeseries: {
         '2020-06-19': {
           cases: 10
@@ -40,9 +42,9 @@ test('single record builds single timeseries', t => {
 test('timeseries fails if missing required fields in any record', t => {
 
   const minimalRecord = {
-    locationID: 'iso1:us#iso2:us-ca#fips:06007',
+    locationID: loc1,
     date: '2020-06-19',
-    source: 'json-source'
+    source: 's'
   }
 
   t.ok(buildTimeseries([ minimalRecord ]), 'can build with minimal record')
@@ -54,6 +56,42 @@ test('timeseries fails if missing required fields in any record', t => {
     t.throws(() => buildTimeseries([ insufficient ]), re)
   })
 
+  t.end()
+})
+
+test('two dates from single source', t => {
+
+  const records = [
+    {
+      locationID: loc1,
+      date: '2020-06-19',
+      source: 's',
+      cases: 10
+    },
+    {
+      locationID: loc1,
+      date: '2020-06-20',
+      source: 's',
+      cases: 20
+    },
+  ]
+
+  const expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': {
+          cases: 10
+        },
+        '2020-06-20': {
+          cases: 20
+        }
+      }
+    }
+  ]
+
+  const actual = buildTimeseries(records)
+  t.equal(JSON.stringify(actual), JSON.stringify(expected))
   t.end()
 })
 
