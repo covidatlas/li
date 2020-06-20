@@ -66,7 +66,7 @@ function makeRecords (arr) {
   return arr.map(a => record(...a))
 }
 
-test.only('two dates from single source', t => {
+test('two dates from single source', t => {
   records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
     [ loc1, '2020-06-20', 'src1', { cases: 20 } ]
@@ -104,6 +104,9 @@ test('multiple locations', t => {
       timeseries: {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { cases: 20 }
+      },
+      sources: {
+        '2020-06-19..2020-06-20': 'src1'
       }
     },
     {
@@ -111,6 +114,9 @@ test('multiple locations', t => {
       timeseries: {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { deaths: 20 }
+      },
+      sources: {
+        '2020-06-19..2020-06-20': 'src1'
       }
     }
   ]
@@ -130,25 +136,9 @@ test('data from multiple sources are combined if fields are distinct', t => {
       locationID: loc1,
       timeseries: {
         '2020-06-19': { cases: 10, deaths: 20 }
-      }
-    }
-  ]
-
-  validateTimeseries(t)
-  t.end()
-})
-
-test('data from multiple sources are combined if fields are distinct', t => {
-  records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
-    [ loc1, '2020-06-19', 'src2', { deaths: 20 } ]
-  ])
-
-  expected = [
-    {
-      locationID: loc1,
-      timeseries: {
-        '2020-06-19': { cases: 10, deaths: 20 }
+      },
+      sources: {
+        '2020-06-19': { src1: [ 'cases' ], src2: [ 'deaths' ] }
       }
     }
   ]
@@ -168,6 +158,9 @@ test('higher priority source overwrites lower priority source', t => {
       locationID: loc1,
       timeseries: {
         '2020-06-19': { cases: 1 }
+      },
+      sources: {
+        '2020-06-19': 'src2'
       }
     }
   ]
@@ -187,6 +180,9 @@ test('lower priority source is used if higher priority source is missing data fo
       locationID: loc1,
       timeseries: {
         '2020-06-19': { cases: 2222, deaths: 1, tested: 0 }
+      },
+      sources: {
+        '2020-06-19': { src1: [ 'deaths', 'tested' ], src2: [ 'cases' ] }
       }
     }
   ]
@@ -195,7 +191,7 @@ test('lower priority source is used if higher priority source is missing data fo
   t.end()
 })
 
-test('two sources with same priority and same value is ok, chooses later one', t => {
+test('two sources with same priority and same value is ok, chooses latest one alphabetically', t => {
   records = makeRecords([
     [ loc1, '2020-06-19', 'src2', { cases: 1, deaths: 2222 }, 1 ],
     [ loc1, '2020-06-19', 'src1', { cases: 1 }, 1 ],
@@ -206,6 +202,9 @@ test('two sources with same priority and same value is ok, chooses later one', t
       locationID: loc1,
       timeseries: {
         '2020-06-19': { cases: 1, deaths: 2222 }
+      },
+      sources: {
+        '2020-06-19': 'src2'
       }
     }
   ]
@@ -233,6 +232,9 @@ test('same priority but different values adds warning, uses larger value', t => 
           cases: 3
         }
       },
+      sources: {
+        '2020-06-19': 'src1'
+      },
       warnings: {
         '2020-06-19': {
           cases: 'conflict (src1: 3, src2: 2)'
@@ -259,6 +261,9 @@ test('conflicting lower priority sources are ignored', t => {
         '2020-06-19': {
           cases: 1
         }
+      },
+      sources: {
+        '2020-06-19': 'src3'
       }
     }
   ]
@@ -292,6 +297,14 @@ test('sanity check, multiple data points', t => {
           tested: 1111
         }
       },
+      sources: {
+        '2020-06-19': {
+          src1: [ 'cases' ], src2: [ 'deaths' ], src3: [ 'tested' ]
+        },
+        '2020-06-20': {
+          src1: [ 'cases' ], src2: [ 'deaths', 'tested' ]
+        }
+      },
       warnings: {
         '2020-06-19': {
           cases: 'conflict (src1: 3, src2: 2, src3: 1)',
@@ -301,7 +314,6 @@ test('sanity check, multiple data points', t => {
           cases: 'conflict (src1: 1002, src2: 1001)',
           deaths: 'conflict (src1: 1022, src2: 2222)'
         }
-
       }
     }
   ]
