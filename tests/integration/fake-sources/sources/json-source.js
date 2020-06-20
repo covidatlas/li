@@ -1,7 +1,9 @@
 module.exports = {
   country: 'iso1:US',
   state: 'CA',
+  county: 'fips:06007',
   maintainers: [],
+  priority: 1,
   friendly: {
     name: 'Canadian COVID Rolling Task Force',
     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
