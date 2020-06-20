@@ -65,29 +65,49 @@ function combinedRecord (records) {
     filter(f => reportFields.includes(f)).
     reduce((hsh, f) => {
       const vw = valueAndWarningForField(sortedRecords, f)
-      if (vw.value !== null && vw.value !== undefined)
-        hsh.data[f] = vw.value
+      if (vw.value === null || vw.value === undefined)
+        return hsh
+
+      hsh.data[f] = vw.value
+      hsh.sources[f] = vw.source
+
       if (vw.warning)
         hsh.warnings[f] = vw.warning
       return hsh
-    }, { data: {}, warnings: {} })
+    }, { data: {}, warnings: {}, sources: {} })
+}
+
+/** Compress the 'sources' data for a given location/date record.  If
+ * all fields are from a single source, only show that source;
+ * otherwise, return a hash map of sources to the fields. */
+function compressSources (fieldSourceHash) {
+  const sources = [ ...new Set(Object.values(fieldSourceHash)) ]
+  if (sources.length === 1)
+    return sources[0]
+  const pairs = Object.entries(fieldSourceHash)
+  return sources.sort().reduce((hsh, src) => {
+    const fields = pairs.filter(p => p[1] === src).map(p => p[0]).sort()
+    hsh[src] = fields
+    return hsh
+  }, {})
 }
 
 /** Get timeseries and any warnings for a locationID using the set of
  * records. */
-function timeseriesAndWarningsForLocation (locationID, records) {
+function locationDetails (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
   const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
   return dates.reduce((hsh, d) => {
     const atDate = locRecords.filter(lr => lr.date === d)
     const combined = combinedRecord(atDate)
     hsh.timeseries[d] = combined.data
+    hsh.sources[d] = compressSources(combined.sources)
 
     if (Object.keys(combined.warnings).length !== 0)
       hsh.warnings[d] = combined.warnings
 
     return hsh
-  }, { timeseries: {}, warnings: {} })
+  }, { timeseries: {}, warnings: {}, sources: {} })
 }
 
 /** Each record must have a minumum set of fields. */
@@ -119,13 +139,14 @@ function buildTimeseries (records) {
   validateRecords (records)
   const locationIDs = [ ...new Set(records.map(r => r.locationID)) ].sort()
   return locationIDs.map(locationID => {
-    const tw = timeseriesAndWarningsForLocation(locationID, records)
+    const d = locationDetails(locationID, records)
     const result = {
       locationID,
-      timeseries: tw.timeseries
+      timeseries: d.timeseries,
+      sources: d.sources
     }
-    if (Object.keys(tw.warnings).length !== 0)
-      result.warnings = tw.warnings
+    if (Object.keys(d.warnings).length !== 0)
+      result.warnings = d.warnings
 
     return result
   })

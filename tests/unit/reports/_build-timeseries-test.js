@@ -15,8 +15,12 @@ let records = []
 let expected = []
 
 /** Build timeseries for records, compare with expected. */
-function validateTimeseries (t) {
-  const actual = buildTimeseries(records)
+function validateTimeseries (t, validateSources = false) {
+  let actual = buildTimeseries(records)
+
+  if (!validateSources)
+    actual.forEach(a => delete a.sources)
+
   t.equal(JSON.stringify(actual), JSON.stringify(expected))
 }
 
@@ -29,7 +33,7 @@ test('single record builds single timeseries', t => {
     locationID: loc1,
     dateSource: '2020-06-19#json-source',
     date: '2020-06-19',
-    source: 'us-ca-kings-county',
+    source: 'src1',
     priority: 1
   } ]
 
@@ -38,11 +42,14 @@ test('single record builds single timeseries', t => {
       locationID: loc1,
       timeseries: {
         '2020-06-19': { cases: 10 }
+      },
+      sources: {
+        '2020-06-19': 'src1'
       }
     }
   ]
 
-  validateTimeseries(t)
+  validateTimeseries(t, true)
   t.end()
 })
 
