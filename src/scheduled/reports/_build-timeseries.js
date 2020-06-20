@@ -1,3 +1,4 @@
+/** Case data fields to include in reports. */
 // TODO (data) validate the fields that we want to include
 // TODO (data) extract these fields as a common constant, and use everywhere
 const reportFields = [
@@ -9,6 +10,12 @@ const reportFields = [
   'tested',
 ]
 
+/** Determines final value for a given field in a set of records.
+ *
+ * The value to use is determined by source priority.  If multiple
+ * sources have the same highest priority, then (arbitrarily) the
+ * largest value for that field in the highest-priority sources is
+ * used, and a warning is included in the return value. */
 function valueAndWarningForField (sortedRecords, f) {
   const haveVals = sortedRecords.filter(r => r[f] !== undefined && r[f] !== null)
   if (haveVals.length === 0)
@@ -33,6 +40,8 @@ function valueAndWarningForField (sortedRecords, f) {
   }
 }
 
+/** Create a combined value from all sources, using the source
+ * priority to determine which value to use for each field. */
 function combinedRecord (records) {
   // Multiple sources of different priorities can return data.  Sort
   // the highest to the last, because later records "win" when
@@ -56,6 +65,8 @@ function combinedRecord (records) {
     }, { data: {}, warnings: {} })
 }
 
+/** Get timeseries and any warnings for a locationID using the set of
+ * records. */
 function timeseriesAndWarningsForLocation (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
   const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
@@ -71,6 +82,7 @@ function timeseriesAndWarningsForLocation (locationID, records) {
   }, { timeseries: {}, warnings: {} })
 }
 
+/** Each record must have a minumum set of fields. */
 function validateRecords (records) {
 
   const minimalRecordSample = {
@@ -94,6 +106,7 @@ function validateRecords (records) {
   }
 }
 
+/** Build timeseries for each location and date in records. */
 function buildTimeseries (records) {
   validateRecords (records)
   const locationIDs = [ ...new Set(records.map(r => r.locationID)) ].sort()
