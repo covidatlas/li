@@ -239,8 +239,8 @@ test('bigger test same priority but different values adds warning, uses larger v
       },
       warnings: {
         '2020-06-19': {
-          cases: 'conflict. src1: 333, src2: 222, src3: 111',
-          deaths: 'conflict. src2: 2222, src3: 1111'
+          cases: 'conflict (src1: 3, src2: 2, src3: 1)',
+          deaths: 'conflict (src2: 22, src3: 11)'
         }
       }
     }
@@ -263,16 +263,23 @@ test('timeseries fails if missing required fields in any record', t => {
   const minimalRecord = {
     locationID: loc1,
     date: '2020-06-19',
-    source: 's'
+    source: 's',
+    cases: 11
   }
 
-  t.ok(buildTimeseries([ minimalRecord ]), 'can build with minimal record')
+  try {
+    buildTimeseries([ minimalRecord ])
+    t.pass('built successfully with minimal record')
+  }
+  catch (err) {
+    t.fail('should have worked, but got ' + err.message)
+  }
 
-  Object.keys(minimalRecord).forEach(k => {
+  [ 'locationID', 'date', 'source' ].forEach(k => {
     const insufficient = Object.assign({}, minimalRecord)
     delete insufficient[k]
     const re = new RegExp(`1 records missing one or more fields locationID, date, source`)
-    t.throws(() => buildTimeseries([ insufficient ]), re)
+    t.throws(() => buildTimeseries([ insufficient ]), re, `throws when record is missing ${k}`)
   })
 
   t.end()
