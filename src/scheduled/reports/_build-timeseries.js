@@ -9,23 +9,28 @@ const reportFields = [
   'tested',
 ]
 
-function _includeFields (obj, keys) {
-  return keys.
+function onlyReportFields (obj) {
+  return reportFields.
     map(k => k in obj ? { [k]: obj[k] } : {}).
     reduce((hsh, entry) => Object.assign(hsh, entry), {})
 }
 
-function _timeseriesForLocation (locationID, records) {
+function timeseriesForLocation (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
   const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
   return dates.reduce((hsh, d) => {
     const recs = locRecords.filter(lr => lr.date === d)
-    hsh[d] = _includeFields(recs[0], reportFields)
+    const combinedRecord = recs.
+          map(onlyReportFields).
+          reduce((hsh, rec) => {
+            return Object.assign(hsh, rec)
+          }, {})
+    hsh[d] = combinedRecord
     return hsh
   }, {})
 }
 
-function _validateRecords (records) {
+function validateRecords (records) {
 
   const minimalRecordSample = {
     locationID: 'someID',
@@ -49,12 +54,12 @@ function _validateRecords (records) {
 }
 
 function buildTimeseries (records) {
-  _validateRecords (records)
+  validateRecords (records)
   const locationIDs = [ ...new Set(records.map(r => r.locationID)) ].sort()
   return locationIDs.map(locationID => {
     return {
       locationID,
-      timeseries: _timeseriesForLocation(locationID, records)
+      timeseries: timeseriesForLocation(locationID, records)
     }
   })
 }
