@@ -182,10 +182,79 @@ test('two sources with same priority and same value is ok, chooses later one', t
   t.end()
 })
 
+test.only('same priority but different values adds warning, uses larger value', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
+    [ loc1, '2020-06-19', 'src2', { cases: 2 }, 1 ]
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': {
+          cases: 3
+        }
+      },
+      warnings: {
+        '2020-06-19': {
+          cases: 'conflict (src1: 3, src2: 2)'
+        }
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
+/*
+Conflict tests
+
+- 2 lower overwritten by 1 higher - ok
+- 1 lower overwritten by 2 conflicting higher
+- 1 lower with value beats higher with undefined
+- 1 lower with 0 beats higher with undefined
+- tie at undefined doesn't raise conflict warning
+- lower with value, another lower with diff value and two higher with undefined
+- undefined is not included in timeline data
+*/
+
+test('bigger test same priority but different values adds warning, uses larger value', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
+    [ loc1, '2020-06-19', 'src2', { cases: 2, deaths: 22 }, 1 ],
+    [ loc1, '2020-06-19', 'src3', { cases: 1, deaths: 11, tested: 111 }, 1 ],
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': {
+          cases: 3,
+          deaths: 22,
+          tested: 111
+        }
+      },
+      warnings: {
+        '2020-06-19': {
+          cases: 'conflict. src1: 333, src2: 222, src3: 111',
+          deaths: 'conflict. src2: 2222, src3: 1111'
+        }
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
 /*
 Tests:
-multiple entries from same source on same date is ok (should never happen)
-if equal priority and field vals are not equal, print a warning (in the same report)
+diff values in eq-pri sources but overwritten by higher-pri source is ok
+same values in low-pri sources but diff in higher-pri sources
+multiple conflicting sources
 no case data adds a warning?
 */
 
