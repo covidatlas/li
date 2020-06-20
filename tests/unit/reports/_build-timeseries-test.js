@@ -163,11 +163,28 @@ test('higher priority source overwrites lower priority source', t => {
   t.end()
 })
 
+test('two sources with same priority and same value is ok, chooses later one', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src2', { cases: 1, deaths: 2222 }, 1 ],
+    [ loc1, '2020-06-19', 'src1', { cases: 1 }, 1 ],
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': { cases: 1, deaths: 2222 }
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
 /*
 Tests:
-missing priority is assumed to be priority 0
-if equal priority and field values are equal, that's ok - pick any one
-multiple entries from same source on same date (should never happen)
+multiple entries from same source on same date is ok (should never happen)
 if equal priority and field vals are not equal, print a warning (in the same report)
 no case data adds a warning?
 */
