@@ -146,15 +146,34 @@ test('data from multiple sources are combined if fields are distinct', t => {
 
 test('higher priority source overwrites lower priority source', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src2', { cases: 2222, deaths: 2222 }, 1 ],
-    [ loc1, '2020-06-19', 'src1', { cases: 1 } ],
+    [ loc1, '2020-06-19', 'src2', { cases: 1 }, 1 ],
+    [ loc1, '2020-06-19', 'src1', { cases: 22222 } ],
   ])
 
   expected = [
     {
       locationID: loc1,
       timeseries: {
-        '2020-06-19': { cases: 2222, deaths: 2222 }
+        '2020-06-19': { cases: 1 }
+      }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
+test('lower priority source is used if higher priority source is missing data for field', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src2', { cases: 2222 }, 1 ],
+    [ loc1, '2020-06-19', 'src1', { cases: 1, deaths: 1, tested: 0 } ],
+  ])
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': { cases: 2222, deaths: 1, tested: 0 }
       }
     }
   ]
@@ -182,6 +201,11 @@ test('two sources with same priority and same value is ok, chooses later one', t
   t.end()
 })
 
+
+/**
+ * Conflict resolution tests.
+ */
+
 test('same priority but different values adds warning, uses larger value', t => {
   records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
@@ -208,23 +232,36 @@ test('same priority but different values adds warning, uses larger value', t => 
   t.end()
 })
 
-/*
-Conflict tests
+test('conflicting lower priority sources are ignored', t => {
+  records = makeRecords([
+    [ loc1, '2020-06-19', 'src1', { cases: 33 }, 1 ],
+    [ loc1, '2020-06-19', 'src2', { cases: 22 }, 1 ],
+    [ loc1, '2020-06-19', 'src3', { cases: 1 }, 2 ]
+  ])
 
-- 2 lower overwritten by 1 higher - ok
-- 1 lower overwritten by 2 conflicting higher
-- 1 lower with value beats higher with undefined
-- 1 lower with 0 beats higher with undefined
-- tie at undefined doesn't raise conflict warning
-- lower with value, another lower with diff value and two higher with undefined
-- undefined is not included in timeline data
-*/
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: {
+        '2020-06-19': {
+          cases: 1
+        }
+      }
+    }
+  ]
 
-test('bigger test same priority but different values adds warning, uses larger value', t => {
+  validateTimeseries(t)
+  t.end()
+})
+
+
+test('sanity check, multiple data points', t => {
   records = makeRecords([
     [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
     [ loc1, '2020-06-19', 'src2', { cases: 2, deaths: 22 }, 1 ],
     [ loc1, '2020-06-19', 'src3', { cases: 1, deaths: 11, tested: 111 }, 1 ],
+    [ loc1, '2020-06-20', 'src1', { cases: 1002, deaths: 1022 }, 1 ],
+    [ loc1, '2020-06-20', 'src2', { cases: 1001, deaths: 2222, tested: 1111 }, 1 ],
   ])
 
   expected = [
@@ -235,13 +272,23 @@ test('bigger test same priority but different values adds warning, uses larger v
           cases: 3,
           deaths: 22,
           tested: 111
+        },
+        '2020-06-20': {
+          cases: 1002,
+          deaths: 2222,
+          tested: 1111
         }
       },
       warnings: {
         '2020-06-19': {
           cases: 'conflict (src1: 3, src2: 2, src3: 1)',
           deaths: 'conflict (src2: 22, src3: 11)'
+        },
+        '2020-06-20': {
+          cases: 'conflict (src1: 1002, src2: 1001)',
+          deaths: 'conflict (src1: 1022, src2: 2222)'
         }
+
       }
     }
   ]
@@ -250,13 +297,6 @@ test('bigger test same priority but different values adds warning, uses larger v
   t.end()
 })
 
-/*
-Tests:
-diff values in eq-pri sources but overwritten by higher-pri source is ok
-same values in low-pri sources but diff in higher-pri sources
-multiple conflicting sources
-no case data adds a warning?
-*/
 
 test('timeseries fails if missing required fields in any record', t => {
 

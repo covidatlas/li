@@ -48,7 +48,7 @@ function combinedRecord (records) {
     filter(f => reportFields.includes(f)).
     reduce((hsh, f) => {
       const vw = valueAndWarningForField(sortedRecords, f)
-      if (vw.value)
+      if (vw.value !== null && vw.value !== undefined)
         hsh.data[f] = vw.value
       if (vw.warning)
         hsh.warnings[f] = vw.warning
