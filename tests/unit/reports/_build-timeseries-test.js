@@ -352,7 +352,7 @@ test('timeseries fails if missing required fields in any record', t => {
  * they're 'collapsed' in the sources field of the results.
  */
 
-test.only('combined data sources collapse correctly', t => {
+test('combined data sources collapse correctly', t => {
   records = makeRecords([
     [ loc1, '2020-06-17', 'src1', { cases: 1 } ],
     [ loc1, '2020-06-18', 'src1', { cases: 1 } ],
@@ -410,7 +410,40 @@ test.only('combined data sources collapse correctly', t => {
 })
 
 
-// TODO: add test with empty recordset, shouldn't bomb
+/** This isn't a real test, it's just verifying current behaviour.  If
+ * this test fails, perhaps something in report generation will need
+ * to be adjusted. */
+test('characterization test: no case data', t => {
+
+  records = [
+    {
+      locationID: loc1,
+      date: '2020-06-19',
+      source: 's'
+    }
+  ]
+
+  expected = [
+    {
+      locationID: loc1,
+      timeseries: { '2020-06-19': {} },
+      sources: { '2020-06-19': {} }
+    }
+  ]
+
+  validateTimeseries(t)
+  t.end()
+})
+
+
+test('sanity check, empty recordset does not throw', t => {
+  records = []
+  expected = []
+  validateTimeseries(t)
+  t.end()
+})
+
+
 
 /*
 Rollup tests (separate module)
