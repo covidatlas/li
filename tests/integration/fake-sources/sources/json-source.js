@@ -1,7 +1,9 @@
 module.exports = {
   country: 'iso1:US',
   state: 'CA',
+  county: 'fips:06007',
   maintainers: [],
+  priority: 1,
   friendly: {
     name: 'Canadian COVID Rolling Task Force',
     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
@@ -12,7 +14,7 @@ module.exports = {
       crawl: [
         {
           type: 'json',
-          url: 'http://localhost:5555/tests/fake-source-urls/fake/fake.json'
+          url: 'http://localhost:5555/tests/fake-source-urls/json-source/data.json'
         }
       ],
       scrape (json) {

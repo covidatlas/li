@@ -40,7 +40,8 @@ test('scrape fails if files missing', async t => {
     t.fail('should have failed')
   }
   catch (err) {
-    t.match(err.message, /Could not load cache/)
+    const hasMatch = [ /Could not load cache/, /Inaccessible host/ ].some(re => err.message.match(re))
+    t.ok(hasMatch, err.message)
   }
 
   await utils.teardown()

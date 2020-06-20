@@ -7,9 +7,9 @@ const testCache = require('../../_lib/testcache.js')
 test('crawl saves files to cache', async t => {
   await utils.setup()
 
-  utils.writeFakeSourceContent('fake/fake.json', { cases: 10, deaths: 20 })
+  utils.writeFakeSourceContent('json-source/data.json', { cases: 10, deaths: 20 })
   t.equal(0, testCache.allFiles().length, 'No files in cache.')
-  await utils.crawl('fake')
+  await utils.crawl('json-source')
   t.equal(1, testCache.allFiles().length, 'have file after crawl.')
 
   await utils.teardown()

@@ -7,7 +7,7 @@
     "lint": "eslint . --fix",
     "list-sources": "node src/shared/sources/_lib/list-sources.js",
     "todos": "node tools/list-dev-todos.js",
-    "test": "npm run lint && npm run test:unit && npm run test:integration",
+    "test": "tape 'tests/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
     "test:unit": "tape 'tests/unit/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
     "test:integration": "tape 'tests/integration/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec; node tests/warnings.js",
     "migrate:all": "./tools/migrate-entire-cache",
