@@ -9,34 +9,63 @@ const reportFields = [
   'tested',
 ]
 
-function onlyReportFields (obj) {
-  return reportFields.
-    map(k => k in obj ? { [k]: obj[k] } : {}).
-    reduce((hsh, entry) => Object.assign(hsh, entry), {})
+function valueAndWarningForField (sortedRecords, f) {
+  const haveVals = sortedRecords.filter(r => r[f] !== undefined && r[f] !== null)
+  if (haveVals.length === 0)
+    return { value: undefined }
+  const maxPriority = Math.max(...haveVals.map(r => r.priority))
+  const candidates = haveVals.filter(r => r.priority === maxPriority)
+  if (candidates.length === 1)
+    return { value: candidates[0][f] }
+
+  // Multiple equal priority.
+  const values = candidates.map(c => c[f])
+  const max = Math.max(...values)
+  const min = Math.min(...values)
+
+  if (max === min)
+    return { value: max }
+
+  const conflicts = candidates.map(c => `${c.source}: ${c[f]}`).join(', ')
+  return {
+    value: max,
+    warning: `conflict (${conflicts})`
+  }
 }
 
-/** Multiple sources of different priorities can return data.  Sort
- * the highest to the last, because later records "win" when combining
- * sources. */
-function byPriority (a, b) {
-  const getPriority = r => r.priority || 0
-  return getPriority(a) - getPriority(b)
+function combinedRecord (records) {
+  // Multiple sources of different priorities can return data.  Sort
+  // the highest to the last, because later records "win" when
+  // combining sources.
+  const sortedRecords = records.
+        map(r => { r.priority = r.priority || 0; return r }).
+        sort((a, b) => a.priority - b.priority)
+
+  // Only look at the fields that exist in any of the records.
+  const base = records.reduce((h, rec) => Object.assign(h, rec), {})
+
+  return Object.keys(base).
+    filter(f => reportFields.includes(f)).
+    reduce((hsh, f) => {
+      const vw = valueAndWarningForField(sortedRecords, f)
+      if (vw.value)
+        hsh.data[f] = vw.value
+      if (vw.warning)
+        hsh.warnings[f] = vw.warning
+      return hsh
+    }, { data: {}, warnings: {} })
 }
 
-function timeseriesForLocation (locationID, records) {
+function timeseriesAndWarningsForLocation (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
   const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
   return dates.reduce((hsh, d) => {
-    const recs = locRecords.filter(lr => lr.date === d)
-    const combinedRecord = recs.
-          sort(byPriority).
-          map(onlyReportFields).
-          reduce((hsh, rec) => {
-            return Object.assign(hsh, rec)
-          }, {})
-    hsh[d] = combinedRecord
+    const atDate = locRecords.filter(lr => lr.date === d)
+    const combined = combinedRecord(atDate)
+    hsh.timeseries[d] = combined.data
+    hsh.warnings[d] = combined.warnings
     return hsh
-  }, {})
+  }, { timeseries: {}, warnings: {} })
 }
 
 function validateRecords (records) {
@@ -66,9 +95,10 @@ function buildTimeseries (records) {
   validateRecords (records)
   const locationIDs = [ ...new Set(records.map(r => r.locationID)) ].sort()
   return locationIDs.map(locationID => {
+    const tw = timeseriesAndWarningsForLocation(locationID, records)
     return {
       locationID,
-      timeseries: timeseriesForLocation(locationID, records)
+      ...tw
     }
   })
 }
