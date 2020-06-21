@@ -60,58 +60,57 @@ async function getHeadless (req) {
 
     const status = response && response.status()
     const is2xx = `${status}`.startsWith(2)
-    const hasBody = response.body
-    // Believe it or not: we've seen 200s + empty bodies bc the request didn't have the "right" headers
-    const ok = is2xx && hasBody
-
-    // We got a good response, return it
-    if (ok) {
-      await page.waitFor(timeout)
-      const html = await page.content()
-      browser.close()
-
-      // Compress, then base64 encode body in case we transit binaries, max 10MB payload
-      let responseBody = Buffer.from(html)
-      responseBody = brotliCompressSync(responseBody).toString('base64')
-      if (responseBody.length >= 1000 * 1000 * 10) {
-        console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
-        return {
-          statusCode: 500,
-          json: { error: 'maximum_size_exceeded' },
-          headers: responseHeaders
-        }
-      }
-      // Set up response payload
-      let payload = {
-        body: responseBody
-      }
-      // TODO handle cookies, haven't seen a need yet
-      // → page.cookies
-
-      const body = JSON.stringify(payload)
-      return {
-        statusCode: 200,
-        body,
-        headers: responseHeaders
-      }
-    }
-    else {
+    if (!is2xx) {
       return {
         headers: responseHeaders,
         statusCode: is2xx ? 500 : status || 599
       }
     }
+
+    await page.waitFor(timeout)
+    const html = await page.content()
+
+    browser.close()
+    browser = null
+
+    // Compress, then base64 encode body in case we transit binaries, max 10MB payload
+    let responseBody = Buffer.from(html)
+    responseBody = brotliCompressSync(responseBody).toString('base64')
+    if (responseBody.length >= 1000 * 1000 * 10) {
+      console.log(`Hit a very large payload!`, JSON.stringify(options, null, 2))
+      return {
+        statusCode: 500,
+        json: { error: 'maximum_size_exceeded' },
+        headers: responseHeaders
+      }
+    }
+
+    // Set up response payload
+    let payload = {
+      body: responseBody
+    }
+    // TODO handle cookies, haven't seen a need yet
+    // → page.cookies
+
+    const body = JSON.stringify(payload)
+    return {
+      statusCode: 200,
+      body,
+      headers: responseHeaders
+    }
   }
   catch (err) {
-    if (browser) {
-      browser.close()
-    }
     console.error('Some manner of strange error occurred:', err)
     console.log('Params:', JSON.stringify(options, null, 2))
     return {
       statusCode: 500,
       json: { error: err.stack },
       headers: responseHeaders
+    }
+  }
+  finally {
+    if (browser) {
+      browser.close()
     }
   }
 }
