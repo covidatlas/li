@@ -52,6 +52,12 @@ async function statusJson () {
   }
 }
 
+function toHtml (s) {
+  if (s === null || s === undefined || s === '')
+    return '&nbsp;'
+  return ('' + s).replace(/\n/g, '<br />')
+}
+
 /** Html page table of summary. */
 // TODO (status) generate HTML using some kind of templating engine.
 // Hacking to get HTML output for now, to be replaced w/ whatever
@@ -65,13 +71,11 @@ function statusHtml (json) {
   ]
 
   const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
-  const shortDate = dt => dt.replace('T', ' ').replace(/\..+/, '')
+  const shortDate = dt => (dt || '').replace('T', ' ').replace(/\..+/, '')
   const trs = json.details.map(d => {
-    d.crawler_last_success = shortDate(d.crawler_last_success || '')
-    d.scraper_last_success = shortDate(d.scraper_last_success || '')
-    d.crawler_error = (d.crawler_error || '').replace(/\n/g, '<br />')
-    d.scraper_error = (d.scraper_error || '').replace(/\n/g, '<br />')
-    const tr = fields.map(f => `<td>${ d[f] || '&nbsp;' }</td>`).join('')
+    d.crawler_last_success = shortDate(d.crawler_last_success)
+    d.scraper_last_success = shortDate(d.scraper_last_success)
+    const tr = fields.map(f => `<td>${ toHtml(d[f]) }</td>`).join('')
     return `<tr class='${d.status}'>${tr}</tr>`
   })
 
