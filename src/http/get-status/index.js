@@ -12,14 +12,13 @@ async function statusSummaryJson () {
 
   function eventDetails (source, e) {
     const currStatus = statuses.find(st => st.source === source && st.event === e) || {}
-    return [ 'status', 'consecutive', 'last_success' ].reduce((hsh, f) => {
+    return [ 'status', 'consecutive', 'last_success', 'error' ].reduce((hsh, f) => {
       return { ...hsh, [`${e}_${f}`]: currStatus[f] || null }
     }, {} )
   }
 
   const sources = [ ...new Set(statuses.map(s => s.source)) ].sort()
 
-  // TODO (status) store error message in the tables
   // TODO (status) add link to raw logs?
   const summary = sources.map(source => {
     return {
@@ -47,8 +46,8 @@ function statusSummaryHtml (summary) {
 
   const fields = [
     'source', 'status',
-    'crawler_status', 'crawler_consecutive', 'crawler_last_success',
-    'scraper_status', 'scraper_consecutive', 'scraper_last_success'
+    'crawler_status', 'crawler_error', 'crawler_consecutive', 'crawler_last_success',
+    'scraper_status', 'scraper_error', 'scraper_consecutive', 'scraper_last_success'
   ]
 
   const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
@@ -56,6 +55,8 @@ function statusSummaryHtml (summary) {
   const trs = summary.map(d => {
     d.crawler_last_success = shortDate(d.crawler_last_success || '')
     d.scraper_last_success = shortDate(d.scraper_last_success || '')
+    d.crawler_error = (d.crawler_error || '').replace(/\n/g, '<br />')
+    d.scraper_error = (d.scraper_error || '').replace(/\n/g, '<br />')
     const tr = fields.map(f => `<td>${ d[f] || '&nbsp;' }</td>`).join('')
     return `<tr class='${d.status}'>${tr}</tr>`
   })

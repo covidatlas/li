@@ -20,12 +20,14 @@ async function crawlSource (event) {
   }
   catch (err) {
     // Alert status to a crawl failure
+    const errMsg = err.message
     arc.events.publish({
       name: 'status',
       payload: {
         source: event.source,
         event: 'crawler',
-        status: 'failed'
+        status: 'failed',
+        error: errMsg
       }
     })
     throw err
