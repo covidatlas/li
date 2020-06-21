@@ -35,8 +35,20 @@ async function statusJson () {
     }
   })
 
+  const counts = {
+    successes: d => d.status === 'success',
+    failures: d => d.status === 'failed',
+    crawler_failures: d => d.crawler_status === 'failed',
+    scraper_failures: d => d.scraper_status === 'failed'
+  }
+  const summary = Object.entries(counts).reduce((hsh, pair) => {
+    const [ key, f ] = pair
+    return Object.assign(hsh, { [key]: details.filter(f).length })
+  }, {})
+
   return {
-    details
+    details,
+    summary
   }
 }
 
