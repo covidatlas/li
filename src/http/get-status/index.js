@@ -106,14 +106,13 @@ function statusHtml (json) {
 <html>
 
 <style>
-h1 {
+p, h1 {
   font-family: Arial;
 }
 
 th, td {
   padding: 5px;
   text-align: left;
-  /* font-family: sans-serif; */
   border-bottom: 1px solid #ddd;
 }
 
@@ -126,9 +125,11 @@ tr:hover { background-color: #f5f5f5; }
 
 <body>
 <h1>Source Statuses</h1>
-<pre><code>
 
-<table style='cell-padding: 5px;'>
+<p>successes: ${json.summary.successes}, failures: ${json.summary.failures}</p>
+
+<pre><code>
+<table>
 <tr>${ths}</tr>
 ${trs.join('\n')}
 </table>
