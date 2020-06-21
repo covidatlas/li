@@ -77,10 +77,10 @@ function combinedRecord (records) {
     }, { data: {}, warnings: {}, sources: {} })
 }
 
-/** Compress the 'sources' data for a given location/date record.  If
+/** Reduce the 'sources' data for a given location/date record.  If
  * all fields are from a single source, only show that source;
  * otherwise, return a hash map of sources to the fields. */
-function compressSources (fieldSourceHash) {
+function reduceSources (fieldSourceHash) {
   const sources = [ ...new Set(Object.values(fieldSourceHash)) ]
   if (sources.length === 1)
     return sources[0]
@@ -133,17 +133,25 @@ function collapseSourceDates (dateSourceHash) {
 function locationDetails (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
   const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
-  return dates.reduce((hsh, d) => {
+
+  const result = dates.reduce((hsh, d) => {
     const atDate = locRecords.filter(lr => lr.date === d)
     const combined = combinedRecord(atDate)
     hsh.timeseries[d] = combined.data
-    hsh.sources[d] = compressSources(combined.sources)
+    hsh.sources[d] = reduceSources(combined.sources)
 
     if (Object.keys(combined.warnings).length !== 0)
       hsh.warnings[d] = combined.warnings
 
     return hsh
-  }, { timeseries: {}, warnings: {}, sources: {} })
+  }, { timeseries: {}, sources: {}, warnings: {} })
+
+  result.sources = collapseSourceDates(result.sources)
+
+  if (Object.keys(result.warnings).length === 0)
+    delete result.warnings
+
+  return result
 }
 
 /** Each record must have a minumum set of fields. */
@@ -174,18 +182,9 @@ function validateRecords (records) {
 function buildTimeseries (records) {
   validateRecords (records)
   const locationIDs = [ ...new Set(records.map(r => r.locationID)) ].sort()
-  return locationIDs.map(locationID => {
-    const d = locationDetails(locationID, records)
-    const result = {
-      locationID,
-      timeseries: d.timeseries,
-      sources: collapseSourceDates(d.sources)
-    }
-    if (Object.keys(d.warnings).length !== 0)
-      result.warnings = d.warnings
-
-    return result
-  })
+  return locationIDs.
+    map(lid => { return { [lid]: locationDetails(lid, records) } }).
+    reduce((result, hsh) => Object.assign(result, hsh), {})
 }
 
 module.exports = buildTimeseries

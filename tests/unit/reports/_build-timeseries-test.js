@@ -4,10 +4,6 @@ const { join } = require('path')
 const sut = join(process.cwd(), 'src', 'scheduled', 'reports', '_build-timeseries.js')
 const buildTimeseries = require(sut)
 
-/** Sample locations. */
-const loc1 = 'iso1:us#iso2:us-ca#fips:06007'
-const loc2 = 'iso1:us#iso2:us-ca#fips:06008'
-
 /** Data for call to buildTimeseries. */
 let records = []
 
@@ -26,16 +22,15 @@ test('single record builds single timeseries', t => {
     country: 'iso1:US',
     state: 'iso2:US-CA',
     county: 'fips:06007',
-    locationID: loc1,
+    locationID: 'iso1:us#iso2:us-ca#fips:06007',
     dateSource: '2020-06-19#json-source',
     date: '2020-06-19',
     source: 'src1',
     priority: 1
   } ]
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    'iso1:us#iso2:us-ca#fips:06007': {
       timeseries: {
         '2020-06-19': { cases: 10 }
       },
@@ -43,7 +38,7 @@ test('single record builds single timeseries', t => {
         '2020-06-19': 'src1'
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -62,13 +57,12 @@ function makeRecords (arr) {
 
 test('two dates from single source', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
-    [ loc1, '2020-06-20', 'src1', { cases: 20 } ]
+    [ 'loc1', '2020-06-19', 'src1', { cases: 10 } ],
+    [ 'loc1', '2020-06-20', 'src1', { cases: 20 } ]
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { cases: 20 }
@@ -76,9 +70,8 @@ test('two dates from single source', t => {
       sources: {
         '2020-06-19..2020-06-20': 'src1'
       }
-
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -86,15 +79,14 @@ test('two dates from single source', t => {
 
 test('multiple locations', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
-    [ loc1, '2020-06-20', 'src1', { cases: 20 } ],
-    [ loc2, '2020-06-19', 'src1', { cases: 10 } ],
-    [ loc2, '2020-06-20', 'src1', { deaths: 20 } ]
+    [ 'loc1', '2020-06-19', 'src1', { cases: 10 } ],
+    [ 'loc1', '2020-06-20', 'src1', { cases: 20 } ],
+    [ 'loc2', '2020-06-19', 'src1', { cases: 10 } ],
+    [ 'loc2', '2020-06-20', 'src1', { deaths: 20 } ]
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { cases: 20 }
@@ -103,8 +95,7 @@ test('multiple locations', t => {
         '2020-06-19..2020-06-20': 'src1'
       }
     },
-    {
-      locationID: loc2,
+    loc2: {
       timeseries: {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { deaths: 20 }
@@ -113,7 +104,7 @@ test('multiple locations', t => {
         '2020-06-19..2020-06-20': 'src1'
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -121,13 +112,12 @@ test('multiple locations', t => {
 
 test('data from multiple sources are combined if fields are distinct', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 10 } ],
-    [ loc1, '2020-06-19', 'src2', { deaths: 20 } ]
+    [ 'loc1', '2020-06-19', 'src1', { cases: 10 } ],
+    [ 'loc1', '2020-06-19', 'src2', { deaths: 20 } ]
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': { cases: 10, deaths: 20 }
       },
@@ -135,7 +125,7 @@ test('data from multiple sources are combined if fields are distinct', t => {
         '2020-06-19': { src1: [ 'cases' ], src2: [ 'deaths' ] }
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -143,13 +133,12 @@ test('data from multiple sources are combined if fields are distinct', t => {
 
 test('higher priority source overwrites lower priority source', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src2', { cases: 1 }, 1 ],
-    [ loc1, '2020-06-19', 'src1', { cases: 22222 } ],
+    [ 'loc1', '2020-06-19', 'src2', { cases: 1 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src1', { cases: 22222 } ],
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': { cases: 1 }
       },
@@ -157,7 +146,7 @@ test('higher priority source overwrites lower priority source', t => {
         '2020-06-19': 'src2'
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -165,13 +154,12 @@ test('higher priority source overwrites lower priority source', t => {
 
 test('lower priority source is used if higher priority source is missing data for field', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src2', { cases: 2222 }, 1 ],
-    [ loc1, '2020-06-19', 'src1', { cases: 1, deaths: 1, tested: 0 } ],
+    [ 'loc1', '2020-06-19', 'src2', { cases: 2222 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src1', { cases: 1, deaths: 1, tested: 0 } ],
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': { cases: 2222, deaths: 1, tested: 0 }
       },
@@ -179,7 +167,7 @@ test('lower priority source is used if higher priority source is missing data fo
         '2020-06-19': { src1: [ 'deaths', 'tested' ], src2: [ 'cases' ] }
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -187,13 +175,12 @@ test('lower priority source is used if higher priority source is missing data fo
 
 test('two sources with same priority and same value is ok, chooses latest one alphabetically', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src2', { cases: 1, deaths: 2222 }, 1 ],
-    [ loc1, '2020-06-19', 'src1', { cases: 1 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src2', { cases: 1, deaths: 2222 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src1', { cases: 1 }, 1 ],
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': { cases: 1, deaths: 2222 }
       },
@@ -201,7 +188,7 @@ test('two sources with same priority and same value is ok, chooses latest one al
         '2020-06-19': 'src2'
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -214,13 +201,12 @@ test('two sources with same priority and same value is ok, chooses latest one al
 
 test('same priority but different values adds warning, uses larger value', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
-    [ loc1, '2020-06-19', 'src2', { cases: 2 }, 1 ]
+    [ 'loc1', '2020-06-19', 'src1', { cases: 3 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src2', { cases: 2 }, 1 ]
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': {
           cases: 3
@@ -235,7 +221,7 @@ test('same priority but different values adds warning, uses larger value', t => 
         }
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -243,14 +229,13 @@ test('same priority but different values adds warning, uses larger value', t => 
 
 test('conflicting lower priority sources are ignored', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 33 }, 1 ],
-    [ loc1, '2020-06-19', 'src2', { cases: 22 }, 1 ],
-    [ loc1, '2020-06-19', 'src3', { cases: 1 }, 2 ]
+    [ 'loc1', '2020-06-19', 'src1', { cases: 33 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src2', { cases: 22 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src3', { cases: 1 }, 2 ]
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': {
           cases: 1
@@ -260,7 +245,7 @@ test('conflicting lower priority sources are ignored', t => {
         '2020-06-19': 'src3'
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -269,16 +254,15 @@ test('conflicting lower priority sources are ignored', t => {
 
 test('sanity check, multiple data points', t => {
   records = makeRecords([
-    [ loc1, '2020-06-19', 'src1', { cases: 3 }, 1 ],
-    [ loc1, '2020-06-19', 'src2', { cases: 2, deaths: 22 }, 1 ],
-    [ loc1, '2020-06-19', 'src3', { cases: 1, deaths: 11, tested: 111 }, 1 ],
-    [ loc1, '2020-06-20', 'src1', { cases: 1002, deaths: 1022 }, 1 ],
-    [ loc1, '2020-06-20', 'src2', { cases: 1001, deaths: 2222, tested: 1111 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src1', { cases: 3 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src2', { cases: 2, deaths: 22 }, 1 ],
+    [ 'loc1', '2020-06-19', 'src3', { cases: 1, deaths: 11, tested: 111 }, 1 ],
+    [ 'loc1', '2020-06-20', 'src1', { cases: 1002, deaths: 1022 }, 1 ],
+    [ 'loc1', '2020-06-20', 'src2', { cases: 1001, deaths: 2222, tested: 1111 }, 1 ],
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-19': {
           cases: 3,
@@ -310,7 +294,7 @@ test('sanity check, multiple data points', t => {
         }
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -320,7 +304,7 @@ test('sanity check, multiple data points', t => {
 test('timeseries fails if missing required fields in any record', t => {
 
   const minimalRecord = {
-    locationID: loc1,
+    locationID: 'loc1',
     date: '2020-06-19',
     source: 's',
     cases: 11
@@ -354,28 +338,27 @@ test('timeseries fails if missing required fields in any record', t => {
 
 test('combined data sources collapse correctly', t => {
   records = makeRecords([
-    [ loc1, '2020-06-17', 'src1', { cases: 1 } ],
-    [ loc1, '2020-06-18', 'src1', { cases: 1 } ],
+    [ 'loc1', '2020-06-17', 'src1', { cases: 1 } ],
+    [ 'loc1', '2020-06-18', 'src1', { cases: 1 } ],
 
-    [ loc1, '2020-06-19', 'src1', { cases: 1 } ],
-    [ loc1, '2020-06-19', 'src2', { deaths: 11 } ],
-    [ loc1, '2020-06-19', 'src3', { tested: 111 } ],
+    [ 'loc1', '2020-06-19', 'src1', { cases: 1 } ],
+    [ 'loc1', '2020-06-19', 'src2', { deaths: 11 } ],
+    [ 'loc1', '2020-06-19', 'src3', { tested: 111 } ],
 
-    [ loc1, '2020-06-20', 'src1', { cases: 2 } ],
-    [ loc1, '2020-06-20', 'src2', { deaths: 22 } ],
-    [ loc1, '2020-06-20', 'src3', { tested: 222 } ],
+    [ 'loc1', '2020-06-20', 'src1', { cases: 2 } ],
+    [ 'loc1', '2020-06-20', 'src2', { deaths: 22 } ],
+    [ 'loc1', '2020-06-20', 'src3', { tested: 222 } ],
 
-    [ loc1, '2020-06-21', 'src1', { cases: 3 } ],
-    [ loc1, '2020-06-21', 'src2', { deaths: 33 } ],
-    [ loc1, '2020-06-21', 'src3', { tested: 333 } ],
+    [ 'loc1', '2020-06-21', 'src1', { cases: 3 } ],
+    [ 'loc1', '2020-06-21', 'src2', { deaths: 33 } ],
+    [ 'loc1', '2020-06-21', 'src3', { tested: 333 } ],
 
-    [ loc1, '2020-06-22', 'src3', { tested: 444 } ],
-    [ loc1, '2020-06-23', 'src3', { tested: 555 } ],
+    [ 'loc1', '2020-06-22', 'src3', { tested: 444 } ],
+    [ 'loc1', '2020-06-23', 'src3', { tested: 555 } ],
   ])
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: {
         '2020-06-17': { cases: 1 },
         '2020-06-18': { cases: 1 },
@@ -403,7 +386,7 @@ test('combined data sources collapse correctly', t => {
         '2020-06-22..2020-06-23': 'src3'
       }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -417,19 +400,18 @@ test('characterization test: no case data', t => {
 
   records = [
     {
-      locationID: loc1,
+      locationID: 'loc1',
       date: '2020-06-19',
       source: 's'
     }
   ]
 
-  expected = [
-    {
-      locationID: loc1,
+  expected = {
+    loc1: {
       timeseries: { '2020-06-19': {} },
       sources: { '2020-06-19': {} }
     }
-  ]
+  }
 
   validateTimeseries(t)
   t.end()
@@ -438,7 +420,7 @@ test('characterization test: no case data', t => {
 
 test('sanity check, empty recordset does not throw', t => {
   records = []
-  expected = []
+  expected = {}
   validateTimeseries(t)
   t.end()
 })
