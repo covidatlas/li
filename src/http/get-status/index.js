@@ -55,7 +55,19 @@ async function statusJson () {
 function toHtml (s) {
   if (s === null || s === undefined || s === '')
     return '&nbsp;'
-  return ('' + s).replace(/\n/g, '<br />')
+  return ('' + s).replace(/ /g, '&nbsp;').replace(/\n/g, '<br />')
+}
+
+function combineError (d) {
+  function makeErr (heading, s) {
+    if (s === null)
+      return null
+    return `${heading}: \n${s}`
+  }
+  return [
+    makeErr('crawler', d.crawler_error),
+    makeErr('scraper', d.scraper_error)
+  ].filter(s => s).join('<hr />')
 }
 
 /** Html page table of summary. */
@@ -64,20 +76,27 @@ function toHtml (s) {
 // templating method we choose.
 function statusHtml (json) {
 
-  const shortDate = dt => (dt || '').replace('T', ' ').replace(/\..+/, '')
+  const shortDate = dt => (dt || '').replace('T', '\n').replace(/\..+/, '')
+  const shortStatus = (s, c) => s === null ? null : [ s, c ].join(' x ')
   const tblJson = json.details.map(d => {
     d.crawler_last_success = shortDate(d.crawler_last_success)
     d.scraper_last_success = shortDate(d.scraper_last_success)
+    d.crawler_status = shortStatus(d.crawler_status, d.crawler_consecutive)
+    d.scraper_status = shortStatus(d.scraper_status, d.scraper_consecutive)
+    d.error = combineError(d)
     return d
   })
 
   const fields = [
     'source', 'status',
-    'crawler_status', 'crawler_error', 'crawler_consecutive', 'crawler_last_success',
-    'scraper_status', 'scraper_error', 'scraper_consecutive', 'scraper_last_success'
+    'crawler_status', 'crawler_last_success',
+    'scraper_status', 'scraper_last_success',
+    'error'
   ]
-
-  const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
+  const headings = fields.
+        map(f => f.includes('consecutive') ? 'times' : f).
+        map(f => f.replace(/_/g, ' '))
+  const ths = headings.map(h => `<th>${h}</th>`).join('')
   const trs = tblJson.map(d => {
     const tr = fields.map(f => `<td>${ toHtml(d[f]) }</td>`).join('')
     return `<tr class='${d.status}'>${tr}</tr>`
