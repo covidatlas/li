@@ -64,6 +64,13 @@ function toHtml (s) {
 // templating method we choose.
 function statusHtml (json) {
 
+  const shortDate = dt => (dt || '').replace('T', ' ').replace(/\..+/, '')
+  const tblJson = json.details.map(d => {
+    d.crawler_last_success = shortDate(d.crawler_last_success)
+    d.scraper_last_success = shortDate(d.scraper_last_success)
+    return d
+  })
+
   const fields = [
     'source', 'status',
     'crawler_status', 'crawler_error', 'crawler_consecutive', 'crawler_last_success',
@@ -71,10 +78,7 @@ function statusHtml (json) {
   ]
 
   const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
-  const shortDate = dt => (dt || '').replace('T', ' ').replace(/\..+/, '')
-  const trs = json.details.map(d => {
-    d.crawler_last_success = shortDate(d.crawler_last_success)
-    d.scraper_last_success = shortDate(d.scraper_last_success)
+  const trs = tblJson.map(d => {
     const tr = fields.map(f => `<td>${ toHtml(d[f]) }</td>`).join('')
     return `<tr class='${d.status}'>${tr}</tr>`
   })
