@@ -16,6 +16,17 @@ module.exports = function annotateLocations (locations) {
     }
 
     for (const bit of bits) {
+
+      // Some locations have UNASSIGNED for the case data location
+      // (i.e. unassigned state, or unassigned county).  In this case,
+      // skip the different cases handled below.  This will mean that
+      // the UNASSIGNED data will be given the same annotation as the
+      // next-higher level: UNASSIGNED state data will get
+      // country-level annotations, and UNASSIGNED county data will
+      // get state-level annotations.
+      if (!bit.includes(':'))
+        continue
+
       const p = bit.split(':')
       const level = p[0]
       const id = p[1].toUpperCase()
