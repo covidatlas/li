@@ -58,7 +58,7 @@ test('entry mapped to multiple distinct values fails', t => {
     cases: 'case',
     deaths: 'death'
   }
-  const errRe = /Multiple matches for deathlike_case in mapping/
+  const errRe = /Multiple matches for "deathlike_case" in mapping/
   t.throws(() => normalizeKey('deathlike_case', mapping), errRe)
   t.end()
 })
@@ -101,7 +101,7 @@ test('all headings must be mapped', t => {
   const mapping = {
     county: 'county'
   }
-  const re = new RegExp('No matches for cases in mapping')
+  const re = new RegExp('No matches for "cases" in mapping')
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
@@ -195,7 +195,7 @@ test('fails if no match', t => {
     county: /nomatch/,
     cases: 'cases'
   }
-  const re = /No matches for county in mapping/
+  const re = /No matches for "county" in mapping/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
@@ -205,7 +205,7 @@ test('fails if ambiguous match', t => {
     county: /c/,
     cases: /c/
   }
-  const re = /Multiple matches for county in mapping/
+  const re = /Multiple matches for "county" in mapping/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
@@ -256,7 +256,7 @@ test('fails if multiple matchers match the same column', t => {
     cases: [ 'apples' ],
     deaths: [ /pples/, 'elephants' ]
   }
-  const re = /Multiple matches for apples in mapping/
+  const re = /Multiple matches for "apples" in mapping/
   t.throws(() => { propertyColumnIndices(headings, mapping) }, re)
   t.end()
 })
