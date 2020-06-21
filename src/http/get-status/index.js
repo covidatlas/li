@@ -3,7 +3,7 @@ const arc = require('@architect/functions')
 
 /** For each source, get scrape and crawl status, and last successful
  * datetime. */
-async function statusSummaryJson () {
+async function statusJson () {
 
   const data = await arc.tables()
 
@@ -20,7 +20,7 @@ async function statusSummaryJson () {
   const sources = [ ...new Set(statuses.map(s => s.source)) ].sort()
 
   // TODO (status) add link to raw logs?
-  const summary = sources.map(source => {
+  const details = sources.map(source => {
     return {
       source,
       ...eventDetails(source, 'crawler'),
@@ -35,14 +35,16 @@ async function statusSummaryJson () {
     }
   })
 
-  return summary
+  return {
+    details
+  }
 }
 
 /** Html page table of summary. */
 // TODO (status) generate HTML using some kind of templating engine.
 // Hacking to get HTML output for now, to be replaced w/ whatever
 // templating method we choose.
-function statusSummaryHtml (summary) {
+function statusHtml (json) {
 
   const fields = [
     'source', 'status',
@@ -52,7 +54,7 @@ function statusSummaryHtml (summary) {
 
   const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
   const shortDate = dt => dt.replace('T', ' ').replace(/\..+/, '')
-  const trs = summary.map(d => {
+  const trs = json.details.map(d => {
     d.crawler_last_success = shortDate(d.crawler_last_success || '')
     d.scraper_last_success = shortDate(d.scraper_last_success || '')
     d.crawler_error = (d.crawler_error || '').replace(/\n/g, '<br />')
@@ -124,12 +126,12 @@ document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() =
  * Returns an array of statuses currently in the system, or html if ?format=html
  */
 async function getStatus (request) {
-  const summary = await statusSummaryJson()
+  const json = await statusJson()
 
   // Default response is json.
   const result = {
     statusCode: 200,
-    body: JSON.stringify(summary, null, 2),
+    body: JSON.stringify(json, null, 2),
     headers: {
       'cache-control': 'max-age=300, s-maxage=300'
     }
@@ -138,7 +140,7 @@ async function getStatus (request) {
   // Html if requested.
   const format = request.queryStringParameters['format'] || ''
   if (format.toLowerCase() === 'html') {
-    result.body = statusSummaryHtml(summary)
+    result.body = statusHtml(json)
     result.headers['Content-Type'] = 'text/html'
   }
 
