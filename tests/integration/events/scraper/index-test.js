@@ -102,7 +102,7 @@ test('scrape writes to dynamodb', async t => {
 })
 
 
-test.only('can specify the date in the scraped record', async t => {
+test('can specify the date in the scraped record', async t => {
   await utils.setup()
 
   const hardcodedDate = '2020-01-23'
