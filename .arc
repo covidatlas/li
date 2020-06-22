@@ -16,6 +16,7 @@ get /get/headless
 get /locations
 get /locations/:location
 get /status
+get /invocations
 
 @events
 crawler     # Crawls our sources
