@@ -102,6 +102,31 @@ test('scrape writes to dynamodb', async t => {
 })
 
 
+test('can specify the date in the scraped record', async t => {
+  await utils.setup()
+
+  const hardcodedDate = '2020-01-23'
+  const caseData = { cases: 10, deaths: 20, tested: 30, hospitalized: 40, icu: 50, date: hardcodedDate }
+  utils.writeFakeSourceContent('json-source/data.json', caseData)
+
+  const recs = await utils.crawl('json-source').
+        then(() => utils.scrape('json-source')).
+        then(() => arc.tables()).
+        then(tbls => tbls['case-data'].scan({})).
+        then(recs => recs.Items)
+  t.equal(recs.length, 1, '1 record only')
+
+  t.equal(recs[0].date, hardcodedDate, 'date hard-coded to 2020-01-23')
+
+  const actualDateSourceDate = recs[0].dateSource.split('#')[0]
+  t.ok(actualDateSourceDate !== hardcodedDate, `${actualDateSourceDate} <> ${hardcodedDate}`)
+  t.match(actualDateSourceDate, /\d{4}-\d{2}-\d{2}/)
+
+  await utils.teardown()
+  t.end()
+})
+
+
 test('cached file does not have to be compressed when working locally', async t => {
   await utils.setup()
 
