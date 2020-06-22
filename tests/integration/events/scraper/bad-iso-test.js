@@ -1,7 +1,7 @@
 process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
-const utils = require('../utils.js')
+const utils = require('../../_lib/utils.js')
 
 test('bad iso code throws during scrape', async t => {
   await utils.setup()

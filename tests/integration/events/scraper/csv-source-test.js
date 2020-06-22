@@ -1,8 +1,8 @@
 process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
-const utils = require('../utils.js')
-const testCache = require('../../_lib/testcache.js')
+const utils = require('../../_lib/utils.js')
+const testCache = utils.testCache
 
 
 // TODO (testing): ensure CSV file actually has real BOM char, and is on a case data field.

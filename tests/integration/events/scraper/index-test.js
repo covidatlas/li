@@ -2,10 +2,10 @@ process.env.NODE_ENV = 'testing'
 
 const arc = require('@architect/functions')
 const test = require('tape')
-const utils = require('../utils.js')
+const utils = require('../../_lib/utils.js')
 const fs = require('fs')
 const path = require('path')
-const testCache = require('../../_lib/testcache.js')
+const testCache = utils.testCache
 
 
 test('scrape extracts data from cached file', async t => {

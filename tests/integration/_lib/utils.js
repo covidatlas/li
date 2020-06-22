@@ -128,5 +128,6 @@ module.exports = {
   copyFixture,
   crawl,
   scrape,
-  validateResults
+  validateResults,
+  testCache
 }
