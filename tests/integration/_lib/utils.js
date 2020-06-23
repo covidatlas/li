@@ -20,11 +20,18 @@ function makeEventMessage (hsh) {
   return { Records: [ { Sns: { Message: JSON.stringify(hsh) } } ] }
 }
 
-/** The port for tests. */
-const sandboxPort = 5555
+/** The port for tests.
+ *
+ * We have to change the port for each integration test, since some
+ * tests raise asynchronous events which don't get handled until
+ * _much_ later, and end up polluting subsequent tests!  This leads to
+ * fun debugging scenarios, where "fun" !== "enjoyable". */
+let sandboxPort = 5555
 
 async function setup () {
+  // console.log(`Running sandbox on port ${sandboxPort}`)
   await sandbox.start({ port: sandboxPort, quiet: true })
+  sandboxPort += 1
   testCache.setup()
   fakeCrawlSites.deleteAllFiles()
 }
@@ -39,12 +46,11 @@ async function setup () {
  * testing. */
 process.on('uncaughtException', err => {
   const ignoreExceptions = [
-    `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
-    `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`,
-    `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 2}`,
+    `connect ECONNRESET 127.0.0.1:`,
+    `connect ECONNREFUSED 127.0.0.1:`
   ]
-  if (ignoreExceptions.includes(err.message)) {
-    // const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
+  if (ignoreExceptions.some(e => err.message.includes(e))) {
+    // const msg = `(Ignoring sandbox "${err.message}"`
     // console.error(msg)
   }
   else
