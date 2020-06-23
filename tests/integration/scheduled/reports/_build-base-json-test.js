@@ -4,7 +4,7 @@ const test = require('tape')
 const utils = require('../../_lib/utils.js')
 const { buildBaseJson } = require('../../../../src/scheduled/reports/_build-base-json.js')
 
-test.only('smoke test report with single location', async t => {
+test('smoke test report with single location', async t => {
   await utils.setup()
 
   // Generated report should contain these dates:
