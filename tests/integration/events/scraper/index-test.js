@@ -159,8 +159,7 @@ test('can specify the date in the scraped record', async t => {
   t.equal(recs[0].date, hardcodedDate, 'date hard-coded to 2020-01-23')
 
   const actualDateSourceDate = recs[0].dateSource.split('#')[0]
-  t.ok(actualDateSourceDate !== hardcodedDate, `${actualDateSourceDate} <> ${hardcodedDate}`)
-  t.match(actualDateSourceDate, /\d{4}-\d{2}-\d{2}/)
+  t.equal(actualDateSourceDate, hardcodedDate, 'uses the same date for dateSource')
 
   await utils.teardown()
   t.end()
