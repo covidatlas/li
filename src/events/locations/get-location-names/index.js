@@ -3,7 +3,6 @@ const iso2Codes = require('country-levels/iso2.json')
 const fipsCodes = require('country-levels/fips.json')
 const slugify = require('slugify')
 const { UNASSIGNED } = require('@architect/shared/sources/_lib/constants.js')
-const assert = require('assert')
 
 module.exports = function getLocationNames (locationIDs) {
 
@@ -14,13 +13,30 @@ module.exports = function getLocationNames (locationIDs) {
       locationID
     }
 
-    // Construct the mostly-denormalized location object (including the human-readable slug) from ISO / FIPS data
+    // Construct the mostly-denormalized location object (including
+    // the human-readable slug) from ISO / FIPS data
     let locationName = []
     for (const bit of bits) {
-      const p = bit.split(':')
-      assert(p.length >= 2, `Expected at least 2 parts after split by : for ${p}`)
-      const level = p[0]
-      const id = p[1].toUpperCase()
+
+      // Some locations report some data as UNASSIGNED for the state
+      // or county.  In these cases, the UNASSIGNED part doesn't have
+      // an associated iso2 or fips code, e.g.
+      //
+      // * iso1:us#iso2:us-fl#(unassigned)
+      // * iso1:us#iso2:us-ga#(unassigned)
+      //
+      // We may have unassigned states as well:
+      //
+      // * iso1:XX#(unassigned)
+
+      let level = ''
+      let id = bit
+
+      if (bit.includes(':')) {
+        const p = bit.split(':')
+        level = p[0]
+        id = p[1].toUpperCase()
+      }
 
       if (level === 'iso1' && iso1Codes[id]) {
         // Location name
@@ -36,7 +52,7 @@ module.exports = function getLocationNames (locationIDs) {
         // Location name
         locationName.unshift(name)
       }
-      else if (p[1] === UNASSIGNED) {
+      else if (id === UNASSIGNED) {
         locationName.unshift(UNASSIGNED)
       }
     }

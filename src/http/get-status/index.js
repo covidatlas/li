@@ -3,7 +3,7 @@ const arc = require('@architect/functions')
 
 /** For each source, get scrape and crawl status, and last successful
  * datetime. */
-async function statusSummaryJson () {
+async function statusJson () {
 
   const data = await arc.tables()
 
@@ -12,16 +12,15 @@ async function statusSummaryJson () {
 
   function eventDetails (source, e) {
     const currStatus = statuses.find(st => st.source === source && st.event === e) || {}
-    return [ 'status', 'consecutive', 'last_success' ].reduce((hsh, f) => {
+    return [ 'status', 'consecutive', 'last_success', 'error' ].reduce((hsh, f) => {
       return { ...hsh, [`${e}_${f}`]: currStatus[f] || null }
     }, {} )
   }
 
   const sources = [ ...new Set(statuses.map(s => s.source)) ].sort()
 
-  // TODO (status) store error message in the tables
   // TODO (status) add link to raw logs?
-  const summary = sources.map(source => {
+  const details = sources.map(source => {
     return {
       source,
       ...eventDetails(source, 'crawler'),
@@ -36,27 +35,70 @@ async function statusSummaryJson () {
     }
   })
 
-  return summary
+  const counts = {
+    successes: d => d.status === 'success',
+    failures: d => d.status === 'failed',
+    crawler_failures: d => d.crawler_status === 'failed',
+    scraper_failures: d => d.scraper_status === 'failed'
+  }
+  const summary = Object.entries(counts).reduce((hsh, pair) => {
+    const [ key, f ] = pair
+    return Object.assign(hsh, { [key]: details.filter(f).length })
+  }, {})
+
+  return {
+    details,
+    summary
+  }
+}
+
+function toHtml (s) {
+  if (s === null || s === undefined || s === '')
+    return '&nbsp;'
+  return ('' + s).replace(/ /g, '&nbsp;').replace(/\n/g, '<br />')
+}
+
+function combineError (d) {
+  function makeErr (heading, s) {
+    if (s === null)
+      return null
+    return `${heading}: \n${s}`
+  }
+  return [
+    makeErr('crawler', d.crawler_error),
+    makeErr('scraper', d.scraper_error)
+  ].filter(s => s).join('<hr />')
 }
 
 /** Html page table of summary. */
 // TODO (status) generate HTML using some kind of templating engine.
 // Hacking to get HTML output for now, to be replaced w/ whatever
 // templating method we choose.
-function statusSummaryHtml (summary) {
+function statusHtml (json) {
+
+  const shortDate = dt => (dt || '').replace('T', '\n').replace(/\..+/, '')
+  const shortStatus = (s, c) => s === null ? null : [ s, c ].join(' x ')
+  const tblJson = json.details.map(d => {
+    d.crawler_last_success = shortDate(d.crawler_last_success)
+    d.scraper_last_success = shortDate(d.scraper_last_success)
+    d.crawler_status = shortStatus(d.crawler_status, d.crawler_consecutive)
+    d.scraper_status = shortStatus(d.scraper_status, d.scraper_consecutive)
+    d.error = combineError(d)
+    return d
+  })
 
   const fields = [
     'source', 'status',
-    'crawler_status', 'crawler_consecutive', 'crawler_last_success',
-    'scraper_status', 'scraper_consecutive', 'scraper_last_success'
+    'crawler_status', 'crawler_last_success',
+    'scraper_status', 'scraper_last_success',
+    'error'
   ]
-
-  const ths = fields.map(f => `<th>${f.replace(/_/g, ' ')}</th>`).join('')
-  const shortDate = dt => dt.replace('T', ' ').replace(/\..+/, '')
-  const trs = summary.map(d => {
-    d.crawler_last_success = shortDate(d.crawler_last_success || '')
-    d.scraper_last_success = shortDate(d.scraper_last_success || '')
-    const tr = fields.map(f => `<td>${ d[f] || '&nbsp;' }</td>`).join('')
+  const headings = fields.
+        map(f => f.includes('consecutive') ? 'times' : f).
+        map(f => f.replace(/_/g, ' '))
+  const ths = headings.map(h => `<th>${h}</th>`).join('')
+  const trs = tblJson.map(d => {
+    const tr = fields.map(f => `<td>${ toHtml(d[f]) }</td>`).join('')
     return `<tr class='${d.status}'>${tr}</tr>`
   })
 
@@ -64,14 +106,13 @@ function statusSummaryHtml (summary) {
 <html>
 
 <style>
-h1 {
+p, h1 {
   font-family: Arial;
 }
 
 th, td {
   padding: 5px;
   text-align: left;
-  /* font-family: sans-serif; */
   border-bottom: 1px solid #ddd;
 }
 
@@ -84,9 +125,11 @@ tr:hover { background-color: #f5f5f5; }
 
 <body>
 <h1>Source Statuses</h1>
-<pre><code>
 
-<table style='cell-padding: 5px;'>
+<p>successes: ${json.summary.successes}, failures: ${json.summary.failures}</p>
+
+<pre><code>
+<table>
 <tr>${ths}</tr>
 ${trs.join('\n')}
 </table>
@@ -123,12 +166,12 @@ document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() =
  * Returns an array of statuses currently in the system, or html if ?format=html
  */
 async function getStatus (request) {
-  const summary = await statusSummaryJson()
+  const json = await statusJson()
 
   // Default response is json.
   const result = {
     statusCode: 200,
-    body: JSON.stringify(summary, null, 2),
+    body: JSON.stringify(json, null, 2),
     headers: {
       'cache-control': 'max-age=300, s-maxage=300'
     }
@@ -137,7 +180,7 @@ async function getStatus (request) {
   // Html if requested.
   const format = request.queryStringParameters['format'] || ''
   if (format.toLowerCase() === 'html') {
-    result.body = statusSummaryHtml(summary)
+    result.body = statusHtml(json)
     result.headers['Content-Type'] = 'text/html'
   }
 

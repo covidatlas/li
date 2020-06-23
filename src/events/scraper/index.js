@@ -34,14 +34,16 @@ async function scrapeSource (event) {
   }
   catch (err) {
     // Cache loading date bounds errors are valid, but do not need to update status
-    if (!err.message.startsWith('DATE_BOUNDS_ERROR')) {
+    const errMsg = err.message
+    if (!errMsg.startsWith('DATE_BOUNDS_ERROR')) {
       // Alert status to a crawl failure
       arc.events.publish({
         name: 'status',
         payload: {
           source: event.source,
           event: 'scraper',
-          status: 'failed'
+          status: 'failed',
+          error: errMsg
         }
       })
     }

@@ -18,7 +18,7 @@ module.exports = {
         }
       ],
       scrape (json) {
-        return {
+        const record = {
           // TODO (testing) Add any fields that we need to check.
           cases: json.cases,
           deaths: json.deaths,
@@ -26,6 +26,9 @@ module.exports = {
           hospitalized: json.hospitalized,
           icu: json.icu
         }
+        if (json.date)
+          record.date = json.date
+        return record
       }
     }
   ]

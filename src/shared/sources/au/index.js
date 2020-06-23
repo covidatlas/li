@@ -9,6 +9,7 @@ const mapping = {
   state: [ 'jurisdiction', 'location' ],
   cases: 'confirmed cases',
   deaths: 'deaths',
+  ignore: [ '', 'new cases in last 24 hours' ]
 }
 
 module.exports = {

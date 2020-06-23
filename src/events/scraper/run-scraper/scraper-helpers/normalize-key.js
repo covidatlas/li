@@ -1,4 +1,3 @@
-const is = require('is')
 const assert = require('assert')
 const slugify = require('slugify')
 const parse = require('@architect/shared/sources/_lib/parse.js')
@@ -59,8 +58,8 @@ function _allPropertiesForHeading (heading, mapping) {
 
   const matchesHeading = m => {
     return false ||
-      (is.string(m) && slugged(heading).includes(slugged(m))) ||
-      (is.regexp(m) && heading.match(m))
+      (typeof(m) === 'string' && slugged(heading).includes(slugged(m))) ||
+      (m instanceof RegExp && heading.match(m))
   }
 
   return Object.keys(mapping).filter(prop => {
@@ -72,13 +71,13 @@ function _allPropertiesForHeading (heading, mapping) {
 function _propertyForHeading (heading, mapping) {
   const props = _allPropertiesForHeading(heading, mapping)
   if (props.length === 0)
-    throw new Error(`No matches for ${heading} in mapping`)
+    throw new Error(`No matches for "${heading}" in mapping`)
 
   const realProps = props.filter(p => p !== 'ignore')
   if (realProps.length === 0)
     return null
   if (realProps.length > 1)
-    throw new Error(`Multiple matches for ${heading} in mapping`)
+    throw new Error(`Multiple matches for "${heading}" in mapping`)
   return realProps[0]
 }
 
