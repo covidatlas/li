@@ -35,9 +35,9 @@ module.exports = function normalizeData (source, output, date) {
       id += `#${location.county}`
     }
 
-    // Fill in the date if it's not already specified.
-    if (!location.date)
-      location.date = date
+    // If the record date is specified in the source data, use it;
+    // otherwise use the scrape date.
+    const useDate = location.date || date
 
     // Normalize
     const locationID = id.toLowerCase()
@@ -45,7 +45,8 @@ module.exports = function normalizeData (source, output, date) {
     // Add secondary keys
     return Object.assign(location, {
       locationID,
-      dateSource: `${date}#${_sourceKey}`,
+      date: useDate,
+      dateSource: `${useDate}#${_sourceKey}`,
       source: _sourceKey,
       priority: source.priority || 0 // Backfill to 0 for sorting later
     })

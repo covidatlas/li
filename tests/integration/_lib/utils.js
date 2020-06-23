@@ -114,7 +114,7 @@ async function waitForDynamoTable (tablename, timeoutms = 10000, interval = 200)
       console.log('waiting for dynamoDB ... ' + remaining)
       remaining -= interval
       const tmp = await arc.tables().
-            then(tbls => tbls.locations.scan({})).
+            then(tbls => tbls[tablename].scan({})).
             then(result => result.Items)
       if (tmp.length > 0)
         resolve(tmp)
