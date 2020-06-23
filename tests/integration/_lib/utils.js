@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'testing'
 
 const sandbox = require('@architect/sandbox')
+const arc = require('@architect/functions')
 const path = require('path')
 const intDir = path.join(process.cwd(), 'tests', 'integration')
 
@@ -39,7 +40,8 @@ async function setup () {
 process.on('uncaughtException', err => {
   const ignoreExceptions = [
     `connect ECONNRESET 127.0.0.1:${sandboxPort + 1}`,
-    `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`
+    `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 1}`,
+    `connect ECONNREFUSED 127.0.0.1:${sandboxPort + 2}`,
   ]
   if (ignoreExceptions.includes(err.message)) {
     // const msg = `(Ignoring sandbox "${err.message}" thrown during teardown)`
@@ -91,6 +93,38 @@ async function scrape (sourceKey) {
   return fullResult
 }
 
+
+/** Wait for dynamoDB table to be loaded, polling until timeout.
+ *
+ * Sometimes, we need to wait for a dynamoDB table to be loaded.  For
+ * example, scraping creates an event to load location data with
+ * `arc.events.publish({ name: 'locations', payload: ... })`, but that
+ * is handled in a separate event queue.
+ */
+async function waitForDynamoTable (tablename, timeoutms = 10000, interval = 200) {
+  return new Promise(resolve => {
+    let remaining = timeoutms
+    var check = async () => {
+      console.log('waiting for dynamoDB ... ' + remaining)
+      remaining -= interval
+      const tmp = await arc.tables().
+            then(tbls => tbls.locations.scan({})).
+            then(result => result.Items)
+      if (tmp.length > 0)
+        resolve(tmp)
+      else if (remaining < 0) {
+        console.log('Timed out ... returning empty')
+        resolve([])
+      }
+      else
+        setTimeout(check, interval)
+    }
+    setTimeout(check, interval)
+  })
+}
+
+
+/** Validate the results of a scrape. */
 function validateResults (t, fullResult, expected) {
   t.ok(fullResult, 'Have fullResult')
   if (!fullResult)
@@ -128,6 +162,7 @@ module.exports = {
   copyFixture,
   crawl,
   scrape,
+  waitForDynamoTable,
   validateResults,
   testCache
 }

@@ -97,6 +97,45 @@ test('scrape writes to dynamodb', async t => {
     t.equal(expected[key], actual[key], key)
   })
 
+  // Scrape creates an event to load location data with
+  // arc.events.publish({ name: 'locations', payload: ... }), but that
+  // is handled in a separate event queue.  We need to wait until that
+  // is processed before we can continue.
+  const locations = await utils.waitForDynamoTable('locations', 10000, 200)
+  t.equal(locations.length, 1, 'Have 1 location')
+  t.equal(recs.Items.length, 1, '1 record only')
+
+  const expectedLoc = {
+    locationID: 'iso1:us#iso2:us-ca#fips:06007',
+    slug: 'butte-county-california-us',
+    name: 'Butte County, California, US',
+    area: {
+      squareMeters: 4348071591,
+      landSquareMeters: 4238438186,
+      waterSquareMeters: 105311003
+    },
+    coordinates: [
+      -121.6,
+      39.67
+    ],
+    countryID: 'iso1:US',
+    countryName: 'United States',
+    population: 219186,
+    tz: 'America/Los_Angeles',
+    level: 'county',
+    stateID: 'iso2:US-CA',
+    stateName: 'California',
+    countyID: 'fips:06007',
+    countyName: 'Butte County'
+    // created: '2020-06-23T00:10:18.744Z'  // Don't check dates.
+  }
+
+  // Don't check dates
+  t.match(locations[0].created, /\d{4}-\d{2}-\d{2}T.*/, 'have created date')
+  const actualLoc = Object.assign({}, locations[0])
+  delete actualLoc.created
+  t.deepEqual(actualLoc, expectedLoc, 'dynamoDB Location')
+
   await utils.teardown()
   t.end()
 })
