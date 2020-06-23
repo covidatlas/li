@@ -4,8 +4,10 @@ const test = require('tape')
 const utils = require('../../_lib/utils.js')
 const { buildBaseJson } = require('../../../../src/scheduled/reports/_build-base-json.js')
 
-test.only('smoke test report with single record', async t => {
+test('smoke test report with single record', async t => {
   await utils.setup()
+  const initialLocs = await utils.waitForDynamoTable('locations', 10000, 200)
+  t.equal(initialLocs.length, 0, `Should have 0 locations at start of test, but got ${JSON.stringify(initialLocs)}`)
 
   const caseData = { cases: 10, deaths: 20, tested: 30, hospitalized: 40, icu: 50, date: '2020-05-25' }
   utils.writeFakeSourceContent('json-source/data.json', caseData)
@@ -21,12 +23,15 @@ test.only('smoke test report with single record', async t => {
   t.equal(locations.length, 1, 'Sanity check, have 1 location')
 
   const actual = await buildBaseJson()
+  t.equal(actual.length, 1, 'single record in report')
 
-  const expected = {
-    something: { data: 'to-come-later' }
-  }
-
-  t.deepEqual(actual, expected)
+  // Note: don't check the detail, just basic structure. Other tests
+  // check dynamoDB writes and timeseries generation.
+  const first = actual[0]
+  t.ok(first.locationID, 'have location ID')
+  t.equal(first.locationID, 'iso1:us#iso2:us-ca#fips:06007')
+  t.ok(first.timeseries, 'have timeseries')
+  t.ok(first.sources, 'have sources')
 
   await utils.teardown()
   t.end()

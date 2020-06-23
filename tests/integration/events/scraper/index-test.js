@@ -134,6 +134,7 @@ test('scrape writes to dynamodb', async t => {
   t.match(locations[0].created, /\d{4}-\d{2}-\d{2}T.*/, 'have created date')
   const actualLoc = Object.assign({}, locations[0])
   delete actualLoc.created
+  delete actualLoc.updated
   t.deepEqual(actualLoc, expectedLoc, 'dynamoDB Location')
 
   await utils.teardown()
