@@ -31,7 +31,7 @@ let sandboxPort = 5555
 async function setup () {
   // console.log(`Running sandbox on port ${sandboxPort}`)
   await sandbox.start({ port: sandboxPort, quiet: true })
-  sandboxPort += 1
+  sandboxPort += 5
   testCache.setup()
   fakeCrawlSites.deleteAllFiles()
 }
@@ -96,6 +96,9 @@ async function crawl (sourceKey) {
 async function scrape (sourceKey) {
   const event = makeEventMessage({ source: sourceKey, _sourcesPath: sourcesPath })
   const fullResult = await scraperHandler(event)
+
+  // Wait for scrape locations to be created.
+  await waitForDynamoTable('locations', 5000, 250)
   return fullResult
 }
 
@@ -108,14 +111,14 @@ async function scrape (sourceKey) {
  * is handled in a separate event queue.
  */
 async function waitForDynamoTable (tablename, timeoutms = 10000, interval = 200) {
+  const data = await arc.tables()
   return new Promise(resolve => {
     let remaining = timeoutms
     var check = async () => {
-      console.log('waiting for dynamoDB ... ' + remaining)
+      if (remaining % 500 === 0)
+        console.log(`  waiting for dynamoDB ${tablename} (${remaining}ms left)`)
       remaining -= interval
-      const tmp = await arc.tables().
-            then(tbls => tbls[tablename].scan({})).
-            then(result => result.Items)
+      const tmp = await data[tablename].scan({}).then(r => r.Items)
       if (tmp.length > 0)
         resolve(tmp)
       else if (remaining < 0) {
