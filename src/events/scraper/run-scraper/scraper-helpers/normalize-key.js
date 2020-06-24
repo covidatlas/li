@@ -1,27 +1,17 @@
 const assert = require('assert')
 const slugify = require('slugify')
 const parse = require('@architect/shared/sources/_lib/parse.js')
-
+const caseFields = require('@architect/shared/constants/case-data-fields.js')
 
 /**
  * Schema fields that we can use as mapping 'destinations' when
  * mapping headings. */
 const _validProperties = {
 
-  numeric: [
-    'active',
-    'cases',
-    'deaths',
-    'hospitalized',
-    'icu',
-    'recovered',
-    'tested',
-
-    // Not in final schema, used for negative
-    // results to then combine with cases to get
-    // `tested` number.
-    'testedNegative'
-  ],
+  // Add 'testedNegative' as a valid field; some areas report this
+  // separately.  This data is then combined with `cases` to get
+  // `tested` values.
+  numeric: caseFields.concat([ 'testedNegative' ]),
 
   text: [
     'county',

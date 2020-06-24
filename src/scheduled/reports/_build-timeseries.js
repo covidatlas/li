@@ -1,14 +1,5 @@
 /** Case data fields to include in reports. */
-// TODO (data) validate the fields that we want to include
-// TODO (data) extract these fields as a common constant, and use everywhere
-const reportFields = [
-  'cases',
-  'deaths',
-  'hospitalized',
-  'icu',
-  'recovered',
-  'tested',
-]
+const reportFields = require('@architect/shared/constants/case-data-fields.js')
 
 /** Determines final value for a given field in a set of records.
  *

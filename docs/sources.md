@@ -80,6 +80,8 @@ result = {
 }
 ```
 
+Note: the data fields actually exported during report generation are listed in `src/shared/constants/case-data-fields.js`.
+
 #### Returning an array
 
 Returning an array of objects is useful for aggregate sources, sources that provide information for more than one geographical area. For example, [Canada](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html?topic=tilelink) provides information for all provinces of the country. If the scraper returns an array, each object in the array will have the attributes specified in the source object appended, meaning you only need to specify the fields that change per location (`county`, `cases`, `deaths` for example).
