@@ -6,6 +6,8 @@ This project exists to crawl, scrape, de-duplicate, and cross-check COVID-19 pan
 
 Every piece of data collected is accessible tagged with GeoJSON, population data, citations of the sources from which the data was obtained, and other related metadata.
 
+# Consumers
+
 <!--
 ## Where's the data?
 
@@ -23,11 +25,18 @@ TBD ... Read the [Data Fields](./docs/data_fields.md) documentation for
 details on exactly what each field in the dataset means.
 -->
 
+## Migrating from CoronaDataScraper
+
+The prior version of this project, [coronadatascraper](https://github.com/covidatlas/coronadatascraper), generates and hosts reports at https://coronadatascraper.com/#home.  Eventually, these reports will be discontinued, but no date is set yet.
+
+* [Migrating from CDS data to Li data](./docs/migrating_from_cds_to_li.md)
+
+
+# Developers
 
 ## Get started
 
 Check out our [Getting Started](./docs/getting_started.md) guide to help get our project running on your local machine.
-
 
 ## Contributing
 
