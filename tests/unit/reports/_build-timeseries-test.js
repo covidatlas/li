@@ -65,7 +65,7 @@ test('two dates from single source', t => {
     loc1: {
       timeseries: {
         '2020-06-19': { cases: 10 },
-        '2020-06-20': { cases: 20 }
+        '2020-06-20': { cases: 20, growthFactor: 2 }
       },
       sources: {
         '2020-06-19..2020-06-20': 'src1'
@@ -89,7 +89,7 @@ test('multiple locations', t => {
     loc1: {
       timeseries: {
         '2020-06-19': { cases: 10 },
-        '2020-06-20': { cases: 20 }
+        '2020-06-20': { cases: 20, growthFactor: 2 }
       },
       sources: {
         '2020-06-19..2020-06-20': 'src1'
@@ -272,7 +272,8 @@ test('sanity check, multiple data points', t => {
         '2020-06-20': {
           cases: 1002,
           deaths: 2222,
-          tested: 1111
+          tested: 1111,
+          growthFactor: 334
         }
       },
       sources: {
@@ -360,22 +361,30 @@ test('combined data sources collapse correctly', t => {
   expected = {
     loc1: {
       timeseries: {
-        '2020-06-17': { cases: 1 },
-        '2020-06-18': { cases: 1 },
+        '2020-06-17': {
+          cases: 1
+        },
+        '2020-06-18': {
+          cases: 1,
+          growthFactor: 1
+        },
         '2020-06-19': {
           cases: 1,
           deaths: 11,
-          tested: 111
+          tested: 111,
+          growthFactor: 1
         },
         '2020-06-20': {
           cases: 2,
           deaths: 22,
-          tested: 222
+          tested: 222,
+          growthFactor: 2
         },
         '2020-06-21': {
           cases: 3,
           deaths: 33,
-          tested: 333
+          tested: 333,
+          growthFactor: 1.5
         },
         '2020-06-22': { tested: 444 },
         '2020-06-23': { tested: 555 }
@@ -428,7 +437,7 @@ test('sanity check, empty recordset does not throw', t => {
 
 
 /*
-Rollup tests (separate module)
+TODO (reports) Rollup tests (separate module)
 if higher level is present, it's left alone
 if no higher level, the lower levels roll up to make the higher level
 if higher level exists, and lower levels don't roll up to match the higher level, print warning

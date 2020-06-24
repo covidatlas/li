@@ -119,11 +119,29 @@ function collapseSourceDates (dateSourceHash) {
 
 }
 
+
+/** Add growth factor to all dates for the location. */
+function addGrowthFactor (ts, dates) {
+  function casesAt (dt) {
+    if (ts[dt] === undefined) return null
+    if ((ts[dt].cases || 0) === 0) return null
+    return ts[dt].cases
+  }
+
+  for (var i = 1; i < dates.length; i++) {
+    const curr = casesAt(dates[i])
+    const prev = casesAt(dates[i - 1])
+    if (curr && prev) {
+      ts[dates[i]].growthFactor = Math.round((curr/prev + Number.EPSILON) * 100) / 100
+    }
+  }
+}
+
 /** Get timeseries and any warnings for a locationID using the set of
  * records. */
 function locationDetails (locationID, records) {
   const locRecords = records.filter(rec => rec.locationID === locationID)
-  const dates = [ ...new Set(locRecords.map(rec => rec.date)) ]
+  const dates = [ ...new Set(locRecords.map(rec => rec.date)) ].sort()
 
   const result = dates.reduce((hsh, d) => {
     const atDate = locRecords.filter(lr => lr.date === d)
@@ -136,6 +154,8 @@ function locationDetails (locationID, records) {
 
     return hsh
   }, { timeseries: {}, sources: {}, warnings: {} })
+
+  addGrowthFactor(result.timeseries, dates)
 
   result.sources = collapseSourceDates(result.sources)
 
