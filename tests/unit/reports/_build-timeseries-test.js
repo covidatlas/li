@@ -34,7 +34,7 @@ test('single record builds single timeseries', t => {
       timeseries: {
         '2020-06-19': { cases: 10 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': 'src1'
       }
     }
@@ -67,7 +67,7 @@ test('two dates from single source', t => {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { cases: 20, growthFactor: 2 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19..2020-06-20': 'src1'
       }
     }
@@ -91,7 +91,7 @@ test('multiple locations', t => {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { cases: 20, growthFactor: 2 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19..2020-06-20': 'src1'
       }
     },
@@ -100,7 +100,7 @@ test('multiple locations', t => {
         '2020-06-19': { cases: 10 },
         '2020-06-20': { deaths: 20 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19..2020-06-20': 'src1'
       }
     }
@@ -121,7 +121,7 @@ test('data from multiple sources are combined if fields are distinct', t => {
       timeseries: {
         '2020-06-19': { cases: 10, deaths: 20 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': { src1: [ 'cases' ], src2: [ 'deaths' ] }
       }
     }
@@ -142,7 +142,7 @@ test('higher priority source overwrites lower priority source', t => {
       timeseries: {
         '2020-06-19': { cases: 1 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': 'src2'
       }
     }
@@ -163,7 +163,7 @@ test('lower priority source is used if higher priority source is missing data fo
       timeseries: {
         '2020-06-19': { cases: 2222, deaths: 1, tested: 0 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': { src1: [ 'deaths', 'tested' ], src2: [ 'cases' ] }
       }
     }
@@ -184,7 +184,7 @@ test('two sources with same priority and same value is ok, chooses latest one al
       timeseries: {
         '2020-06-19': { cases: 1, deaths: 2222 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': 'src2'
       }
     }
@@ -212,7 +212,7 @@ test('same priority but different values adds warning, uses larger value', t => 
           cases: 3
         }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': 'src1'
       },
       warnings: {
@@ -241,7 +241,7 @@ test('conflicting lower priority sources are ignored', t => {
           cases: 1
         }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': 'src3'
       }
     }
@@ -276,7 +276,7 @@ test('sanity check, multiple data points', t => {
           growthFactor: 334
         }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-19': {
           src1: [ 'cases' ], src2: [ 'deaths' ], src3: [ 'tested' ]
         },
@@ -389,7 +389,7 @@ test('combined data sources collapse correctly', t => {
         '2020-06-22': { tested: 444 },
         '2020-06-23': { tested: 555 }
       },
-      sources: {
+      timeseriesSources: {
         '2020-06-17..2020-06-18': 'src1',
         '2020-06-19..2020-06-21': { src1: [ 'cases' ], src2: [ 'deaths' ], src3: [ 'tested' ] },
         '2020-06-22..2020-06-23': 'src3'
@@ -418,7 +418,7 @@ test('characterization test: no case data', t => {
   expected = {
     loc1: {
       timeseries: { '2020-06-19': {} },
-      sources: { '2020-06-19': {} }
+      timeseriesSources: { '2020-06-19': {} }
     }
   }
 

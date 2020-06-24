@@ -54,9 +54,9 @@ test('smoke test report with single location', async t => {
   t.ok(first.locationID, 'have location ID')
   t.equal(first.locationID, 'iso1:us#iso2:us-ca#fips:06007')
   t.ok(first.timeseries, 'have timeseries key')
-  t.equal(expectedDates.sort().join(), Object.keys(first.timeseries).sort().join(), 'all dates present')
-  t.ok(first.sources, 'have sources key')
-  t.ok(Object.keys(first.sources).length > 0, `should have sources keys, got ${Object.keys(first.sources)}`)
+  t.equal(expectedDates.sort().join(), Object.keys(first.timeseries).sort().join(), 'all timeseries dates present')
+  t.ok(first.timeseriesSources, 'have timeseriesSources key')
+  t.ok(Object.keys(first.timeseriesSources).length > 0, `have timeseriesSources keys`)
 
   await utils.teardown()
   t.end()

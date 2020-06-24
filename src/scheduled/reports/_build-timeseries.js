@@ -147,17 +147,17 @@ function locationDetails (locationID, records) {
     const atDate = locRecords.filter(lr => lr.date === d)
     const combined = combinedRecord(atDate)
     hsh.timeseries[d] = combined.data
-    hsh.sources[d] = reduceSources(combined.sources)
+    hsh.timeseriesSources[d] = reduceSources(combined.sources)
 
     if (Object.keys(combined.warnings).length !== 0)
       hsh.warnings[d] = combined.warnings
 
     return hsh
-  }, { timeseries: {}, sources: {}, warnings: {} })
+  }, { timeseries: {}, timeseriesSources: {}, warnings: {} })
 
   addGrowthFactor(result.timeseries, dates)
 
-  result.sources = collapseSourceDates(result.sources)
+  result.timeseriesSources = collapseSourceDates(result.timeseriesSources)
 
   if (Object.keys(result.warnings).length === 0)
     delete result.warnings
