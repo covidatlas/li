@@ -7,7 +7,7 @@ const reportFields = require('@architect/shared/constants/case-data-fields.js')
  * sources have the same highest priority, then (arbitrarily) the
  * largest value for that field in the highest-priority sources is
  * used, and a warning is included in the return value. */
-function valueAndWarningForField (sortedRecords, f) {
+function multivalentField (sortedRecords, f) {
   const haveVals = sortedRecords.filter(r => r[f] !== undefined && r[f] !== null)
   if (haveVals.length === 0)
     return { value: undefined }
@@ -71,16 +71,16 @@ function createMultivalentRecord (records) {
   const result = Object.keys(base).
     filter(f => reportFields.includes(f)).
     reduce((hsh, f) => {
-      const vw = valueAndWarningForField(sortedRecords, f)
-      if (vw.value === null || vw.value === undefined)
+      const { value, source, warning } = multivalentField(sortedRecords, f)
+      if (value === null || value === undefined)
         return hsh
 
-      hsh.data[f] = vw.value
-      hsh.timeseriesSources[f] = vw.source
-      hsh.sources.push(vw.source)
+      hsh.data[f] = value
+      hsh.timeseriesSources[f] = source
+      hsh.sources.push(source)
 
-      if (vw.warning)
-        hsh.warnings[f] = vw.warning
+      if (warning)
+        hsh.warnings[f] = warning
       return hsh
     }, { data: {}, warnings: {}, timeseriesSources: {}, sources: [] })
 
