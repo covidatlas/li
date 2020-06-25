@@ -8,15 +8,15 @@ TBD
 
 ## Report replacements
 
-| CDS report | Li report **(wip, currently code only, manual generation)** |
-| --- | --- |
-| features.json | TODO |
-| locations.json | TODO |
-| timeseries-byLocation.json | IN PROGRESS |
+| CDS report | Li report **(wip, currently code only, manual generation)** | Code (`src/scheduled/reports/`) |
+| --- | --- | --- |
+| features.json | TODO | TODO |
+| locations.json | TODO | `_reports.js/locations()` |
+| timeseries-byLocation.json | `_build-base-json.js` |
 | timeseries-jhu.csv | TODO |
 | timeseries-tidy.csv | TODO |
 | timeseries.csv | TODO |
-| timeseries.json | Will not reproduce |
+| timeseries.json | **Will not reproduce** |
 
 
 ### TODOs and comparison notes
