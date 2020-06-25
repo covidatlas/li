@@ -63,14 +63,16 @@ function locationDetails (locationID, records) {
 
   const result = dates.reduce((hsh, d) => {
     const atDate = locRecords.filter(lr => lr.date === d)
-    const combined = createMultivalentRecord(atDate)
+    const {
+      data, warnings, timeseriesSources, sources
+    } = createMultivalentRecord(atDate)
 
-    hsh.timeseries[d] = combined.data
-    hsh.timeseriesSources[d] = combined.timeseriesSources
-    hsh.sources = hsh.sources.concat(combined.sources)
+    hsh.timeseries[d] = data
+    hsh.timeseriesSources[d] = timeseriesSources
+    hsh.sources = hsh.sources.concat(sources)
 
-    if (Object.keys(combined.warnings).length !== 0)
-      hsh.warnings[d] = combined.warnings
+    if (Object.keys(warnings).length !== 0)
+      hsh.warnings[d] = warnings
 
     return hsh
   }, { timeseries: {}, timeseriesSources: {}, sources: [], warnings: {} })
