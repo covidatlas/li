@@ -151,6 +151,8 @@ function validateSource (source) {
   if (maintainers) {
     const nullMaintainers = maintainers.filter(m => !m)
     requirement(nullMaintainers.length === 0, 'Should not have any null maintainers')
+    const noName = maintainers.filter(m => m.name === undefined)
+    requirement(noName.length === 0, `All mantainers must have a name (got ${JSON.stringify(noName)})`)
   }
 
   // Priority

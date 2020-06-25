@@ -18,7 +18,8 @@ module.exports = {
     flag: '🇺🇸'
   },
   chunder: {
-    github: 'chunder',
+    name: 'chunder',
+    github: 'chunder'
   },
   paulboal: {
     name: 'Paul Boal',
