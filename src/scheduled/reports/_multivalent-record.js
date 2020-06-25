@@ -1,3 +1,20 @@
+/** Multivalent records.
+ *
+ * A "multivalent record" is one which combines data dimensions from
+ * multiple sources to yield a final combined data item.  For example,
+ * if location L has death data D from source Ld and case data C from
+ * Lc, those can be combined:
+ *
+ * L = { cases: C, deaths: D }
+ *
+ * Since multiple sources can potentially give the same data
+ * dimension, we need to determine the final value that the
+ * multivalent record should contain.  We use the source "priority" to
+ * determine the final value, and report on conflicts.
+ */
+
+const assert = require('assert')
+
 /** Case data fields to include in reports. */
 const reportFields = require('@architect/shared/constants/case-data-fields.js')
 
@@ -59,9 +76,22 @@ function reduceSources (fieldSourceHash) {
 }
 
 
+function assertAllSame (records, field) {
+  const vals = [ ...new Set(records.map(r => r[field])) ]
+  assert.equal(vals.length, 1, `multivalent record can only be created from records with same ${field}`)
+}
+
 /** Create a combined value from all sources, using the source
  * priority to determine which value to use for each field. */
 function createMultivalentRecord (records) {
+
+  const emptyRecord = { data: {}, warnings: {}, timeseriesSources: {}, sources: [] }
+  if (records.length === 0)
+    return emptyRecord
+
+  assertAllSame(records, 'date')
+  assertAllSame(records, 'locationID')
+
   // Multiple sources of different priorities can return data.  Sort
   // the highest to the last, because later records "win" when
   // combining sources.
@@ -84,10 +114,10 @@ function createMultivalentRecord (records) {
     if (warning)
       hsh.warnings[field] = warning
     return hsh
-  }, { data: {}, warnings: {}, timeseriesSources: {}, sources: [] })
+  }, emptyRecord)
 
   result.timeseriesSources = reduceSources(result.timeseriesSources)
-  result.sources = [ ...new Set(result.sources) ]
+  result.sources = [ ...new Set(result.sources) ].sort()
   return result
 }
 
