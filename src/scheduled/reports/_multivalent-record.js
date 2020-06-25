@@ -11,11 +11,11 @@ function multivalentField (sortedRecords, f) {
   const haveVals = sortedRecords.filter(r => r[f] !== undefined && r[f] !== null)
   if (haveVals.length === 0)
     return { value: undefined }
-  const maxPriority = Math.max(...haveVals.map(r => r.priority))
+  const maxPriority = Math.max(...haveVals.map(r => r.priority || 0))
 
   const bySource = (a, b) => (a.source < b.name ? -1 : 1)
   const candidates = haveVals.
-        filter(r => r.priority === maxPriority).
+        filter(r => (r.priority || 0) === maxPriority).
         sort(bySource)
 
   if (candidates.length === 1)
@@ -61,9 +61,8 @@ function createMultivalentRecord (records) {
   // Multiple sources of different priorities can return data.  Sort
   // the highest to the last, because later records "win" when
   // combining sources.
-  const sortedRecords = records.
-        map(r => { r.priority = r.priority || 0; return r }).
-        sort((a, b) => a.priority - b.priority)
+  const nz = n => n || 0
+  const sorted = records.sort((a, b) => nz(a.priority) - nz(b.priority))
 
   // Only look at the fields that exist in any of the records.
   const base = records.reduce((h, rec) => Object.assign(h, rec), {})
@@ -71,7 +70,7 @@ function createMultivalentRecord (records) {
   const result = Object.keys(base).
     filter(f => reportFields.includes(f)).
     reduce((hsh, f) => {
-      const { value, source, warning } = multivalentField(sortedRecords, f)
+      const { value, source, warning } = multivalentField(sorted, f)
       if (value === null || value === undefined)
         return hsh
 
