@@ -13,10 +13,8 @@ function multivalentField (sortedRecords, f) {
     return { value: undefined }
   const maxPriority = Math.max(...haveVals.map(r => r.priority || 0))
 
-  const bySource = (a, b) => (a.source < b.name ? -1 : 1)
   const candidates = haveVals.
-        filter(r => (r.priority || 0) === maxPriority).
-        sort(bySource)
+        filter(r => (r.priority || 0) === maxPriority)
 
   if (candidates.length === 1)
     return { value: candidates[0][f], source: candidates[0].source }
@@ -25,16 +23,22 @@ function multivalentField (sortedRecords, f) {
   const values = candidates.map(c => c[f])
   const max = Math.max(...values)
   const min = Math.min(...values)
-  const maxSource = candidates.find(c => c[f] === max).source
 
+  // Arbitrarily picking the first source with the max value as the
+  // source used.
+  const bySource = (a, b) => (a.source < b.name ? -1 : 1)
+  const maxSource = candidates.sort(bySource).
+        find(c => c[f] === max).source
+
+  // Arbitrarily using the maximum value returned by any sources.
   const result = {
     value: max,
     source: maxSource
   }
 
-  if (max !== min) {
-    const conflicts = candidates.map(c => `${c.source}: ${c[f]}`).join(', ')
-    result.warning = `conflict (${conflicts})`
+  if (min !== max) {
+    const conflicts = candidates.map(c => `${c.source}: ${c[f]}`)
+    result.warning = `conflict (${conflicts.join(', ')})`
   }
   return result
 }
