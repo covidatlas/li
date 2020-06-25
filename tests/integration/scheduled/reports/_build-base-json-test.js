@@ -10,7 +10,7 @@ test('smoke test report with single location', async t => {
   // Generated report should contain these dates:
   const expectedDates = []
 
-  for (var i = 21; i <= 25; ++i) {
+  for (var i = 21; i <= 22; ++i) {
     const date = '2020-05-' + i
     expectedDates.push(date)
 
@@ -35,7 +35,7 @@ test('smoke test report with single location', async t => {
   const locations = await utils.waitForDynamoTable('locations', 10000, 200)
   t.equal(locations.length, 1, `Sanity check, have 1 location: ${JSON.stringify(locations, null, 2)}`)
   const caseData = await utils.waitForDynamoTable('case-data', 10000, 200)
-  t.equal(caseData.length, 5, `Sanity check, have 5 case records: ${JSON.stringify(caseData, null, 2)}`)
+  t.equal(caseData.length, 2, `Sanity check, have 2 case records: ${JSON.stringify(caseData, null, 2)}`)
 
   const actual = await buildBaseJson()
   t.equal(actual.length, 1, 'single record in report')
@@ -44,7 +44,7 @@ test('smoke test report with single location', async t => {
         split('\n').
         // Substack tape or the postprocessing hides lines that have '..' --
         // hacking around to get it to show up.
-        map(s => s.replace('2020-05-21..2020-05-25', '2020-05-21 .. 2020-05-25')).
+        map(s => s.replace('2020-05-21..2020-05-22', '2020-05-21 .. 2020-05-22')).
         join('\n')
   console.log(j)
 
