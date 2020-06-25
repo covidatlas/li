@@ -68,24 +68,23 @@ function createMultivalentRecord (records) {
   const nz = n => n || 0
   const sorted = records.sort((a, b) => nz(a.priority) - nz(b.priority))
 
-  // Only look at the fields that exist in any of the records.
-  const base = records.reduce((h, rec) => Object.assign(h, rec), {})
+  const accumAllFields = (a, rec) => a.concat(Object.keys(rec))
+  const uniques = (arr, v) => arr.includes(v) ? arr : arr.concat(v)
+  let fields = records.reduce(accumAllFields, []).
+      reduce(uniques, []).
+      filter(f => reportFields.includes(f)).
+      map(f => { return { field: f, ...multivalentField(sorted, f) } }).
+      filter(f => f.value !== null && f.value !== undefined)
 
-  const result = Object.keys(base).
-    filter(f => reportFields.includes(f)).
-    reduce((hsh, f) => {
-      const { value, source, warning } = multivalentField(sorted, f)
-      if (value === null || value === undefined)
-        return hsh
-
-      hsh.data[f] = value
-      hsh.timeseriesSources[f] = source
-      hsh.sources.push(source)
-
-      if (warning)
-        hsh.warnings[f] = warning
-      return hsh
-    }, { data: {}, warnings: {}, timeseriesSources: {}, sources: [] })
+  const result = fields.reduce((hsh, f) => {
+    const { field, value, source, warning } = f
+    hsh.data[field] = value
+    hsh.timeseriesSources[field] = source
+    hsh.sources.push(source)
+    if (warning)
+      hsh.warnings[field] = warning
+    return hsh
+  }, { data: {}, warnings: {}, timeseriesSources: {}, sources: [] })
 
   result.timeseriesSources = reduceSources(result.timeseriesSources)
   result.sources = [ ...new Set(result.sources) ]
