@@ -1,7 +1,5 @@
 const is = require('is')
-const { join } = require('path')
-const srcShared = join(process.cwd(), 'src', 'shared')
-const datetime = require(join(srcShared, 'datetime', 'index.js'))
+const datetime = require('../../datetime/index.js')
 const { allowed } = require('./crawl-types.js')
 
 /**
