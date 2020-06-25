@@ -33,5 +33,5 @@ test('Source dir can be overridden', t => {
   t.plan(1)
   const d = join(process.cwd(), 'tests', 'integration', 'fake-sources')
   const keys = Object.keys(sourceMap({ _sourcesPath: d }))
-  t.ok(keys.includes('fake'), `should have fake source in keys [ ${keys.join()} ]`)
+  t.ok(keys.includes('json-source'), `should have json-source in keys [ ${keys.join()} ]`)
 })

@@ -37,36 +37,23 @@ module.exports = {
         }
       ],
       scrape ($, date, {
-        getDataWithTestedNegativeApplied, getSchemaKeyFromHeading, normalizeTable, transposeArrayOfArrays
+        getDataWithTestedNegativeApplied, normalizeKey, normalizeTable, transposeArrayOfArrays
       }) {
         const [ , ...tableData ] = normalizeTable({ $, tableSelector: '.maincontent table:first-of-type' })
         const normalizedTable = transposeArrayOfArrays(tableData)
 
-        const schemaKeysByHeadingFragment = {
-          'confirmed case': 'cases',
-          'tested and excluded': 'testedNegative',
-          'total persons tested': 'tested',
+        const mapping = {
+          cases: 'confirmed case',
+          testedNegative: 'tested and excluded',
+          tested: 'total persons tested',
           deaths: 'deaths',
           recovered: 'recovered',
         }
 
-        const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({
-            heading: heading.replace('(in NSW from confirmed cases)', ''),
-            schemaKeysByHeadingFragment
-          })
-        })
-
+        const headings = normalizedTable[0].map(s => s.replace('(in NSW from confirmed cases)', ''))
+        const propColIndices = normalizeKey.propertyColumnIndices(headings, mapping)
         const dataRow = normalizedTable[normalizedTable.length - 1]
-
-        const data = {}
-        dataRow.forEach((value, columnIndex) => {
-          const key = dataKeysByColumnIndex[columnIndex]
-          data[key] = parse.number(value)
-        })
-
+        const data = normalizeKey.createHash(propColIndices, dataRow)
         assert(data.cases > 0, 'Cases are not reasonable')
 
         const getDeathsFromParagraph = $currentArticlePage => {

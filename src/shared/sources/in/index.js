@@ -4,17 +4,25 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:IN'
 
-const schemaKeysByHeadingFragment = {
-  'name of state': 'state',
-  'death': 'deaths',
-  'total confirmed cases': 'cases',
-  'cured': 'recovered',
-  's. no.': null,
+const mapping = {
+  state: 'name of state',
+  deaths: 'death',
+  cases: 'total confirmed cases',
+  recovered: 'cured',
+  active: 'active cases',
+  ignore: 's. no.'
 }
 
-const nameToCanonical = { // Name differences get mapped to the canonical names
-  'Telengana': 'Telangana',
-  'Dadar Nagar Haveli': 'Dadra and Nagar Haveli',
+const isoMap = {
+  // Non-unique gets mapped straight to ISO2
+  "Dadra and Nagar Haveli and Daman and Diu": "iso2:IN-DN+iso2:IN-DD",
+}
+
+const nameToCanonical = {
+  // Name differences get mapped to the canonical names
+  Telengana: "Telangana",
+  "Dadar Nagar Haveli": "Dadra and Nagar Haveli",
+  "Dadra and Nagar Haveli and Daman and Diu": "Dadra and Nagar Haveli",
 }
 
 module.exports = {
@@ -36,38 +44,31 @@ module.exports = {
             'https://www.mohfw.gov.in/'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, normalizeKey, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: '#state-data' })
 
         const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[headingRowIndex], mapping)
 
         // Create new array with just the state data (no headings, comments, totals)
         const stateDataRows = normalizedTable.filter(row => row[0].match(/^\d/))
 
         const states = []
         stateDataRows.forEach((row) => {
-          const stateData = {}
-          row.forEach((value, columnIndex) => {
-            const key = dataKeysByColumnIndex[columnIndex]
-            stateData[key] = value
+          const stateData = normalizeKey.createHash(propColIndices, row)
+          stateData.state = getIso2FromName({
+            country,
+            name: stateData.state,
+            nameToCanonical,
+            isoMap,
           })
-
-          states.push({
-            state: getIso2FromName({ country, name: stateData.state, nameToCanonical }),
-            cases: parse.number(stateData.cases),
-            deaths: parse.number(stateData.deaths),
-            recovered: parse.number(stateData.recovered)
-          })
+          states.push(stateData)
         })
 
         const summedData = transform.sumData(states)
         states.push(summedData)
 
-        const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
+        const indexForCases = propColIndices.cases
         const [ , ...nonHeaderRows ] = normalizedTable
         const casesFromTotalRow = parse.number(
           nonHeaderRows.find((row) => row.some((cell) => cell.startsWith("Total")))[indexForCases]

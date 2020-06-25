@@ -35,6 +35,10 @@ module.exports = function normalizeData (source, output, date) {
       id += `#${location.county}`
     }
 
+    // Fill in the date if it's not already specified.
+    if (!location.date)
+      location.date = date
+
     // Normalize
     const locationID = id.toLowerCase()
 
@@ -42,7 +46,6 @@ module.exports = function normalizeData (source, output, date) {
     return Object.assign(location, {
       locationID,
       dateSource: `${date}#${_sourceKey}`,
-      date,
       source: _sourceKey,
       priority: source.priority || 0 // Backfill to 0 for sorting later
     })

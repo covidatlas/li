@@ -13,6 +13,10 @@ module.exports = function getDatedFolders (params) {
     tz
   } = params
 
+  // Note: for 'timeseries' source scrapers, we always use the latest
+  // scraper available (see shared/sources/_lib/find-scraper.js), so
+  // we need to get the latest files in the cache.
+
   // Even though time is a flat circle, establish "today"
   let d = timeseries ? datetime.today.at(tz) : date
   let today = folders.findIndex(f => f === d)

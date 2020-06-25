@@ -28,7 +28,7 @@ test('Generate some filenames', t => {
   let data = Buffer.from('hi there')
   let type = 'page'
   let params = { _sourceKey, _name, data, type }
-  let { filepath, filename } = cacheNamer(params)
+  let { filepath, filename } = cacheNamer(now.toISOString(), params)
 
   // Filepath
   let parts = filepath.split('/')
@@ -61,7 +61,7 @@ test('Generate some filenames', t => {
   type = 'json'
   params = { _sourceKey, _name, data, type }
 
-  ;({ filename } = cacheNamer(params))
+  ;({ filename } = cacheNamer(now.toISOString(), params))
   parts = filename.split('-')
   t.equal(parts[3], _name, 'name matches')
   t.equal(parts[4].split('.')[0], '0f112', 'Hash appended')

@@ -5,11 +5,11 @@ const transform = require('../_lib/transform.js')
 
 const country = 'iso1:AU'
 
-const schemaKeysByHeadingFragment = {
-  'confirmed cases': 'cases',
+const mapping = {
+  state: [ 'jurisdiction', 'location' ],
+  cases: 'confirmed cases',
   deaths: 'deaths',
-  jurisdiction: 'state',
-  location: 'state',
+  ignore: [ '', 'new cases in last 24 hours' ]
 }
 
 module.exports = {
@@ -32,14 +32,10 @@ module.exports = {
             'https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, getSchemaKeyFromHeading, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, normalizeKey, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: '.health-table__responsive > table' })
 
-        const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-        })
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[0], mapping)
 
         // Create new array with just the state data (no headings, comments, totals)
         const stateDataRows = normalizedTable.slice(1, -2)
@@ -49,30 +45,23 @@ module.exports = {
 
         const states = []
         stateDataRows.forEach((row) => {
-          const stateData = {}
-          row.forEach((value, columnIndex) => {
-            const key = dataKeysByColumnIndex[columnIndex]
-            stateData[key] = value
-          })
-
-          states.push({
-            state: getIso2FromName({ country, name: stateData.state }),
-            cases: parse.number(stateData.cases)
-          })
+          const stateData = normalizeKey.createHash(propColIndices, row)
+          stateData.state = getIso2FromName({ country, name: stateData.state })
+          states.push(stateData)
         })
 
         const summedData = transform.sumData(states)
         states.push(summedData)
 
-        const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const casesFromTotalRow = parse.number(
-          normalizedTable.find((row) => row.some(cell => cell === 'Total'))[indexForCases]
+          normalizedTable.find((row) => row.some(cell => cell === 'Total'))[propColIndices.cases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states
       }
     },
     {
+      // TODO (scrapers) Fix au scraper, currently it doesn't work.
       startDate: '2020-04-02',
       crawl: [
         {
@@ -82,16 +71,9 @@ module.exports = {
           url: 'https://www.health.gov.au/resources/total-covid-19-cases-and-deaths-by-states-and-territories'
         }
       ],
-      scrape ($, date, { assertTotalsAreReasonable, getSchemaKeyFromHeading, normalizeTable }) {
+      scrape ($, date, { assertTotalsAreReasonable, normalizeKey, normalizeTable }) {
         const normalizedTable = normalizeTable({ $, tableSelector: '.ng-scope table' })
-
-        const headingRowIndex = 0
-        const dataKeysByColumnIndex = []
-        normalizedTable[headingRowIndex].forEach((heading, index) => {
-          dataKeysByColumnIndex[index] = heading
-            ? getSchemaKeyFromHeading({ heading, schemaKeysByHeadingFragment })
-            : null
-        })
+        const propColIndices = normalizeKey.propertyColumnIndices(normalizedTable[0], mapping)
 
         const totalLabel = 'Australia'
         // Create new array with just the state data (no headings, comments, totals)
@@ -104,25 +86,16 @@ module.exports = {
 
         const states = []
         stateDataRows.forEach((row) => {
-          const stateData = {}
-          row.forEach((value, columnIndex) => {
-            const key = dataKeysByColumnIndex[columnIndex]
-            stateData[key] = value
-          })
-
-          states.push({
-            state: 'iso2:AU-'+stateData.state,
-            cases: parse.number(stateData.cases),
-            deaths: parse.number(stateData.deaths)
-          })
+          const stateData = normalizeKey.createHash(propColIndices, row)
+          stateData.state = 'iso2:AU-' + stateData.state
+          states.push(stateData)
         })
 
         const summedData = transform.sumData(states)
         states.push(summedData)
 
-        const indexForCases = dataKeysByColumnIndex.findIndex(key => key === 'cases')
         const casesFromTotalRow = parse.number(
-          normalizedTable.find((row) => row.some(cell => cell === totalLabel))[indexForCases]
+          normalizedTable.find((row) => row.some(cell => cell === totalLabel))[propColIndices.cases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
         return states

@@ -7,7 +7,7 @@ const log = require('./log/index.js')
  */
 async function updateStatus (params) {
   try {
-    const { source, event, status } = params
+    const { source, event, status, error } = params
     // Status can be one of: success, failed
 
     const timeLabel = `Status update: ${source} / ${event} / ${status}`
@@ -21,6 +21,13 @@ async function updateStatus (params) {
     const lastStatus = await getLastStatus(params, data)
     let newStatus = Object.assign({}, lastStatus)
     newStatus.status = status
+
+    if (status === 'success') {
+      newStatus.last_success = new Date().toISOString()
+      newStatus.error = null
+    } else {
+      newStatus.error = error
+    }
 
     /**
      * Refresh consecutive

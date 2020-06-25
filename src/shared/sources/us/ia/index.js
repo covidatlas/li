@@ -49,7 +49,12 @@ module.exports = {
     },
     {
       startDate: "2020-03-19",
-      crawl: [ { type: "raw", url: "" } ],
+      crawl: [
+        {
+          type: "raw",
+          url: "https://idph.iowa.gov/emerging-health-issues/novel-coronavirus"
+        }
+      ],
       scrape () {
         throw new Error("Iowa is putting an image on their site, not data!")
       },

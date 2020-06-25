@@ -2,6 +2,7 @@ const sorter = require('@architect/shared/utils/sorter.js')
 const datetime = require('@architect/shared/datetime/index.js')
 const getDateBounds = require('./_get-date-bounds.js')
 const getLocalDateFromFilename = require('./_get-local-date-from-filename.js')
+const parseCacheFilename = require('@architect/shared/utils/parse-cache-filename.js')
 
 const local = require('./_load-local.js')
 const s3 = require('./_load-s3.js')
@@ -38,6 +39,10 @@ async function load (params, useS3) {
       tz
     })
 
+    // Remove duplicate filenames.
+    const fileset = new Set(files)
+    files = Array.from(fileset)
+
     if (!timeseries && files.length) {
       /**
        * If date is earlier than we have cached, bail
@@ -71,9 +76,9 @@ async function load (params, useS3) {
     for (const crawl of scraper.crawl) {
       // We may have multiple crawls for a single scraper (each with a unique name key)
       // Disambiguate and match them so we are getting back the correct data sources
-      const { name='default' } = crawl
-      const matchName = file => name === file.split('-')[3] // Skips over 8601Z ts
-      const matches = files.filter(matchName)
+      const { name='default', paginated } = crawl
+
+      const matches = parseCacheFilename.matchName(name, files)
 
       // Fall back to S3 cache
       if (!matches.length) {
@@ -82,12 +87,14 @@ async function load (params, useS3) {
       }
 
       // We may have multiple files for this day, choose the last one
-      // TODO we may want to do more here, including:
-      // - analysis of contents (e.g. stale files, etc.)
-      // - attempting to scrape this file, and if it doesn't work, trying a previous scrape from the same day?
       const file = matches[matches.length - 1]
 
-      crawl.content = await loader.getFileContents({ _sourceKey, keys, file })
+      let fileset = [ file ]
+      if (paginated)
+        fileset = parseCacheFilename.matchPaginatedSet(file, files)
+
+      const allContent = fileset.map(file => loader.getFileContents({ _sourceKey, keys, file }))
+      crawl.pages = await Promise.all(allContent)
       cache.push(crawl)
     }
     if (cache !== 'miss') {

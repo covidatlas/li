@@ -1,6 +1,53 @@
 <html>
-<body>
-  <p>Welcome to li.</p>
-  <p>Content to come.</p>
-</body>
+  <style>
+    body {
+        font-family: Arial;
+    }
+
+    table {
+        border-spacing: 5px;
+    }
+
+    th, td {
+        text-align: left;
+    }
+  </style>
+  <body>
+    <h1>Welcome to Li.</h1>
+    <table>
+      <tr>
+        <th>
+          Item
+        </th>
+        <th>
+          URL
+        </th>
+      </tr>
+      <tr>
+        <td>
+          Locations
+        </td>
+        <td>
+          <a href='locations'>json</a>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Scraper status
+        </td>
+        <td>
+          <a href='status?format=html'>html</a>
+          <a href='status'>json</a>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Invocations of scheduled items
+        </td>
+        <td>
+          <a href='invocations'>json</a>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

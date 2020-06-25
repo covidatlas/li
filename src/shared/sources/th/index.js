@@ -54,6 +54,35 @@ module.exports = {
 
         return output
       }
+    },
+    {
+      // The 'country' dataset URL in the prior scraper has disappeared ...
+      // other datasets are listed at
+      // https://ddcportal.ddc.moph.go.th/arcgis/rest/services/iT_Neillgis,
+      // but it's not clear which is the best country-level dataset.
+      startDate: '2020-06-21',
+      crawl: [
+        {
+          type: 'json',
+          url: 'https://ddcportal.ddc.moph.go.th/arcgis/rest/services/iT_Neillgis/thai_prov_region/FeatureServer/0/query?where=0%3D0&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson'
+        }
+      ],
+      scrape (states) {
+        assert(states.features.length > 0, 'features are unreasonable')
+        const stateAttributes = states.features.map(({ attributes }) => attributes)
+
+        assert(stateAttributes.length > 0, 'data fetch failed, no attributes')
+        const output = stateAttributes.map(item => ({
+          state: `iso2:TH-${item.PROV_CODE}`.replace('iso2:TH-00', UNASSIGNED),
+          cases: item.Count_Confirm,
+          hospitalized: item.Count_Admission,
+          recovered: item.Count_Recovery,
+          deaths: item.Count_Death,
+          tested: item.Count_Total,
+        }))
+
+        return output
+      }
     }
   ]
 }

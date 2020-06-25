@@ -11,9 +11,10 @@ module.exports = async function saveToCache (results) {
   const local = process.env.NODE_ENV === 'testing'
   const write = local ? writeLocal : writeS3
 
+  const now = new Date().toISOString()
   for (const result of results) {
     const { data } = result
-    const { filepath, filename } = cacheNamer(result)
+    const { filepath, filename } = cacheNamer(now, result)
     await write(data, filepath, filename)
   }
 }
