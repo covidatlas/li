@@ -14,7 +14,12 @@ const assert = require('assert')
 const normalizeTable = ({ $, tableSelector }) => {
   const output = []
 
-  const $rows = $(tableSelector).find('tr')
+  const $table = $(tableSelector)
+  assert(
+    $table.length > 0,
+    `No table found for selector "${tableSelector}"`
+  )
+  const $rows = $table.find('tr')
   $rows.each((rowIndex, row) => {
     const $columns = $(row).find('th, td')
     $columns.each((columnIndex, column) => {
@@ -37,6 +42,8 @@ const normalizeTable = ({ $, tableSelector }) => {
   output.forEach(row => {
     assert.equal(row.length, output[0].length, 'Column count varies in output table')
   })
+
+  assert(output.length > 0, 'Empty output from table normalization')
 
   return output
 }
