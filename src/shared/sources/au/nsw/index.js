@@ -71,18 +71,17 @@ module.exports = {
       }
     },
     {
-      // TODO (scrapers) Fix au-nsw scraper, currently it doesn't work.
-      startDate: '2020-03-25',
+      startDate: new Date((new Date().getTime()-(86400000*14))).toJSON().substr(0,10),
       crawl: [
         {
           name: 'cases',
           type: 'json',
-          url: 'https://nswdac-np-covid-19-postcode-heatmap.azurewebsites.net/datafiles/data_Cases2.json'
+          url: 'https://nswdac-covid-19-postcode-heatmap.azurewebsites.net/datafiles/data_Cases2.json'
         },
         {
           name: 'tests',
           type: 'json',
-          url: 'https://nswdac-np-covid-19-postcode-heatmap.azurewebsites.net/datafiles/data_tests.json'
+          url: 'https://nswdac-covid-19-postcode-heatmap.azurewebsites.net/datafiles/data_tests.json'
         }
       ],
       scrape ({ cases }, date, { cumulateObjects }) {
