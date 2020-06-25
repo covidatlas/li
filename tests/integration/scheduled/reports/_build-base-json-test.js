@@ -57,6 +57,8 @@ test('smoke test report with single location', async t => {
   t.equal(expectedDates.sort().join(), Object.keys(first.timeseries).sort().join(), 'all timeseries dates present')
   t.ok(first.timeseriesSources, 'have timeseriesSources key')
   t.ok(Object.keys(first.timeseriesSources).length > 0, `have timeseriesSources keys`)
+  t.equal(first.sources.length, 1, 'have 1 source')
+  t.equal(first.sources.join(), 'json-source')
 
   await utils.teardown()
   t.end()
