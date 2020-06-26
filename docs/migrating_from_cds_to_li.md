@@ -262,7 +262,9 @@ name,level,city,county,state,country,population,lat,long,aggregate,tz,date,type,
 #### Li record
 
 ```
-
+locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,date,type,value
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,2020-05-21,cases,21
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,2020-05-21,deaths,4
 ```
 
 ### timeseries.csv

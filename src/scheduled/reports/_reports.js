@@ -103,8 +103,36 @@ function timeseriesJhu (baseJson) {
   stringify( data, { header: true, columns: cols }).pipe(process.stdout)
 }
 
+
+/** timeseries-tidy.csv source.
+ *
+ */
+function timeseriesTidy (baseJson) {
+  const data = []
+  baseCsv(baseJson).forEach(rec => {
+    Object.keys(rec.timeseries).forEach(dt => {
+      Object.keys(rec.timeseries[dt]).forEach(k => {
+        data.push({
+          ...rec,
+          date: dt,
+          type: k,
+          value: rec.timeseries[dt][k]
+        })
+      })
+    })
+  })
+
+  // TODO (reports) Move this to file-writing routine.
+  let cols = [ 'date', 'type', 'value' ].reduce((a, s) => {
+    return a.concat([ { key: s, header: s } ])
+  }, baseCsvColumns)
+  stringify( data, { header: true, columns: cols }).pipe(process.stdout)
+}
+
+
 module.exports = {
   locations,
   timeseriesByLocation,
-  timeseriesJhu
+  timeseriesJhu,
+  timeseriesTidy
 }
