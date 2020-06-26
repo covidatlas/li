@@ -12,11 +12,11 @@ TBD
 | --- | --- | --- |
 | features.json | TODO | TODO |
 | locations.json | TODO | `_reports.js/locations()` |
-| timeseries-byLocation.json | `_reports.js/timeseriesByLocation()` |
-| timeseries-jhu.csv | `_reports.js/timeseriesJhu()` |
-| timeseries-tidy.csv | TODO |
-| timeseries.csv | TODO |
-| timeseries.json | **Will not reproduce** |
+| timeseries-byLocation.json | TODO | `_reports.js/timeseriesByLocation()` |
+| timeseries-jhu.csv | TODO | `_reports.js/timeseriesJhu()` |
+| timeseries-tidy.csv | TODO | `_reports.js/timeseriesTidy()` |
+| timeseries.csv | TODO | `_reports.js/timeseries()` |
+| timeseries.json | **Will not reproduce** | n/a |
 
 
 ### TODOs and comparison notes
@@ -28,7 +28,6 @@ TBD
 #### locations.json
 
 - TODO question - how to get the URL - can't do this all the time, some urls are dynamic and change; some URLs are _extremely_ long (arcgis)
-- TODO load maintainers - locations are populated sometimes from multiple sources.
 
 ##### CDS record
 
@@ -269,7 +268,19 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
 
 ### timeseries.csv
 
-- should be able to reproduce
+#### CDS record
+
+```
+name,level,city,county,state,country,population,lat,long,url,aggregate,tz,cases,deaths,recovered,active,tested,hospitalized,hospitalized_current,discharged,icu,icu_current,growthFactor,date
+"Lower Austria, Austria",state,,,Lower Austria,Austria,1653419,48.221000000000004,15.7605,https://info.gesundheitsministerium.at/data/GenesenTodesFaelleBL.js,,Europe/Vienna,2867,97,2678,92,,,,,,,,2020-06-02
+```
+
+#### Li record
+
+```
+locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,cases,deaths,recovered,active,tested,hospitalized,hospitalized_current,discharged,icu,icu_current,date
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,4,,,210,1,,,10,,2020-05-21
+```
 
 ### timeseries.json
 

@@ -69,6 +69,10 @@ test('smoke test report with single location', async t => {
   reports.timeseriesTidy(base)
 
   console.log('-------------------------------------------------------')
+  console.log('timeseries')
+  reports.timeseries(base)
+
+  console.log('-------------------------------------------------------')
   await utils.teardown()
   t.end()
 })

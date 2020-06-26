@@ -1,4 +1,5 @@
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
+const caseDataFields = require('@architect/shared/constants/case-data-fields.js')
 const stringify = require('csv-stringify')
 const utils = require('./_utils.js')
 
@@ -81,6 +82,27 @@ function baseCsv (baseJson) {
   })
 }
 
+/** timeseries.csv source.
+ *
+ */
+function timeseries (baseJson) {
+  const data = []
+  baseCsv(baseJson).forEach(rec => {
+    Object.keys(rec.timeseries).forEach(dt => {
+      data.push({
+        ...rec,
+        ...rec.timeseries[dt],
+        date: dt,
+      })
+    })
+  })
+
+  // TODO (reports) Move this to file-writing routine.
+  let cols = caseDataFields.concat('date').
+      reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
+  stringify( data, { header: true, columns: cols }).pipe(process.stdout)
+}
+
 /** timeseries-jhu.csv source.
  *
  */
@@ -134,5 +156,6 @@ module.exports = {
   locations,
   timeseriesByLocation,
   timeseriesJhu,
-  timeseriesTidy
+  timeseriesTidy,
+  timeseries
 }
