@@ -13,7 +13,7 @@ TBD
 | features.json | TODO | TODO |
 | locations.json | TODO | `_reports.js/locations()` |
 | timeseries-byLocation.json | `_reports.js/timeseriesByLocation()` |
-| timeseries-jhu.csv | TODO |
+| timeseries-jhu.csv | `_reports.js/timeseriesJhu()` |
 | timeseries-tidy.csv | TODO |
 | timeseries.csv | TODO |
 | timeseries.json | **Will not reproduce** |
@@ -233,7 +233,22 @@ If there are conflicts in the data (e.g., multiple sources return `cases`, but t
 
 ### timeseries-jhu.csv
 
-- should be able to reproduce
+#### CDS record
+
+```
+name,level,city,county,state,country,lat,long,population,url,aggregate,tz,2020-06-02,2020-06-03,...
+"Lower Austria, Austria",state,,,Lower Austria,Austria,48.22100,15.7605,1653419,https:...js,,Europe/Vienna,2867,2868,...
+```
+
+#### Li record
+
+```
+locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,2020-05-21,2020-05-22
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,22
+```
+
+* `locationID` is the canonical ID to use for a location
+* `slug` may be used in future API calls (TBD!)
 
 ### timeseries-tidy.csv
 

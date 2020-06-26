@@ -60,6 +60,10 @@ test('smoke test report with single location', async t => {
   dumpJson('locations', await reports.locations(base, params))
   dumpJson('timeseries-byLocation', await reports.timeseriesByLocation(base, params))
 
+  console.log('-------------------------------------------------------')
+  console.log('timeseriesJhu')
+  reports.timeseriesJhu(base)
+
   await utils.teardown()
   t.end()
 })
