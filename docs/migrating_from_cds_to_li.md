@@ -252,7 +252,18 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
 
 ### timeseries-tidy.csv
 
-- should be able to reproduce
+#### CDS record
+
+```
+name,level,city,county,state,country,population,lat,long,aggregate,tz,date,type,value
+"Lower Austria, Austria",state,,,Lower Austria,Austria,1653419,48.221000000000004,15.7605,,Europe/Vienna,2020-06-02,cases,2867
+```
+
+#### Li record
+
+```
+
+```
 
 ### timeseries.csv
 

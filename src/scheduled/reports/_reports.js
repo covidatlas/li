@@ -54,6 +54,33 @@ async function timeseriesByLocation (baseJson, params = {}) {
 }
 
 
+/** Common fields to include in all CSV reports. */
+const baseCsvColumns = [
+  'locationID',
+  'slug',
+  'name',
+  'level',
+  'city',
+  'countyName',
+  'stateName',
+  'countryName',
+  'lat',
+  'long',
+  'population',
+  'aggregate',
+  'tz'
+].map(s => { return { key: s, header: s.replace('Name', '') } })
+
+
+function baseCsv (baseJson) {
+  return baseJson.map(loc => {
+    let rec = Object.assign({}, loc)
+    rec.lat = rec.coordinates[1]
+    rec['long'] = rec.coordinates[0]
+    return rec
+  })
+}
+
 /** timeseries-jhu.csv source.
  *
  */
@@ -63,44 +90,17 @@ function timeseriesJhu (baseJson) {
   }, [])
   const dates = [ ...new Set(allDates) ].sort()
 
-  const data = baseJson.map(loc => {
-    let rec = Object.assign({}, loc)
-    rec.lat = rec.coordinates[1]
-    rec['long'] = rec.coordinates[0]
-
+  const data = baseCsv(baseJson).map(rec => {
     const caseTs = Object.entries(rec.timeseries).
-          reduce((hsh, entry) => {
-            const dt = entry[0]
-            hsh[dt] = entry[1].cases || null
-            return hsh
-          }, {})
+      reduce((hsh, e) => Object.assign(hsh, { [e[0]]: e[1].cases }), {})
     return Object.assign(rec, caseTs)
   })
 
   // TODO (reports) Move this to file-writing routine.
-  let columns = [
-    'locationID',
-    'slug',
-    'name',
-    'level',
-    'city',
-    'countyName',
-    'stateName',
-    'countryName',
-    'lat',
-    'long',
-    'population',
-    'aggregate',
-    'tz'
-  ].concat(dates).reduce((hsh, c) => Object.assign(hsh, { [c]: c }), {})
-  const overrides = {
-    countryName: 'country',
-    stateName: 'state',
-    countyName: 'county'
-  }
-  columns = Object.assign(columns, overrides)
-
-  stringify( data, { header: true, columns }).pipe(process.stdout)
+  let cols = dates.reduce((a, d) => {
+    return a.concat([ { key: d, header: d } ])
+  }, baseCsvColumns)
+  stringify( data, { header: true, columns: cols }).pipe(process.stdout)
 }
 
 module.exports = {
