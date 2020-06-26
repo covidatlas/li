@@ -2,7 +2,7 @@ module.exports = {
   country: 'iso1:US',
   state: 'CA',
   county: 'fips:06007',
-  maintainers: [],
+  maintainers: [ { name: 'John Smith', github: 'jsmith42' } ],
   priority: 1,
   friendly: {
     name: 'Canadian COVID Rolling Task Force',
