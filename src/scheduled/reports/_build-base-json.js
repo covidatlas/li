@@ -18,6 +18,12 @@ async function getTimeseriesForLocation (data, locationID) {
     then(data => data[locationID])
 }
 
+function addPopulationDensity (rec) {
+  if (rec.population && rec.area && rec.area.landSquareMeters) {
+    const pd = (rec.population / rec.area.landSquareMeters) * 1000000
+    rec.populationDensity = Math.round(pd * 10000) / 10000
+  }
+}
 
 /** Gets the first and last dates in the locations. */
 async function getBaseJson () {
@@ -28,6 +34,7 @@ async function getBaseJson () {
   const result = []
   for (var i = 0; i < locations.length; ++i) {
     const loc = locations[i]
+    addPopulationDensity(loc)
     const ts = await getTimeseriesForLocation(data, loc.locationID)
     result.push( { ...loc, ...ts } )
   }

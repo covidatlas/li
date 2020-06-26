@@ -12,7 +12,7 @@ TBD
 | --- | --- | --- |
 | features.json | TODO | TODO |
 | locations.json | TODO | `_reports.js/locations()` |
-| timeseries-byLocation.json | `_build-base-json.js` |
+| timeseries-byLocation.json | `_reports.js/timeseriesByLocation()` |
 | timeseries-jhu.csv | TODO |
 | timeseries-tidy.csv | TODO |
 | timeseries.csv | TODO |
@@ -111,18 +111,125 @@ TBD
 
 ### timeseries-byLocation.json
 
-- current data structure is returned by _build-base-json.js
+#### CDS record
 
-Changes
+```
+{
+    "Aargau, Switzerland": {
+        "coordinates": [
+            8.0725,
+            47.378
+        ],
+        "country": "Switzerland",
+        "countryId": "iso1:CH",
+        "dates": {
+            "2020-06-02": {
+                "cases": 1177,
+                "deaths": 43,
+                "discharged": 1060
+            },
+            ...
+            "2020-06-06": {
+                "cases": 1177,
+                "deaths": 43,
+                "discharged": 1060,
+                "growthFactor": 1
+            }
+        },
+        "featureId": "iso2:CH-AG",
+        "level": "state",
+        "maintainers": [
+            {
+                "flag": "\ud83c\udde8\ud83c\udde6",
+                "github": "qgolsteyn",
+                "name": "Quentin Golsteyn"
+            }
+        ],
+        "name": "Aargau, Switzerland",
+        "population": 678207,
+        "populationDensity": 485.70234973285847,
+        "rating": 0.43137254901960786,
+        "state": "Aargau",
+        "stateId": "iso2:CH-AG",
+        "tz": [
+            "Europe/Zurich"
+        ],
+        "url": "https://github.com/daenuprobst/covid19-cases-switzerland/"
+    },
+```
 
-TODO verify these changes
+#### Li record
+
+```
+  {
+    "locationID": "iso1:us#iso2:us-ca#fips:06007",
+    "slug": "butte-county-california-us",
+    "name": "Butte County, California, US",
+    "coordinates": [
+      -121.6,
+      39.67
+    ],
+    "countryID": "iso1:US",
+    "countryName": "United States",
+    "population": 219186,
+    "tz": "America/Los_Angeles",
+    "level": "county",
+    "stateID": "iso2:US-CA",
+    "stateName": "California",
+    "countyID": "fips:06007",
+    "countyName": "Butte County",
+    "populationDensity": 51.7139,
+    "timeseries": {
+      "2020-05-21": {
+        "cases": 21,
+        "deaths": 4,
+        "tested": 210,
+        "hospitalized": 1,
+        "icu": 10
+      },
+      ...
+    },
+    "timeseriesSources": {
+      "2020-05-21 .. 2020-06-18": "json-source"
+    },
+    "sources": [
+      "json-source"
+    ],
+    "maintainers": [
+      {
+        "name": "John Smith",
+        "github": "jsmith42"
+      }
+    ]
+  }
+```
+
+##### Changes
 
 * no rating
 * tz is not in an array
 * no url
 * no featureId
 * map location to geo using locationID
-* added locationID
+* add locationID (primary key for locations)
+
+##### Multivalent data
+
+The data fields in a given record can be supplied by many sources: one source may return cases and deaths, and another return hospitalizations and tests.  The field `timeseriesSources` shows where each field comes from.
+
+A shorthand is shown for the date ranges for which the sources supplied data.  For example, `"2020-05-21 .. 2020-06-18": "json-source"` means that `json-source` supplied the data from 05-21 to 06-18.
+
+If there are conflicts in the data (e.g., multiple sources return `cases`, but they're inconsistent), a `warnings` element is added.  e.g.,
+
+```
+  "warnings": {
+    "2020-06-19": {
+      "cases": "conflict (src1: 3, src2: 2, src3: 1)",
+      "deaths": "conflict (src2: 22, src3: 11)"
+    },
+    ...
+```
+
 
 ### timeseries-jhu.csv
 

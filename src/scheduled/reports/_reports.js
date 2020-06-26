@@ -1,49 +1,58 @@
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
+const utils = require('./_utils.js')
 
-function uniqueByKey (arr, key) {
-  const h = arr.reduce((hsh, m) => { return { ...hsh, [m[key]]: m } }, {})
-  return Object.values(h)
+function addMaintainers (rec, sources) {
+  // TODO (reports) this won't work if maintainers have the same name.
+  const maintainers = sources.map(s => s.maintainers).flat()
+  if (maintainers.length)
+    rec.maintainers = utils.uniqueByKey(maintainers, 'name')
 }
 
-function addPopulationDensity (rec) {
-  if (rec.population && rec.area && rec.area.landSquareMeters) {
-    const pd = (rec.population / rec.area.landSquareMeters) * 1000000
-    rec.populationDensity = Math.round(pd * 10000) / 10000
-  }
+function removeFields (rec, fields) {
+  for (const f of fields)
+    delete rec[f]
 }
 
-/** Get locations.
+/** locations.json source.
  *
- * Pass in params._sourcesPath to override the default sources path,
- * useful for integration testing. */
+ * Pass in params._sourcesPath to override the default sources path. */
 async function locations (baseJson, params = {}) {
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
 
     const sources = rec.sources.map(s => getSource({ source: s, ...params }))
 
-    // TODO (reports) this won't work if maintainers have the same name.
-    const maintainers = sources.map(s => s.maintainers).flat()
-    if (maintainers.length)
-      rec.maintainers = uniqueByKey(maintainers, 'name')
+    addMaintainers(rec, sources)
 
     const links = sources.map(s => s.friendly).flat()
     if (links.length)
-      rec.links = uniqueByKey(links, 'url')
+      rec.links = utils.uniqueByKey(links, 'url')
 
-    addPopulationDensity(rec)
-    delete rec.area
+    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created' ])
 
-    const remove = [
-      'timeseries', 'timeseriesSources', 'warnings', 'area', 'created'
-    ]
-    for (const f of remove)
-      delete rec[f]
+    return rec
+  })
+}
+
+
+/** timeseries-byLocation.json source.
+ *
+ * Pass in params._sourcesPath to override the default sources path. */
+async function timeseriesByLocation (baseJson, params = {}) {
+  return baseJson.map(loc => {
+    const rec = Object.assign({}, loc)
+
+    const sources = rec.sources.map(s => getSource({ source: s, ...params }))
+
+    addMaintainers(rec, sources)
+
+    removeFields(rec, [ 'area', 'created' ])
 
     return rec
   })
 }
 
 module.exports = {
-  locations
+  locations,
+  timeseriesByLocation
 }

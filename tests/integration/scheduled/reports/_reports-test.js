@@ -58,6 +58,7 @@ test('smoke test report with single location', async t => {
   // for these tests.
   const params = { _sourcesPath: sourcesPath }
   dumpJson('locations', await reports.locations(base, params))
+  dumpJson('timeseries-byLocation', await reports.timeseriesByLocation(base, params))
 
   await utils.teardown()
   t.end()
