@@ -4,6 +4,7 @@
   "scripts": {
     "help": "node tools/show-help.js",
     "start": "arc sandbox",
+    "gen-reports": "node tools/gen-reports.js",
     "lint": "eslint . --fix",
     "list-sources": "node src/shared/sources/_lib/list-sources.js",
     "todos": "node tools/list-dev-todos.js",

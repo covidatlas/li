@@ -14,6 +14,12 @@ const args = require('yargs')
     description: 'Generate data for (or start the timeseries at) the provided date in YYYY-MM-DD format',
     type: 'string'
   })
+  .option('report', {
+    description: 'Report to generate',
+    type: 'string',
+    choices: [ 'a', 'b', 'c' ],
+    default: 'a'
+  })
   .option('regenerate', {
     alias: 'r',
     description: 'Regenerate a source from scratch via cache',

@@ -16,6 +16,7 @@ get /get/headless
 get /locations
 get /locations/:location
 get /status
+get /report_status
 get /invocations
 
 @events
@@ -23,6 +24,7 @@ crawler     # Crawls our sources
 scraper     # Operates the scrapers
 locations   # Update location data
 regenerator # Regenerates a source from cache
+reports     # Generate reports
 status      # Status updater
 
 
@@ -62,6 +64,12 @@ geojson
 status
   source *String
   event **String
+
+# Report generation status.
+# There are multiple reports, and users can specify a particular location
+# to generate the report for.  Recording the status of each of these.
+report-status
+  reportLocation *String
 
 # Running log of source status changes
 status-logs
