@@ -9,5 +9,8 @@ scratch/
 tools/geojsondb/geojson-db-payload.json
 test-results.txt
 
+# Generated reports.
+/reports
+
 # Some integration tests put files into public/tests to be scraped.
 public/tests

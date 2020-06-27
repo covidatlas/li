@@ -36,6 +36,7 @@ reports rate(6 hours)           # Generates reports
 
 @storage-public
 cache   # Main crawler cache
+reports # Generated reports
 
 
 @tables
