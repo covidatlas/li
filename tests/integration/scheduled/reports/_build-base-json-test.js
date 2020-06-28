@@ -4,6 +4,11 @@ const test = require('tape')
 const utils = require('../../_lib/utils.js')
 const { buildBaseJson } = require('../../../../src/scheduled/reports/_build-base-json.js')
 
+/** Fake sources used by the tests. */
+const path = require('path')
+const intDir = path.join(process.cwd(), 'tests', 'integration')
+const sourcesPath = path.join(intDir, 'fake-sources')
+
 test('smoke test report with single location', async t => {
   await utils.setup()
 
@@ -37,7 +42,8 @@ test('smoke test report with single location', async t => {
   const caseData = await utils.waitForDynamoTable('case-data', 10000, 200)
   t.equal(caseData.length, 2, `Sanity check, have 2 case records: ${JSON.stringify(caseData, null, 2)}`)
 
-  const actual = await buildBaseJson()
+  const params = { _sourcesPath: sourcesPath }
+  const actual = await buildBaseJson(params)
   t.equal(actual.length, 1, 'single record in report')
 
   const j = JSON.stringify(actual, null, 2).
@@ -59,6 +65,8 @@ test('smoke test report with single location', async t => {
   t.ok(Object.keys(first.timeseriesSources).length > 0, `have timeseriesSources keys`)
   t.equal(first.sources.length, 1, 'have 1 source')
   t.equal(first.sources.join(), 'json-source')
+  t.equal(first.maintainers.length, 1, 'maintainers')
+  t.equal(first.links.length, 1, 'links')
 
   await utils.teardown()
   t.end()

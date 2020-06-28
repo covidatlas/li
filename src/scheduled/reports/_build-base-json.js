@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
+const getSource = require('@architect/shared/sources/_lib/get-source.js')
 const buildTimeseries = require('./_build-timeseries.js')
-
+const utils = require('./_utils.js')
 
 async function getTimeseriesForLocation (data, locationID) {
   // Probably should not require pagination as we should only be
@@ -25,8 +26,10 @@ function addPopulationDensity (rec) {
   }
 }
 
-/** Gets the first and last dates in the locations. */
-async function getBaseJson () {
+/** Gets the first and last dates in the locations.
+ *
+ * Pass in params._sourcesPath to override the default sources path. */
+async function getBaseJson (params) {
   const data = await arc.tables()
   const locations = await data.locations.scan({}).
         then(result => result.Items)
@@ -36,6 +39,14 @@ async function getBaseJson () {
     const loc = locations[i]
     addPopulationDensity(loc)
     const ts = await getTimeseriesForLocation(data, loc.locationID)
+
+    const sources = ts.sources.map(s => getSource({ source: s, ...params }))
+    const maintainers = sources.map(s => s.maintainers).flat()
+    // TODO (reports) this won't work if maintainers have the same name.
+    loc.maintainers = utils.uniqueByKey(maintainers, 'name')
+    const links = sources.map(s => s.friendly).flat()
+    loc.links = utils.uniqueByKey(links, 'url')
+
     result.push( { ...loc, ...ts } )
   }
 
@@ -43,9 +54,9 @@ async function getBaseJson () {
 }
 
 /** Builds base report json data from dynamoDB data. */
-async function buildBaseJson () {
+async function buildBaseJson (params) {
   try {
-    return getBaseJson()
+    return getBaseJson(params)
   }
   catch (err) {
     console.log(err)

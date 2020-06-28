@@ -51,14 +51,14 @@ test('smoke test report with single location', async t => {
   const locations = await utils.waitForDynamoTable('locations', 10000, 200)
   t.equal(locations.length, 1, `Sanity check, have 1 location: ${JSON.stringify(locations, null, 2)}`)
 
-  const base = await buildBaseJson()
-  dumpJson('base', base)
-
   // Override load path for sources, since we're using fake sources
   // for these tests.
   const params = { _sourcesPath: sourcesPath }
-  dumpJson('locations', await reports.locations(base, params))
-  dumpJson('timeseries-byLocation', await reports.timeseriesByLocation(base, params))
+  const base = await buildBaseJson(params)
+  dumpJson('base', base)
+
+  dumpJson('locations', await reports.locations(base))
+  dumpJson('timeseries-byLocation', await reports.timeseriesByLocation(base))
 
   console.log('-------------------------------------------------------')
   console.log('timeseriesJhu')
