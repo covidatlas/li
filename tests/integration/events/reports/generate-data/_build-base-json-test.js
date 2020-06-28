@@ -1,8 +1,8 @@
 process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
-const utils = require('../../_lib/utils.js')
-const { buildBaseJson } = require('../../../../src/scheduled/reports/_build-base-json.js')
+const utils = require('../../../_lib/utils.js')
+const getBaseJson = require('../../../../../src/events/reports/generate-data/_build-base-json.js')
 
 /** Fake sources used by the tests. */
 const path = require('path')
@@ -43,7 +43,7 @@ test('smoke test report with single location', async t => {
   t.equal(caseData.length, 2, `Sanity check, have 2 case records: ${JSON.stringify(caseData, null, 2)}`)
 
   const params = { _sourcesPath: sourcesPath }
-  const actual = await buildBaseJson(params)
+  const actual = await getBaseJson(params)
   t.equal(actual.length, 1, 'single record in report')
 
   const j = JSON.stringify(actual, null, 2).

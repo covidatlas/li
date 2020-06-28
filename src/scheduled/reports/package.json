@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@architect/functions": "^3.8.4",
-    "csv-stringify": "^5.5.0"
-  }
-}

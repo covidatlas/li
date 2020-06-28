@@ -1,9 +1,23 @@
+const getBaseJson = require('./_build-base-json.js')
 const caseDataFields = require('@architect/shared/constants/case-data-fields.js')
 const stringify = require('csv-stringify/lib/sync')
 
 function removeFields (rec, fields) {
   for (const f of fields)
     delete rec[f]
+}
+
+
+/** Builds base report json data from dynamoDB data. */
+async function buildBaseJson (params) {
+  try {
+    return getBaseJson(params)
+  }
+  catch (err) {
+    console.log(err)
+    console.log(err.stack)
+    throw err
+  }
 }
 
 /** locations.json source. */
@@ -120,6 +134,7 @@ function timeseriesTidy (baseJson) {
 
 
 module.exports = {
+  buildBaseJson,
   locations,
   timeseriesByLocation,
   timeseriesJhu,

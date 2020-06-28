@@ -1,9 +1,8 @@
 process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
-const utils = require('../../_lib/utils.js')
-const { buildBaseJson } = require('../../../../src/scheduled/reports/_build-base-json.js')
-const reports = require('../../../../src/scheduled/reports/_reports.js')
+const utils = require('../../../_lib/utils.js')
+const reports = require('../../../../../src/events/reports/generate-data/index.js')
 
 const path = require('path')
 const intDir = path.join(process.cwd(), 'tests', 'integration')
@@ -30,7 +29,7 @@ function dumpCsv (title, csv) {
   console.log(csv)
 }
 
-test.only('smoke test report with single location', async t => {
+test('smoke test report with single location', async t => {
   await utils.setup()
 
   // Generated report should contain these dates:
@@ -59,7 +58,7 @@ test.only('smoke test report with single location', async t => {
   // Override load path for sources, since we're using fake sources
   // for these tests.
   const params = { _sourcesPath: sourcesPath }
-  const base = await buildBaseJson(params)
+  const base = await reports.buildBaseJson(params)
   dumpJson('base', base)
 
   dumpJson('locations', await reports.locations(base))

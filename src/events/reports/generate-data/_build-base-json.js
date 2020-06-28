@@ -55,18 +55,5 @@ async function getBaseJson (params) {
   return result
 }
 
-/** Builds base report json data from dynamoDB data. */
-async function buildBaseJson (params) {
-  try {
-    return getBaseJson(params)
-  }
-  catch (err) {
-    console.log(err)
-    console.log(err.stack)
-    throw err
-  }
-}
 
-module.exports = {
-  buildBaseJson
-}
+module.exports = getBaseJson
