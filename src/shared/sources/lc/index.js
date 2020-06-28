@@ -1,4 +1,5 @@
 const assert = require('assert')
+const maintainers = require('../_lib/maintainers.js')
 
 const country = 'iso1:LC'
 
@@ -7,15 +8,17 @@ module.exports = {
   timeseries: false,
   friendly: {
     name: "SAINT LUCIA'S COVID-19 DASHBOARD",
-    url: 'https://www.health.gov.au/'
+    url: 'https://www.covid19response.lc/'
   },
+  maintainers: [ maintainers.appastair ],
   scrapers: [
     {
       startDate: '2020-06-04',
       crawl: [
         {
           type: 'page',
-          url: 'https://www.covid19response.lc/'
+          url: 'https://www.covid19response.lc/',
+          data: 'paragraph'
         },
       ],
       scrape ($) {
