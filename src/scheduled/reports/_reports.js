@@ -1,5 +1,5 @@
 const caseDataFields = require('@architect/shared/constants/case-data-fields.js')
-const stringify = require('csv-stringify')
+const stringify = require('csv-stringify/lib/sync')
 
 function removeFields (rec, fields) {
   for (const f of fields)
@@ -7,7 +7,7 @@ function removeFields (rec, fields) {
 }
 
 /** locations.json source. */
-async function locations (baseJson) {
+function locations (baseJson) {
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
     removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created' ])
@@ -16,7 +16,7 @@ async function locations (baseJson) {
 }
 
 /** timeseries-byLocation.json source. */
-async function timeseriesByLocation (baseJson) {
+function timeseriesByLocation (baseJson) {
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
     removeFields(rec, [ 'area', 'created' ])
@@ -70,7 +70,7 @@ function timeseries (baseJson) {
   // TODO (reports) Move this to file-writing routine.
   let cols = caseDataFields.concat('date').
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
-  stringify( data, { header: true, columns: cols }).pipe(process.stdout)
+  return stringify( data, { header: true, columns: cols })
 }
 
 /** timeseries-jhu.csv source.
@@ -92,7 +92,7 @@ function timeseriesJhu (baseJson) {
   let cols = dates.reduce((a, d) => {
     return a.concat([ { key: d, header: d } ])
   }, baseCsvColumns)
-  stringify( data, { header: true, columns: cols }).pipe(process.stdout)
+  return stringify( data, { header: true, columns: cols })
 }
 
 
@@ -118,7 +118,7 @@ function timeseriesTidy (baseJson) {
   let cols = [ 'date', 'type', 'value' ].reduce((a, s) => {
     return a.concat([ { key: s, header: s } ])
   }, baseCsvColumns)
-  stringify( data, { header: true, columns: cols }).pipe(process.stdout)
+  return stringify( data, { header: true, columns: cols })
 }
 
 

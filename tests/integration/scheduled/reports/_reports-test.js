@@ -24,8 +24,13 @@ function dumpJson (title, json) {
   console.log(j)
 }
 
+function dumpCsv (title, csv) {
+  console.log('-------------------------------------------------------')
+  console.log(title)
+  console.log(csv)
+}
 
-test('smoke test report with single location', async t => {
+test.only('smoke test report with single location', async t => {
   await utils.setup()
 
   // Generated report should contain these dates:
@@ -59,20 +64,10 @@ test('smoke test report with single location', async t => {
 
   dumpJson('locations', await reports.locations(base))
   dumpJson('timeseries-byLocation', await reports.timeseriesByLocation(base))
+  dumpCsv('timeseriesJhu', reports.timeseriesJhu(base))
+  dumpCsv('timeseriesTidy', reports.timeseriesTidy(base))
+  dumpCsv('timeseries', reports.timeseries(base))
 
-  console.log('-------------------------------------------------------')
-  console.log('timeseriesJhu')
-  reports.timeseriesJhu(base)
-
-  console.log('-------------------------------------------------------')
-  console.log('timeseriesTidy')
-  reports.timeseriesTidy(base)
-
-  console.log('-------------------------------------------------------')
-  console.log('timeseries')
-  reports.timeseries(base)
-
-  console.log('-------------------------------------------------------')
   await utils.teardown()
   t.end()
 })
