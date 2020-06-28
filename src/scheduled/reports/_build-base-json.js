@@ -1,7 +1,6 @@
 const arc = require('@architect/functions')
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
 const buildTimeseries = require('./_build-timeseries.js')
-const utils = require('./_utils.js')
 
 async function getTimeseriesForLocation (data, locationID) {
   // Probably should not require pagination as we should only be
@@ -26,7 +25,14 @@ function addPopulationDensity (rec) {
   }
 }
 
-/** Gets the first and last dates in the locations.
+/** Given array of hashes, gets unique elements, where uniquness is
+ * determined by key value. */
+function uniqueByKey (arr, key) {
+  const h = arr.reduce((hsh, m) => { return { ...hsh, [m[key]]: m } }, {})
+  return Object.values(h)
+}
+
+/** Gets base json to be interpreted and formatted by all reports.
  *
  * Pass in params._sourcesPath to override the default sources path. */
 async function getBaseJson (params) {
@@ -39,15 +45,11 @@ async function getBaseJson (params) {
     const loc = locations[i]
     addPopulationDensity(loc)
     const ts = await getTimeseriesForLocation(data, loc.locationID)
-
     const sources = ts.sources.map(s => getSource({ source: s, ...params }))
-    const maintainers = sources.map(s => s.maintainers).flat()
-    // TODO (reports) this won't work if maintainers have the same name.
-    loc.maintainers = utils.uniqueByKey(maintainers, 'name')
-    const links = sources.map(s => s.friendly).flat()
-    loc.links = utils.uniqueByKey(links, 'url')
+    const maintainers = uniqueByKey(sources.map(s => s.maintainers).flat(), 'name')
+    const links = uniqueByKey(sources.map(s => s.friendly).flat(), 'url')
 
-    result.push( { ...loc, ...ts } )
+    result.push( { ...loc, maintainers, links, ...ts } )
   }
 
   return result
