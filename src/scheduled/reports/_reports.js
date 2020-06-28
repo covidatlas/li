@@ -67,7 +67,6 @@ function timeseries (baseJson) {
     })
   })
 
-  // TODO (reports) Move this to file-writing routine.
   let cols = caseDataFields.concat('date').
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
   return stringify( data, { header: true, columns: cols })
@@ -88,7 +87,6 @@ function timeseriesJhu (baseJson) {
     return Object.assign(rec, caseTs)
   })
 
-  // TODO (reports) Move this to file-writing routine.
   let cols = dates.reduce((a, d) => {
     return a.concat([ { key: d, header: d } ])
   }, baseCsvColumns)
@@ -114,7 +112,6 @@ function timeseriesTidy (baseJson) {
     })
   })
 
-  // TODO (reports) Move this to file-writing routine.
   let cols = [ 'date', 'type', 'value' ].reduce((a, s) => {
     return a.concat([ { key: s, header: s } ])
   }, baseCsvColumns)
