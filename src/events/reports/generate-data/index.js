@@ -30,7 +30,7 @@ function locations (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created' ])
+    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated' ])
     return rec
   })
 }
@@ -40,7 +40,7 @@ function timeseriesByLocation (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'area', 'created' ])
+    removeFields(rec, [ 'area', 'created', 'updated' ])
     return rec
   })
 }
