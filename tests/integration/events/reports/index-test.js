@@ -1,6 +1,8 @@
 process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
+const { join } = require('path')
+const fs = require('fs')
 const utils = require('../../_lib/utils.js')
 
 
@@ -49,9 +51,28 @@ test.only('files are generated', async t => {
   const reportStatus = await utils.waitForDynamoTable('report-status', 10000, 200)
   console.table(reportStatus)
 
+  const expectedFiles = [
+    'locations.json',
+    'timeseries-byLocation.json',
+    'timeseries-jhu.csv',
+    'timeseries-tidy.csv',
+    'timeseries.csv'
+  ]
   let files = await waitForGeneratedFiles(5)
   const msg = `expected 5 files, got ${files.length} (${files.join()})`
   t.equal(files.length, 5, msg)
+  t.equal(expectedFiles.sort().join(), files.sort().join())
+
+  function assertContentsEqual (filename) {
+    const actual = join(utils.testReportsDir.reportsDir, filename)
+    const expected = join(__dirname, 'expected-results', filename)
+    const clean = f => fs.readFileSync(f, 'UTF-8').replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD')
+    t.equal(clean(actual), clean(expected), filename)
+  }
+  for (const f of expectedFiles) {
+    console.log(`validate ${f}`)
+    assertContentsEqual(f)
+  }
 
   await utils.teardown()
   t.end()
