@@ -31,7 +31,7 @@ status      # Status updater
 @scheduled
 runner rate(2 hours)            # Regularly invokes crawls and scrapes
 regen-timeseries rate(2 hours)  # Regularly regenerates timeseries sources
-reports rate(12 hours)          # Fire event to regenerate reports
+reports rate(2 hours)           # Fire event to regenerate reports
 
 
 @storage-public
