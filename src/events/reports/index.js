@@ -1,8 +1,9 @@
 const arc = require('@architect/functions')
-
 const generateData = require('./generate-data/index.js')
 const writeFile = require('./write/index.js')
 
+
+/** Post a status update. */
 async function reportStatus (filename, status, params = {}) {
   const rpt = { report: filename, status, ...params }
   rpt.updated = new Date().toISOString()
@@ -12,6 +13,7 @@ async function reportStatus (filename, status, params = {}) {
 }
 
 
+/** Generate and save a report, updating the status. */
 async function doGeneration (hsh) {
   const f = hsh.filename
 
