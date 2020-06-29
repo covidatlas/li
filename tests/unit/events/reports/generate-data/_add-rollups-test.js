@@ -39,19 +39,34 @@ test('lower levels roll up to higher levels if higher levels are empty', t => {
 
 /*
 single location
+
 rollup of two locations to higher level
 
-top level, mid level has data, bottom level also has data ... uses data from middle.
+top level, mid level has data, bottom level also has data ... uses
+data from middle.
 
 can even handle city-level data, though that's unusual
 
+two locations with data at different dates rolluing up to higher
+
+two locations rolling up to different top level
+
 if higher level data is present, it's left alone
-higher has some data but not all (eg has cases but not deaths) gets data from lower cases (eg for deaths)
+
+higher has some data but not all (eg has cases but not deaths) gets
+data from lower cases (eg for deaths); sources includes 'rollup'
+
 sanity check: higher level only
+
 if no higher level, the lower levels roll up to make the higher level
-if higher level exists, and lower levels don't roll up to match the higher level, print warning
+
+if higher level exists, and lower levels don't roll up to match the
+higher level, print warning
+
 sources say "rollup" for each date where it was a rollup
+
 growth factor should be added after rollups
+
 rolled up item should have growth factor
 
 Full reports can handle "rollup" items

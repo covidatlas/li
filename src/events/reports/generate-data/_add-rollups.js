@@ -30,6 +30,38 @@ function allLocationsAndLevels (locationIDs) {
   })
 }
 
+
+function rollup (timeseries, levelsAndIds, locationID, level) {
+
+  // Build on existing timeseries entry for locationID, if any.
+  const empty = {
+    timeseries: {},
+    timeseriesSources: {},
+    sources: []
+  }
+  const result = Object.assign(empty, timeseries[locationID])
+
+  const children = levelsAndIds.
+        filter(lid =>
+               lid.level === (level + 1) &&
+               lid.locationID.startsWith(locationID)).
+        map(lid => timeseries[lid.locationID])
+
+  // TODO: keep parent value if present
+  // TODO: set missing parent value to sum of children value, and set source and timeseriesSource to rollup.
+  // TODO: "reduceSources" needs to occur after this step, b/c this step may add 'rollup' as the source for some fields.
+  // Placeholder: just assign child to result.
+  const cDates = children.map(c => Object.keys(c.timeseries)).flat()
+  const dates = [ ...new Set(cDates) ].sort()
+  for (const d of dates) {
+    result.timeseries[d] = children[0].timeseries[d]
+    result.timeseriesSources[d] = children[0].timeseriesSources[d]
+    result.sources = children[0].sources
+  }
+
+  return result
+}
+
 /** Add rollups for locations in timeseries.
  *
  * a) Get the implied locations and levels from locationIDs in
@@ -54,6 +86,18 @@ function allLocationsAndLevels (locationIDs) {
  * decrement level, and repeat.
  */
 function addRollups (timeseries) {
+
+  const levelsAndIds = allLocationsAndLevels(Object.keys(timeseries))
+  const levels = [ ...new Set(levelsAndIds.map(l => l.level)) ]
+  const maxLevel = Math.max(...levels)
+  for (let level = maxLevel - 1; level > 0; level--) {
+    const locsAtLevel = levelsAndIds.
+          filter(i => i.level === level).
+          map(i => i.locationID)
+    for (const locationID of locsAtLevel) {
+      timeseries[locationID] = rollup(timeseries, levelsAndIds, locationID, level)
+    }
+  }
 
   return timeseries
 }
