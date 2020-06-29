@@ -9,12 +9,20 @@ const mapping = {
   deaths: 'death',
   cases: 'total confirmed cases',
   recovered: 'cured',
+  active: 'active cases',
   ignore: 's. no.'
 }
 
-const nameToCanonical = { // Name differences get mapped to the canonical names
-  'Telengana': 'Telangana',
-  'Dadar Nagar Haveli': 'Dadra and Nagar Haveli',
+const isoMap = {
+  // Non-unique gets mapped straight to ISO2
+  "Dadra and Nagar Haveli and Daman and Diu": "iso2:IN-DN+iso2:IN-DD",
+}
+
+const nameToCanonical = {
+  // Name differences get mapped to the canonical names
+  Telengana: "Telangana",
+  "Dadar Nagar Haveli": "Dadra and Nagar Haveli",
+  "Dadra and Nagar Haveli and Daman and Diu": "Dadra and Nagar Haveli",
 }
 
 module.exports = {
@@ -48,7 +56,12 @@ module.exports = {
         const states = []
         stateDataRows.forEach((row) => {
           const stateData = normalizeKey.createHash(propColIndices, row)
-          stateData.state = getIso2FromName({ country, name: stateData.state, nameToCanonical })
+          stateData.state = getIso2FromName({
+            country,
+            name: stateData.state,
+            nameToCanonical,
+            isoMap,
+          })
           states.push(stateData)
         })
 

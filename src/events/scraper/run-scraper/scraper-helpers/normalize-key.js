@@ -97,6 +97,7 @@ function _propertyForHeading (heading, mapping) {
 function propertyColumnIndices (headings, mapping) {
   _validateMappingKeys(mapping)
   const result = {}
+  assert(headings, `No headings array, got ${JSON.stringify(headings)}`)
   headings.forEach((heading, index) => {
     const p = _propertyForHeading(heading, mapping)
     if (result[p] !== undefined) {
