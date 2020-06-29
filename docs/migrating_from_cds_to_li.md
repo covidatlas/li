@@ -1,35 +1,39 @@
 # Migrating from CDS to Li.
 
-**NOTE: everything here is a work-in-progress, and may change!  If you are working with the data and note any discrepancies between this doc and the live data, please let us know by [opening an issue](https://github.com/covidatlas/li/issues/new/choose), notifying us on Slack, or (better yet!) updating the documentation and submitting a Pull Request.**
+**NOTE: everything here is a work-in-progress, and may change!**
+
+If you are working with the data and note any discrepancies between this doc and the live data, please let us know by [opening an issue](https://github.com/covidatlas/li/issues/new/choose), notifying us on Slack, or (better yet!) updating the documentation and submitting a Pull Request.  Thank you!
 
 ## Report endpoint
 
-TBD
+TODO (reports) endpoint
+
+## Report schedule
+
+TODO (reports) schedule
 
 ## Report replacements
 
-| CDS report | Li report **(wip, currently code only, manual generation)** | Code (`src/scheduled/reports/`) |
+Note: sample reports are committed to this repository for test verification.  They're in `tests/integration/events/reports/expected-results`.
+
+| CDS report | Li report |
 | --- | --- | --- |
-| features.json | TODO | TODO |
-| locations.json | TODO | `_reports.js/locations()` |
-| timeseries-byLocation.json | TODO | `_reports.js/timeseriesByLocation()` |
-| timeseries-jhu.csv | TODO | `_reports.js/timeseriesJhu()` |
-| timeseries-tidy.csv | TODO | `_reports.js/timeseriesTidy()` |
-| timeseries.csv | TODO | `_reports.js/timeseries()` |
-| timeseries.json | **Will not reproduce** | n/a |
+| features.json | TODO |
+| locations.json | locations.json |
+| timeseries-byLocation.json | timeseries-byLocation.json |
+| timeseries-jhu.csv | timeseries-jhu.csv |
+| timeseries-tidy.csv | timeseries-tidy.csv |
+| timeseries.csv | timeseries.csv |
+| timeseries.json | **Will not reproduce** |
 
 
-### TODOs and comparison notes
+### features.json
 
-#### features.json
+TODO (reports) waiting for Zsolt's response re generating from geojson
 
-- TODO - waiting for Zsolt's response re generating from geojson
+### locations.json
 
-#### locations.json
-
-- TODO question - how to get the URL - can't do this all the time, some urls are dynamic and change; some URLs are _extremely_ long (arcgis)
-
-##### CDS record
+#### CDS record
 
 ```
   {
@@ -68,7 +72,7 @@ TBD
 
 ```
 
-##### Li record
+#### Li record
 
 ```
   {
@@ -108,9 +112,9 @@ TBD
   }
 ```
 
-### timeseries-byLocation.json
+## timeseries-byLocation.json
 
-#### CDS record
+### CDS record
 
 ```
 {
@@ -157,7 +161,7 @@ TBD
     },
 ```
 
-#### Li record
+### Li record
 
 ```
   {
@@ -203,16 +207,13 @@ TBD
   }
 ```
 
-##### Changes
+#### Changes
 
-* no rating
+* removed rating, url, featureId
+* added locationID (primary key for locations)
 * tz is not in an array
-* no url
-* no featureId
-* map location to geo using locationID
-* add locationID (primary key for locations)
 
-##### Multivalent data
+#### Multivalent data
 
 The data fields in a given record can be supplied by many sources: one source may return cases and deaths, and another return hospitalizations and tests.  The field `timeseriesSources` shows where each field comes from.
 
@@ -230,16 +231,16 @@ If there are conflicts in the data (e.g., multiple sources return `cases`, but t
 ```
 
 
-### timeseries-jhu.csv
+## timeseries-jhu.csv
 
-#### CDS record
+### CDS record
 
 ```
 name,level,city,county,state,country,lat,long,population,url,aggregate,tz,2020-06-02,2020-06-03,...
 "Lower Austria, Austria",state,,,Lower Austria,Austria,48.22100,15.7605,1653419,https:...js,,Europe/Vienna,2867,2868,...
 ```
 
-#### Li record
+### Li record
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,2020-05-21,2020-05-22
@@ -249,16 +250,16 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
 * `locationID` is the canonical ID to use for a location
 * `slug` may be used in future API calls (TBD!)
 
-### timeseries-tidy.csv
+## timeseries-tidy.csv
 
-#### CDS record
+### CDS record
 
 ```
 name,level,city,county,state,country,population,lat,long,aggregate,tz,date,type,value
 "Lower Austria, Austria",state,,,Lower Austria,Austria,1653419,48.221000000000004,15.7605,,Europe/Vienna,2020-06-02,cases,2867
 ```
 
-#### Li record
+### Li record
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,date,type,value
@@ -266,22 +267,22 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
 iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,2020-05-21,deaths,4
 ```
 
-### timeseries.csv
+## timeseries.csv
 
-#### CDS record
+### CDS record
 
 ```
 name,level,city,county,state,country,population,lat,long,url,aggregate,tz,cases,deaths,recovered,active,tested,hospitalized,hospitalized_current,discharged,icu,icu_current,growthFactor,date
 "Lower Austria, Austria",state,,,Lower Austria,Austria,1653419,48.221000000000004,15.7605,https://info.gesundheitsministerium.at/data/GenesenTodesFaelleBL.js,,Europe/Vienna,2867,97,2678,92,,,,,,,,2020-06-02
 ```
 
-#### Li record
+### Li record
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,cases,deaths,recovered,active,tested,hospitalized,hospitalized_current,discharged,icu,icu_current,date
 iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,4,,,210,1,,,10,,2020-05-21
 ```
 
-### timeseries.json
+## timeseries.json
 
-Will not reproduce.  This file is not atomic; it relies on some external resource or resources, and it's not clear on its own.
+**Will not reproduce.**  This file is not atomic; it relies on some external resource or resources, and it's not clear on its own.
