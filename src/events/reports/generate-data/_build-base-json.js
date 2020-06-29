@@ -38,7 +38,8 @@ function uniqueByKey (arr, key) {
 async function getBaseJson (params) {
   const data = await arc.tables()
   const locations = await data.locations.scan({}).
-        then(result => result.Items)
+        then(result => result.Items).
+        then(result => result.sort((a, b) => a.locationID < b.locationID ? -1 : 1))
   const result = []
   for (var i = 0; i < locations.length; ++i) {
     const loc = locations[i]
