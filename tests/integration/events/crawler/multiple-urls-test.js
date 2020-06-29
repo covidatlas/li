@@ -1,8 +1,8 @@
 process.env.NODE_ENV = 'testing'
 
-const utils = require('../utils.js')
+const utils = require('../../_lib/utils.js')
 const test = require('tape')
-const testCache = require('../../_lib/testcache.js')
+const testCache = utils.testCache
 
 test('successful crawl saves multiple files to cache', async t => {
   await utils.setup()

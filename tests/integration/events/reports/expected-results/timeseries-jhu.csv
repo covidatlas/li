@@ -1,0 +1,2 @@
+locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,2020-06-28
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21

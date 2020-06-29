@@ -3,8 +3,8 @@ process.env.NODE_ENV = 'testing'
 const test = require('tape')
 const fs = require('fs')
 const path = require('path')
-const utils = require('../utils.js')
-const testCache = require('../../_lib/testcache.js')
+const utils = require('../../_lib/utils.js')
+const testCache = utils.testCache
 
 
 test('scrape of multiple files', async t => {

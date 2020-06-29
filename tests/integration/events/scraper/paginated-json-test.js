@@ -1,10 +1,10 @@
 process.env.NODE_ENV = 'testing'
 
-const utils = require('../utils.js')
+const utils = require('../../_lib/utils.js')
 const test = require('tape')
 const fs = require('fs')
 const path = require('path')
-const testCache = require('../../_lib/testcache.js')
+const testCache = utils.testCache
 
 const firstPage = {
   records: [

@@ -16,6 +16,7 @@ get /get/headless
 get /locations
 get /locations/:location
 get /status
+get /report_status
 get /invocations
 
 @events
@@ -23,16 +24,19 @@ crawler     # Crawls our sources
 scraper     # Operates the scrapers
 locations   # Update location data
 regenerator # Regenerates a source from cache
+reports     # Generate reports
 status      # Status updater
 
 
 @scheduled
 runner rate(2 hours)            # Regularly invokes crawls and scrapes
 regen-timeseries rate(2 hours)  # Regularly regenerates timeseries sources
+reports rate(12 hours)          # Fire event to regenerate reports
 
 
 @storage-public
 cache   # Main crawler cache
+reports # Generated reports
 
 
 @tables
@@ -61,6 +65,10 @@ geojson
 status
   source *String
   event **String
+
+# Report generation status.
+report-status
+  report *String
 
 # Running log of source status changes
 status-logs

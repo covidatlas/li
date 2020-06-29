@@ -28,6 +28,17 @@ npm install
 
 If you get an error message saying you have an incompatible version of `node`, you may need to change versions.  You can use `n` or `nvm` if you don't want to install Node.js 12.x.
 
+### 3. Pull from upstream often
+
+This gets you the latest sources.
+
+```
+git pull upstream master
+```
+
+
+## Usage
+
 ### Start the local dev server
 
 Start the local dev server in one terminal:
@@ -91,34 +102,22 @@ On Windows:
 node .\start --scrape <id> --date 2020-03-19
 ```
 
-
-
-### 3. Pull from upstream often
-
-This gets you the latest sources.
-
-```
-git pull upstream master
-```
-
-
-## Run sources
-
-
-
 ### Re-generating old data
 
-Coming soon!
+TBD
 
 
-### Generating timeseries data
+### Generating reports
 
-Coming soon!
+```
+npm run gen-reports
+```
 
+The reports will be generated from the data present in your local database.
 
-### Command-line options
+Reports are generated to `/reports` in project root.
 
-Coming soon!
+The report generation status is shown in http://localhost:3333/report_status.
 
 
 ## Tests
