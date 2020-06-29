@@ -27,7 +27,7 @@ async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 5
 }
 
 
-test.only('files are generated', async t => {
+test('files are generated', async t => {
   await utils.setup()
   t.equal(utils.testReportsDir.allFiles().length, 0, 'no files at start')
 
