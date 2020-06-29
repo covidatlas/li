@@ -7,22 +7,11 @@
  * complexity.
  */
 
-require('../src/cli/env.js')()
-const args = require('../src/cli/args.js')
 const arc = require('@architect/functions')
-
-let { report } = args
-
-// TODO (reports) select good default
-// TODO (reports) should we let ppl run one specific report?  or just run all?
-if (!report)
-  report = 'a'
 
 ;(async () => {
   await arc.events.publish({
     name: 'reports',
-    payload: {
-      report
-    }
+    payload: {}
   })
 })()

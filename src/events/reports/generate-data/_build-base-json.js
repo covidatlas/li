@@ -39,7 +39,6 @@ async function getBaseJson (params) {
   const data = await arc.tables()
   const locations = await data.locations.scan({}).
         then(result => result.Items)
-
   const result = []
   for (var i = 0; i < locations.length; ++i) {
     const loc = locations[i]
@@ -51,7 +50,6 @@ async function getBaseJson (params) {
 
     result.push( { ...loc, maintainers, links, ...ts } )
   }
-
   return result
 }
 

@@ -1,7 +1,7 @@
 const aws = require('aws-sdk')
 const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
 
-module.exports = async function writeS3 (data, filename) {
+module.exports = async function writeS3 (filename, data) {
   const s3 = new aws.S3()
 
   const Bucket = getReportsBucket()

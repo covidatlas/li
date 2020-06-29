@@ -8,10 +8,15 @@ function removeFields (rec, fields) {
 }
 
 
-/** Builds base report json data from dynamoDB data. */
+/** Builds base report json data from dynamoDB data.
+ *
+ * Pass in params._sourcesPath to override the default sources path.
+ */
 async function buildBaseJson (params) {
   try {
-    return getBaseJson(params)
+    console.log('calling getBaseJson')
+    const ret = await getBaseJson(params)
+    return ret
   }
   catch (err) {
     console.log(err)
@@ -22,6 +27,7 @@ async function buildBaseJson (params) {
 
 /** locations.json source. */
 function locations (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
     removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created' ])
@@ -31,6 +37,7 @@ function locations (baseJson) {
 
 /** timeseries-byLocation.json source. */
 function timeseriesByLocation (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
   return baseJson.map(loc => {
     const rec = Object.assign({}, loc)
     removeFields(rec, [ 'area', 'created' ])
@@ -58,6 +65,7 @@ const baseCsvColumns = [
 
 
 function baseCsv (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
   return baseJson.map(loc => {
     let rec = Object.assign({}, loc)
     rec.lat = rec.coordinates[1]
@@ -70,6 +78,7 @@ function baseCsv (baseJson) {
  *
  */
 function timeseries (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
   const data = []
   baseCsv(baseJson).forEach(rec => {
     Object.keys(rec.timeseries).forEach(dt => {
@@ -90,6 +99,7 @@ function timeseries (baseJson) {
  *
  */
 function timeseriesJhu (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
   const allDates = baseJson.reduce((dates, loc) => {
     return dates.concat(Object.keys(loc.timeseries))
   }, [])
@@ -112,6 +122,7 @@ function timeseriesJhu (baseJson) {
  *
  */
 function timeseriesTidy (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
   const data = []
   baseCsv(baseJson).forEach(rec => {
     Object.keys(rec.timeseries).forEach(dt => {
@@ -137,6 +148,7 @@ module.exports = {
   buildBaseJson,
   locations,
   timeseriesByLocation,
+
   timeseriesJhu,
   timeseriesTidy,
   timeseries

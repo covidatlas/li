@@ -66,10 +66,8 @@ status
   event **String
 
 # Report generation status.
-# There are multiple reports, and users can specify a particular location
-# to generate the report for.  Recording the status of each of these.
 report-status
-  reportLocation *String
+  report *String
 
 # Running log of source status changes
 status-logs

@@ -1,7 +1,7 @@
 const fs = require('fs')
 const { join } = require('path')
 
-module.exports = async function writeLocal (data, filename) {
+module.exports = async function writeLocal (filename, data) {
   let reportPath = join(__dirname, '..', '..', '..', '..', 'reports')
   // Alter the local cache dir (handy for such things as integration testing)
   if (process.env.LI_REPORT_PATH) {

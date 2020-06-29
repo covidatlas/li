@@ -7,4 +7,9 @@ function getWrite () {
   return local ? writeLocal : writeS3
 }
 
-module.exports = getWrite
+async function writeFile (filename, content) {
+  const write = getWrite()
+  await write(filename, content)
+}
+
+module.exports = writeFile

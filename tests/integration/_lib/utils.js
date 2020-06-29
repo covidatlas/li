@@ -11,9 +11,11 @@ const intDir = path.join(process.cwd(), 'tests', 'integration')
 const sourcesPath = path.join(intDir, 'fake-sources')
 
 const testCache = require(path.join(intDir, '_lib', 'testcache.js'))
+const testReportsDir = require('./reports-dir.js')
 const fakeCrawlSites = require(path.join(intDir, '_lib', 'fake-crawl-sites.js'))
 const crawlerHandler = require(path.join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
 const scraperHandler = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'index.js')).handler
+const reportsHandler = require(path.join(process.cwd(), 'src', 'events', 'reports', 'index.js')).handler
 
 /** Create AWS event payload for the crawl/scrape handlers. */
 function makeEventMessage (hsh) {
@@ -33,6 +35,7 @@ async function setup () {
   await sandbox.start({ port: sandboxPort, quiet: true })
   sandboxPort += 5
   testCache.setup()
+  testReportsDir.setup()
   fakeCrawlSites.deleteAllFiles()
 }
 
@@ -60,6 +63,7 @@ process.on('uncaughtException', err => {
 async function teardown () {
   fakeCrawlSites.deleteAllFiles()
   testCache.teardown()
+  testReportsDir.teardown()
   await sandbox.end()
 }
 
@@ -102,6 +106,14 @@ async function scrape (sourceKey) {
   return fullResult
 }
 
+/** Generate reports from dynamoDB, using sources at sourcesPath. */
+async function generateReports (_sourcesPath, _reportsPath) {
+  const params = { _sourcesPath, _reportsPath }
+  const event = makeEventMessage(params)
+  await reportsHandler(event)
+  await waitForDynamoTable('report-status', 5000, 250)
+}
+
 
 /** Wait for dynamoDB table to be loaded, polling until timeout.
  *
@@ -122,8 +134,7 @@ async function waitForDynamoTable (tablename, timeoutms = 10000, interval = 200)
       if (tmp.length > 0)
         resolve(tmp)
       else if (remaining < 0) {
-        console.log('Timed out ... returning empty')
-        resolve([])
+        resolve(new Error(`timeout waiting for ${tablename}`))
       }
       else
         setTimeout(check, interval)
@@ -167,11 +178,14 @@ function validateResults (t, fullResult, expected) {
 module.exports = {
   setup,
   teardown,
+  sourcesPath,
   writeFakeSourceContent,
   copyFixture,
   crawl,
   scrape,
+  generateReports,
   waitForDynamoTable,
   validateResults,
-  testCache
+  testCache,
+  testReportsDir
 }
