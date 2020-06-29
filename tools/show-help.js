@@ -21,6 +21,10 @@ const descriptions = {
     desc: 'List the SourceIDs for all sources.',
     docref: 'docs/getting_started.md/Source IDs'
   },
+  'gen-reports': {
+    desc: 'Generate reports to /reports.',
+    docref: 'docs/reports'
+  },
   todos: {
     desc: 'List all TODOs, FIXMEs, etc, grouped.',
     docref: 'TODO'
