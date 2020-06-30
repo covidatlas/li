@@ -14,6 +14,19 @@ async function writeFile (filename, data) {
   console.log(`Wrote report:`, file)
 }
 
+function getWritableStream (filename) {
+  let reportPath = join(__dirname, '..', '..', '..', '..', 'reports')
+  // Alter the local cache dir (handy for integration testing)
+  if (process.env.LI_REPORT_PATH) {
+    reportPath = process.env.LI_REPORT_PATH
+  }
+  fs.mkdirSync(reportPath, { recursive: true })
+
+  const file = join(reportPath, filename)
+  return fs.createWriteStream(file)
+}
+
 module.exports = {
-  writeFile
+  writeFile,
+  getWritableStream
 }

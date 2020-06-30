@@ -1,4 +1,5 @@
 const aws = require('aws-sdk')
+const stream = require('stream')
 const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
 
 async function writeFile (filename, data) {
@@ -32,6 +33,31 @@ async function writeFile (filename, data) {
   console.log(`Wrote to S3: ${filename}`)
 }
 
+
+function getWritableStream (filename) {
+  var pass = new stream.PassThrough()
+
+  const Bucket = getReportsBucket()
+
+  const Key = [ 'beta', 'latest', filename ].join('/')
+
+  const params = {
+    ACL: 'public-read',
+    Bucket,
+    Key,
+    Body: pass
+  }
+
+  const s3 = new aws.S3()
+  s3.upload(params, function (err, data) {
+    console.log(`Error: ${err}\nData: ${data}`)
+    throw err
+  })
+
+  return pass
+}
+
 module.exports = {
-  writeFile
+  writeFile,
+  getWritableStream
 }
