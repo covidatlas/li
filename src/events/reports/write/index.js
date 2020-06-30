@@ -12,6 +12,12 @@ async function writeFile (filename, content) {
   await writer.writeFile(filename, content)
 }
 
+function getWritableStream (filename) {
+  const writer = getWriter()
+  return writer.getWritableStream(filename)
+}
+
 module.exports = {
-  writeFile
+  writeFile,
+  getWritableStream
 }

@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
 const generateData = require('./generate-data/index.js')
-const { writeFile } = require('./write/index.js')
+const writeReports = require('./write-reports/index.js')
+const { getWritableStream } = require('./write/index.js')
 
 
 /** Post a status update. */
@@ -20,15 +21,11 @@ async function doGeneration (hsh) {
   let result = null
   try {
     await reportStatus(f, 'generating')
-    result = await hsh.generate()
-    if (f.endsWith('.json'))
-      result = JSON.stringify(result, null, 2)
-    if (!hsh.skipSave) {
-      await reportStatus(f, 'saving')
-      await writeFile(f, result)
-    }
+    let s = null
+    if (!hsh.skipSave)
+      s = getWritableStream(f)
+    await hsh.generate(s)
     await reportStatus(f, 'success')
-    return result
   }
   catch (err) {
     const errMsg = [ err.message, err.stack ].join('\n')
@@ -69,23 +66,23 @@ async function handleEvent (event) {
     },
     {
       filename: 'locations.json',
-      generate: () => generateData.locations(baseJson)
+      generate: (s) => writeReports.locations(baseJson, s)
     },
     {
       filename: 'timeseries-byLocation.json',
-      generate: () => generateData.timeseriesByLocation(baseJson)
+      generate: (s) => writeReports.timeseriesByLocation(baseJson, s)
     },
     {
       filename: 'timeseries-jhu.csv',
-      generate: () => generateData.timeseriesJhu(baseJson)
+      generate: (s) => writeReports.timeseriesJhu(baseJson, s)
     },
     {
       filename: 'timeseries-tidy.csv',
-      generate: () => generateData.timeseriesTidy(baseJson)
+      generate: (s) => writeReports.timeseriesTidy(baseJson, s)
     },
     {
       filename: 'timeseries.csv',
-      generate: () => generateData.timeseries(baseJson)
+      generate: (s) => writeReports.timeseries(baseJson, s)
     }
   ]
 
