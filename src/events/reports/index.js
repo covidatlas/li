@@ -37,6 +37,17 @@ async function doGeneration (hsh) {
   }
 }
 
+/** Report status during generation of baseData.json.
+ *
+ * This report takes a while to build currently, due to a naive
+ * implementation (of mine).  Report status during generation for
+ * visibility. */
+async function updateBaseJsonStatus (index, total) {
+  if (index % 10 !== 0)
+    return
+  reportStatus('baseData.json', `generating (${index + 1} of ${total})`)
+}
+
 /**
  * Generate a report.
  */
@@ -52,7 +63,7 @@ async function handleEvent (event) {
     {
       filename: 'baseData.json',
       generate: async function () {
-        baseJson = await generateData.buildBaseJson( { _sourcesPath } )
+        baseJson = await generateData.buildBaseJson( { _sourcesPath }, updateBaseJsonStatus )
       },
       skipSave: true
     },

@@ -34,16 +34,23 @@ function uniqueByKey (arr, key) {
   return Object.values(h)
 }
 
+
+/** Dummy function for status updates. */
+// eslint-disable-next-line no-unused-vars
+async function baseJsonStatus (index, total) {}
+
+
 /** Gets base json to be interpreted and formatted by all reports.
  *
  * Pass in params._sourcesPath to override the default sources path. */
-async function getBaseJson (params) {
+async function getBaseJson (params, statusCallback = baseJsonStatus) {
   const data = await arc.tables()
   const locations = await data.locations.scan({}).
         then(result => result.Items).
         then(result => result.sort((a, b) => a.locationID < b.locationID ? -1 : 1))
   const result = []
   for (var i = 0; i < locations.length; ++i) {
+    statusCallback(i, locations.length)
     const loc = locations[i]
     addPopulationDensity(loc)
     const ts = await getTimeseriesForLocation(data, loc.locationID)
