@@ -43,7 +43,7 @@ async function doGeneration (hsh) {
  * implementation (of mine).  Report status during generation for
  * visibility. */
 async function updateBaseJsonStatus (index, total) {
-  if (index % 10 !== 0)
+  if (index % 100 !== 0)
     return
   reportStatus('baseData.json', `generating (${index + 1} of ${total})`)
 }

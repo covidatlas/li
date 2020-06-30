@@ -120,6 +120,11 @@ function timeseriesJhu (baseJson) {
 
 /** timeseries-tidy.csv source.
  *
+ * Timeseries-tidy.csv is a _huge_ file (~256MB as of 2020-jun-30, in
+ * CDS), as it repeats all of the baseCsvColumns for each type of case
+ * data point.  This is too big to fit into memory in Lambda, and
+ * kills the whole process, so we need to write it directly to a
+ * compressed file.
  */
 function timeseriesTidy (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
