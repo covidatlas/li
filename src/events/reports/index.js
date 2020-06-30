@@ -1,6 +1,6 @@
 const arc = require('@architect/functions')
 const generateData = require('./generate-data/index.js')
-const writeFile = require('./write/index.js')
+const { writeFile } = require('./write/index.js')
 
 
 /** Post a status update. */
