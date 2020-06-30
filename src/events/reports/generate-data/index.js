@@ -12,10 +12,10 @@ function removeFields (rec, fields) {
  *
  * Pass in params._sourcesPath to override the default sources path.
  */
-async function buildBaseJson (params) {
+async function buildBaseJson (params, updateBaseJsonStatus) {
   try {
     console.log('calling getBaseJson')
-    const ret = await getBaseJson(params)
+    const ret = await getBaseJson(params, updateBaseJsonStatus)
     return ret
   }
   catch (err) {

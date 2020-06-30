@@ -42,9 +42,16 @@ test('smoke test report with single location', async t => {
   const caseData = await utils.waitForDynamoTable('case-data', 10000, 200)
   t.equal(caseData.length, 2, `Sanity check, have 2 case records: ${JSON.stringify(caseData, null, 2)}`)
 
+  const statusUpdates = []
+  function updateStatus (index, total) {
+    statusUpdates.push(`${index} of ${total}`)
+  }
+
   const params = { _sourcesPath: sourcesPath }
-  const actual = await getBaseJson(params)
+  const actual = await getBaseJson(params, updateStatus)
   t.equal(actual.length, 1, 'single record in report')
+
+  t.deepEqual(statusUpdates, [ '0 of 1' ], 'location status updates sent')
 
   const j = JSON.stringify(actual, null, 2).
         split('\n').
