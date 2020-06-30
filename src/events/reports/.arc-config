@@ -1,4 +1,4 @@
 @aws
 runtime nodejs12.x
+memory 256
 timeout 900
-memory 1152

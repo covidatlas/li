@@ -28,7 +28,9 @@ function addPopulationDensity (rec) {
 /** Given array of hashes, gets unique elements, where uniquness is
  * determined by key value. */
 function uniqueByKey (arr, key) {
-  const h = arr.reduce((hsh, m) => { return { ...hsh, [m[key]]: m } }, {})
+  const h = arr.
+        filter(p => p).
+        reduce((hsh, m) => { return { ...hsh, [m[key]]: m } }, {})
   return Object.values(h)
 }
 
