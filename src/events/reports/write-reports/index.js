@@ -14,7 +14,7 @@ function locations (baseJson, writableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
   const content = baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated' ])
+    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
     return rec
   })
   writableStream.write(JSON.stringify(content, null, 2))
@@ -25,10 +25,38 @@ function timeseriesByLocation (baseJson, writableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
   const content = baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'area', 'created', 'updated' ])
+    removeFields(rec, [ 'area', 'created', 'updated', 'lat', 'long' ])
     return rec
   })
   writableStream.write(JSON.stringify(content, null, 2))
+}
+
+/** Convert array to batches.
+ *
+ * e.g., makeBatches([1,2,3,44], 3) => [ [ 1, 2, 3 ], [ 44 ] ]
+ */
+function makeBatches (arr, batchSize) {
+  const batches = []
+  let index = 0
+  while (index < arr.length)
+    batches.push(arr.slice(index, index += batchSize))
+  return batches
+}
+
+
+/** Divide recs up into batches.  Accumulate the output for each
+ * mapRecord in an array, and at the end of each batch write the array
+ * to the stream. Include the headings in the first array.  */
+function batchedCsvWrite (logname, batchedRecords, headings, mapRecord, writeBatch) {
+  batchedRecords.forEach((batch, bindex) => {
+    console.log(`${logname}: batch ${bindex + 1} of ${batchedRecords.length}`)
+    const batchContent = []
+    if (bindex === 0)
+      batchContent.push(stringify([ headings ]))
+
+    batchContent.push(batch.map(mapRecord))
+    writeBatch(batchContent)
+  })
 }
 
 
@@ -50,17 +78,6 @@ const baseCsvColumns = [
 ].map(s => { return { key: s, header: s.replace('Name', '') } })
 
 
-function baseCsv (baseJson) {
-  if (!baseJson) throw new Error('baseJson data is required')
-  return baseJson.map(loc => {
-    let rec = Object.assign({}, loc)
-    rec.lat = rec.coordinates[1]
-    rec['long'] = rec.coordinates[0]
-    return rec
-  })
-}
-
-
 /** timeseries.csv source.
  *
  */
@@ -70,19 +87,17 @@ function timeseries (baseJson, writeableStream) {
   let cols = caseDataFields.concat('date').
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
   const headings = cols.map(c => c.header)
-  writeableStream.write(stringify([ headings ]))
 
-  const columns = cols.map(c => c.key)
-  baseCsv(baseJson).forEach(rec => {
-    Object.keys(rec.timeseries).forEach(dt => {
-      const outrec = {
-        ...rec,
-        ...rec.timeseries[dt],
-        date: dt
-      }
-      writeableStream.write(stringify([ outrec ], { columns }))
+  const mapRecord = rec => {
+    const recs = Object.keys(rec.timeseries).map(dt => {
+      return { ...rec, ...rec.timeseries[dt], date: dt }
     })
-  })
+    return stringify(recs, { columns: cols.map(c => c.key) })
+  }
+
+  const writeBatch = result => writeableStream.write(result.join(''))
+
+  batchedCsvWrite('timeseries.csv', makeBatches(baseJson, 20), headings, mapRecord, writeBatch)
 }
 
 /** timeseries-jhu.csv source.
@@ -100,15 +115,18 @@ function timeseriesJhu (baseJson, writeableStream) {
   }, baseCsvColumns)
 
   const headings = cols.map(c => c.header)
-  writeableStream.write(stringify([ headings ]))
 
-  const columns = cols.map(c => c.key)
-  baseCsv(baseJson).forEach(rec => {
-    const cases = Object.entries(rec.timeseries).
-      reduce((hsh, e) => Object.assign(hsh, { [e[0]]: e[1].cases }), {})
-    const outrec = Object.assign(rec, cases)
-    writeableStream.write(stringify([ outrec ], { columns }))
-  })
+  const mapRecord = rec => {
+    // Convert all 'cases' to { 'date1': count1, 'date2': count2, ... }
+    const ts = rec.timeseries
+    const cases = Object.keys(ts).reduce((hsh, dt) => Object.assign(hsh, { [dt]: ts[dt].cases }), {})
+    const reportRecord = Object.assign(rec, cases)
+    return stringify([ reportRecord ], { columns: cols.map(c => c.key) } )
+  }
+
+  const writeBatch = result => writeableStream.write(result.join(''))
+
+  batchedCsvWrite('timeseries-jhu.csv', makeBatches(baseJson, 50), headings, mapRecord, writeBatch)
 }
 
 
@@ -153,30 +171,24 @@ async function timeseriesTidy (baseJson, writeableStream) {
   let cols = [ 'date', 'type', 'value' ].reduce((a, s) => {
     return a.concat([ { key: s, header: s } ])
   }, baseCsvColumns)
+
   const headings = cols.map(c => c.header)
-  src.push(stringify([ headings ]))
 
-  const recCount = baseJson.length
-
-  const columns = cols.map(c => c.key)
-  baseCsv(baseJson).forEach((rec, index) => {
-
-    if (index % 50 === 0)
-      console.log(`writing timeseriesTidy, record ${index + 1} of ${recCount}`)
-
+  const mapRecord = rec => {
+    const recs = []
     Object.keys(rec.timeseries).forEach(dt => {
       Object.keys(rec.timeseries[dt]).forEach(k => {
-        const outrec = {
-          ...rec,
-          date: dt,
-          type: k,
-          value: rec.timeseries[dt][k]
-        }
-
-        src.push(stringify([ outrec ], { columns }))
+        const outrec = { ...rec, date: dt, type: k, value: rec.timeseries[dt][k] }
+        recs.push(outrec)
       })
     })
-  })
+    return stringify(recs, { columns: cols.map(c => c.key) })
+  }
+
+  const writeBatch = result => src.push(result.join(''))
+
+  // Batch size for this is small as each location can contain many records.
+  batchedCsvWrite('timeseries-tidy.csv', makeBatches(baseJson, 10), headings, mapRecord, writeBatch)
 
   src.push(null)
   gzip.flush()

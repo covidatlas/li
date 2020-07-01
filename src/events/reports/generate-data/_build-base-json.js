@@ -25,6 +25,13 @@ function addPopulationDensity (rec) {
   }
 }
 
+function addLatLong (rec) {
+  if (rec.coordinates) {
+    rec.lat = rec.coordinates[1]
+    rec['long'] = rec.coordinates[0]
+  }
+}
+
 /** Given array of hashes, gets unique elements, where uniquness is
  * determined by key value. */
 function uniqueByKey (arr, key) {
@@ -53,6 +60,7 @@ async function getBaseJson (params, statusCallback = baseJsonStatus) {
     statusCallback(i, locations.length)
     const loc = locations[i]
     addPopulationDensity(loc)
+    addLatLong(loc)
     const ts = await getTimeseriesForLocation(data, loc.locationID)
     const sources = ts.sources.map(s => getSource({ source: s, ...params }))
     const maintainers = uniqueByKey(sources.map(s => s.maintainers).flat(), 'name')
