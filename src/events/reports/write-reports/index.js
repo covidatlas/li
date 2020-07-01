@@ -31,6 +31,35 @@ function timeseriesByLocation (baseJson, writableStream) {
   writableStream.write(JSON.stringify(content, null, 2))
 }
 
+/** Convert array to batches.
+ *
+ * e.g., makeBatches([1,2,3,44], 3) => [ [ 1, 2, 3 ], [ 44 ] ]
+ */
+function makeBatches (arr, batchSize) {
+  const batches = []
+  let index = 0
+  while (index < arr.length)
+    batches.push(arr.slice(index, index += batchSize))
+  return batches
+}
+
+
+/** Divide recs up into batches.  Accumulate the output for each
+ * mapRecord in an array, and at the end of each batch write the array
+ * to the stream. Include the headings in the first array.  */
+function batchedCsvWrite (logname, recs, headings, mapRecord, writeBatch) {
+  const batches = makeBatches(recs, 50)
+  batches.forEach((batch, bindex) => {
+    console.log(`${logname}: batch ${bindex + 1} of ${batches.length}`)
+    const batchContent = []
+    if (bindex === 0)
+      batchContent.push(stringify([ headings ]))
+
+    batchContent.push(batch.map(mapRecord))
+    writeBatch(batchContent)
+  })
+}
+
 
 /** Common fields to include in all CSV reports. */
 const baseCsvColumns = [
@@ -59,19 +88,24 @@ function timeseries (baseJson, writeableStream) {
   let cols = caseDataFields.concat('date').
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
   const headings = cols.map(c => c.header)
-  writeableStream.write(stringify([ headings ]))
 
   const columns = cols.map(c => c.key)
-  baseJson.forEach(rec => {
-    Object.keys(rec.timeseries).forEach(dt => {
+  const mapRecord = rec => {
+    return Object.keys(rec.timeseries).map(dt => {
       const outrec = {
         ...rec,
         ...rec.timeseries[dt],
         date: dt
       }
-      writeableStream.write(stringify([ outrec ], { columns }))
+      return stringify([ outrec ], { columns })
     })
-  })
+  }
+
+  const writeBatch = result => {
+    writeableStream.write(result.flat().join(''))
+  }
+
+  batchedCsvWrite('timeseries.csv', baseJson, headings, mapRecord, writeBatch)
 }
 
 /** timeseries-jhu.csv source.
