@@ -47,10 +47,9 @@ function makeBatches (arr, batchSize) {
 /** Divide recs up into batches.  Accumulate the output for each
  * mapRecord in an array, and at the end of each batch write the array
  * to the stream. Include the headings in the first array.  */
-function batchedCsvWrite (logname, recs, headings, mapRecord, writeBatch) {
-  const batches = makeBatches(recs, 50)
-  batches.forEach((batch, bindex) => {
-    console.log(`${logname}: batch ${bindex + 1} of ${batches.length}`)
+function batchedCsvWrite (logname, batchedRecords, headings, mapRecord, writeBatch) {
+  batchedRecords.forEach((batch, bindex) => {
+    console.log(`${logname}: batch ${bindex + 1} of ${batchedRecords.length}`)
     const batchContent = []
     if (bindex === 0)
       batchContent.push(stringify([ headings ]))
@@ -89,23 +88,16 @@ function timeseries (baseJson, writeableStream) {
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
   const headings = cols.map(c => c.header)
 
-  const columns = cols.map(c => c.key)
   const mapRecord = rec => {
-    return Object.keys(rec.timeseries).map(dt => {
-      const outrec = {
-        ...rec,
-        ...rec.timeseries[dt],
-        date: dt
-      }
-      return stringify([ outrec ], { columns })
+    const recs = Object.keys(rec.timeseries).map(dt => {
+      return { ...rec, ...rec.timeseries[dt], date: dt }
     })
+    return stringify(recs, { columns: cols.map(c => c.key) })
   }
 
-  const writeBatch = result => {
-    writeableStream.write(result.flat().join(''))
-  }
+  const writeBatch = result => writeableStream.write(result.join(''))
 
-  batchedCsvWrite('timeseries.csv', baseJson, headings, mapRecord, writeBatch)
+  batchedCsvWrite('timeseries.csv', makeBatches(baseJson, 20), headings, mapRecord, writeBatch)
 }
 
 /** timeseries-jhu.csv source.
