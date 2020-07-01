@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
 const generateData = require('./generate-data/index.js')
-const writeFile = require('./write/index.js')
+const writeReports = require('./write-reports/index.js')
+const { getWritableStream, copyFileToArchive } = require('./write/index.js')
 
 
 /** Post a status update. */
@@ -20,15 +21,15 @@ async function doGeneration (hsh) {
   let result = null
   try {
     await reportStatus(f, 'generating')
-    result = await hsh.generate()
-    if (f.endsWith('.json'))
-      result = JSON.stringify(result, null, 2)
-    if (!hsh.skipSave) {
-      await reportStatus(f, 'saving')
-      await writeFile(f, result)
-    }
+
+    const { writestream, promise } = getWritableStream(f)
+
+    await hsh.generate(writestream)
+    writestream.end()
+    await promise
+    await copyFileToArchive(f)
+
     await reportStatus(f, 'success')
-    return result
   }
   catch (err) {
     const errMsg = [ err.message, err.stack ].join('\n')
@@ -43,7 +44,7 @@ async function doGeneration (hsh) {
  * implementation (of mine).  Report status during generation for
  * visibility. */
 async function updateBaseJsonStatus (index, total) {
-  if (index % 10 !== 0)
+  if (index % 100 !== 0)
     return
   reportStatus('baseData.json', `generating (${index + 1} of ${total})`)
 }
@@ -62,30 +63,30 @@ async function handleEvent (event) {
   const reports = [
     {
       filename: 'baseData.json',
-      generate: async function () {
+      generate: async function (s) {
         baseJson = await generateData.buildBaseJson( { _sourcesPath }, updateBaseJsonStatus )
-      },
-      skipSave: true
+        await s.write(JSON.stringify(baseJson, null, 2))
+      }
     },
     {
       filename: 'locations.json',
-      generate: () => generateData.locations(baseJson)
+      generate: async (s) => await writeReports.locations(baseJson, s)
     },
     {
       filename: 'timeseries-byLocation.json',
-      generate: () => generateData.timeseriesByLocation(baseJson)
+      generate: async (s) => await writeReports.timeseriesByLocation(baseJson, s)
     },
     {
       filename: 'timeseries-jhu.csv',
-      generate: () => generateData.timeseriesJhu(baseJson)
+      generate: async (s) => await writeReports.timeseriesJhu(baseJson, s)
     },
     {
-      filename: 'timeseries-tidy.csv',
-      generate: () => generateData.timeseriesTidy(baseJson)
+      filename: 'timeseries-tidy.csv.gz',
+      generate: async (s) => await writeReports.timeseriesTidy(baseJson, s)
     },
     {
       filename: 'timeseries.csv',
-      generate: () => generateData.timeseries(baseJson)
+      generate: async (s) => await writeReports.timeseries(baseJson, s)
     }
   ]
 
