@@ -14,7 +14,7 @@ function locations (baseJson, writableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
   const content = baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated' ])
+    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
     return rec
   })
   writableStream.write(JSON.stringify(content, null, 2))
@@ -25,7 +25,7 @@ function timeseriesByLocation (baseJson, writableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
   const content = baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'area', 'created', 'updated' ])
+    removeFields(rec, [ 'area', 'created', 'updated', 'lat', 'long' ])
     return rec
   })
   writableStream.write(JSON.stringify(content, null, 2))
@@ -50,17 +50,6 @@ const baseCsvColumns = [
 ].map(s => { return { key: s, header: s.replace('Name', '') } })
 
 
-function baseCsv (baseJson) {
-  if (!baseJson) throw new Error('baseJson data is required')
-  return baseJson.map(loc => {
-    let rec = Object.assign({}, loc)
-    rec.lat = rec.coordinates[1]
-    rec['long'] = rec.coordinates[0]
-    return rec
-  })
-}
-
-
 /** timeseries.csv source.
  *
  */
@@ -73,7 +62,7 @@ function timeseries (baseJson, writeableStream) {
   writeableStream.write(stringify([ headings ]))
 
   const columns = cols.map(c => c.key)
-  baseCsv(baseJson).forEach(rec => {
+  baseJson.forEach(rec => {
     Object.keys(rec.timeseries).forEach(dt => {
       const outrec = {
         ...rec,
@@ -103,7 +92,7 @@ function timeseriesJhu (baseJson, writeableStream) {
   writeableStream.write(stringify([ headings ]))
 
   const columns = cols.map(c => c.key)
-  baseCsv(baseJson).forEach(rec => {
+  baseJson.forEach(rec => {
     const cases = Object.entries(rec.timeseries).
       reduce((hsh, e) => Object.assign(hsh, { [e[0]]: e[1].cases }), {})
     const outrec = Object.assign(rec, cases)
@@ -159,7 +148,7 @@ async function timeseriesTidy (baseJson, writeableStream) {
   const recCount = baseJson.length
 
   const columns = cols.map(c => c.key)
-  baseCsv(baseJson).forEach((rec, index) => {
+  baseJson.forEach((rec, index) => {
 
     if (index % 50 === 0)
       console.log(`writing timeseriesTidy, record ${index + 1} of ${recCount}`)
