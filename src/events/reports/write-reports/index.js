@@ -115,15 +115,18 @@ function timeseriesJhu (baseJson, writeableStream) {
   }, baseCsvColumns)
 
   const headings = cols.map(c => c.header)
-  writeableStream.write(stringify([ headings ]))
 
-  const columns = cols.map(c => c.key)
-  baseJson.forEach(rec => {
-    const cases = Object.entries(rec.timeseries).
-      reduce((hsh, e) => Object.assign(hsh, { [e[0]]: e[1].cases }), {})
-    const outrec = Object.assign(rec, cases)
-    writeableStream.write(stringify([ outrec ], { columns }))
-  })
+  const mapRecord = rec => {
+    // Convert all 'cases' to { 'date1': count1, 'date2': count2, ... }
+    const ts = rec.timeseries
+    const cases = Object.keys(ts).reduce((hsh, dt) => Object.assign(hsh, { [dt]: ts[dt].cases }), {})
+    const reportRecord = Object.assign(rec, cases)
+    return stringify([ reportRecord ], { columns: cols.map(c => c.key) } )
+  }
+
+  const writeBatch = result => writeableStream.write(result.join(''))
+
+  batchedCsvWrite('timeseries-jhu.csv', makeBatches(baseJson, 50), headings, mapRecord, writeBatch)
 }
 
 
