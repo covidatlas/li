@@ -57,7 +57,29 @@ function getWritableStream (filename) {
   return pass
 }
 
+
+async function copyFileToArchive (filename) {
+  const s3 = new aws.S3()
+
+  const Bucket = getReportsBucket()
+
+  const key = [ 'beta', 'latest', filename ].join('/')
+
+  const archiveDate = new Date().toISOString().slice(0, 10)
+  const copyKey = [ 'beta', archiveDate, filename ].join('/')
+  console.log(`Copying /${key} to ${copyKey}`)
+  const copyParams = {
+    CopySource: `/${Bucket}/${key}`,
+    Bucket,
+    Key: copyKey
+  }
+  const s3copy = s3.copyObject(copyParams)
+  await s3copy.promise()
+}
+
+
 module.exports = {
   writeFile,
-  getWritableStream
+  getWritableStream,
+  copyFileToArchive
 }

@@ -17,7 +17,13 @@ function getWritableStream (filename) {
   return writer.getWritableStream(filename)
 }
 
+async function copyFileToArchive (filename) {
+  const writer = getWriter()
+  return writer.copyFileToArchive(filename)
+}
+
 module.exports = {
   writeFile,
-  getWritableStream
+  getWritableStream,
+  copyFileToArchive
 }

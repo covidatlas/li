@@ -26,7 +26,13 @@ function getWritableStream (filename) {
   return fs.createWriteStream(file)
 }
 
+// eslint-disable-next-line no-unused-vars
+async function copyFileToArchive (filename) {
+  /* No-op for local */
+}
+
 module.exports = {
   writeFile,
-  getWritableStream
+  getWritableStream,
+  copyFileToArchive
 }

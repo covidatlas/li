@@ -1,7 +1,7 @@
 const arc = require('@architect/functions')
 const generateData = require('./generate-data/index.js')
 const writeReports = require('./write-reports/index.js')
-const { getWritableStream } = require('./write/index.js')
+const { getWritableStream, copyFileToArchive } = require('./write/index.js')
 
 
 /** Post a status update. */
@@ -25,10 +25,12 @@ async function doGeneration (hsh) {
     let s = null
     if (!hsh.skipSave)
       s = getWritableStream(f)
+
     await hsh.generate(s)
 
-    if (s) {
+    if (!hsh.skipSave) {
       s.end()
+      await copyFileToArchive(f)
     }
 
     await reportStatus(f, 'success')
