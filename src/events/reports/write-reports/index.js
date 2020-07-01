@@ -173,7 +173,6 @@ async function timeseriesTidy (baseJson, writeableStream) {
           value: rec.timeseries[dt][k]
         }
 
-        console.log('WRITING DATA: ' + stringify([ outrec ], { columns }))
         src.push(stringify([ outrec ], { columns }))
       })
     })
