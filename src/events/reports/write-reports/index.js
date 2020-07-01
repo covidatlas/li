@@ -132,6 +132,20 @@ async function timeseriesTidy (baseJson, writeableStream) {
   const src = new stream.Readable()
   const gzip = createGzip()
 
+  // Adding a promise to later wait until the writeableStream is
+  // finished.
+  //
+  // This routine created _hours_ of debugging as the streams weren't
+  // completely flushing during unit tests, so the tests couldn't
+  // verify the generated file content after the routine had run.  I
+  // expected that this would cause issues when run in production, and
+  // so eventually reached this solution, after trying various ways to
+  // flush() or end() the different streams.
+  //
+  // Ref https://stackoverflow.com/questions/37837132/
+  //   how-to-wait-for-a-stream-to-finish-piping-nodejs
+  const writeDone = new Promise(fulfill => writeableStream.on("finish", fulfill))
+
   stream.pipeline(
     src, gzip, writeableStream,
     (err) => {
@@ -168,19 +182,7 @@ async function timeseriesTidy (baseJson, writeableStream) {
   src.push(null)
   gzip.flush()
 
-  // Adding a promise here to wait until the writeableStream is
-  // finished.
-  //
-  // This routine created _hours_ of debugging as the streams weren't
-  // completely flushing during unit tests, so the tests couldn't
-  // verify the generated file content after the routine had run.  I
-  // expected that this would cause issues when run in production, and
-  // so eventually reached this solution, after trying various ways to
-  // flush() or end() the different streams.
-  //
-  // Ref https://stackoverflow.com/questions/37837132/
-  //   how-to-wait-for-a-stream-to-finish-piping-nodejs
-  await new Promise(fulfill => writeableStream.on("finish", fulfill))
+  await writeDone
 }
 
 

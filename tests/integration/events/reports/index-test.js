@@ -27,6 +27,11 @@ async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 5
   })
 }
 
+/*
+async function unzipFileInPlace(f) {
+
+}
+*/
 
 test('files are generated', async t => {
   await utils.setup()
@@ -68,7 +73,7 @@ test('files are generated', async t => {
   const zipfile = join(utils.testReportsDir.reportsDir, 'timeseries-tidy.csv.gz')
   const unzip = zlib.createGunzip()
   const writable = fs.createWriteStream(zipfile.replace('.gz', ''))
-  const p = new Promise(fulfill => writable.on("finish", fulfill))
+  const writeDone = new Promise(fulfill => writable.on("finish", fulfill))
   stream.pipeline(
     fs.createReadStream(zipfile),
     unzip,
@@ -83,27 +88,19 @@ test('files are generated', async t => {
   )
   unzip.flush()
 
-  console.log('waiting for finish')
-  await p
-  console.log('waiting for finish')
+  console.log('waiting until file fully unzipped ...')
+  await writeDone
+  console.log('... done.')
 
-  // writable.drain() // doesn't exist
-  // writable.end()
   t.ok(fs.existsSync(zipfile.replace('.gz', '')), 'unzipped file exists')
 
   function assertContentsEqual (filename) {
     const actual = join(utils.testReportsDir.reportsDir, filename)
     const expected = join(__dirname, 'expected-results', filename)
-    console.log(`comparing actual ${actual} vs expected ${expected}`)
-
-    console.log('ACTUAL CONTENT')
-    console.log(fs.readFileSync(actual, 'UTF-8'))
-
     const clean = f => fs.readFileSync(f, 'UTF-8').replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD')
-    t.equal(clean(expected), clean(actual), filename)
+    t.equal(clean(expected), clean(actual), `validate ${filename}`)
   }
   for (const f of expectedFiles.map(f => f.replace('.gz', ''))) {
-    console.log(`validate ${f}`)
     assertContentsEqual(f)
   }
 
