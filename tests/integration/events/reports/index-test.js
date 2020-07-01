@@ -27,11 +27,36 @@ async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 5
   })
 }
 
-/*
-async function unzipFileInPlace(f) {
 
+/** Unnecessarily complicated code to ensure that the unzipped file is
+ * actually unzipped and on disk when we expect it. */
+async function unzipInPlace (zipfile) {
+  const unzip = zlib.createGunzip()
+  const writable = fs.createWriteStream(zipfile.replace('.gz', ''))
+
+  // This promise is _required_ to ensure that everything actually
+  // gets written to disk!
+  const writeDonePromise = new Promise(
+    fulfill => writable.on("finish", fulfill)
+  )
+
+  stream.pipeline(
+    fs.createReadStream(zipfile),
+    unzip,
+    writable,
+    (err) => {
+      if (err)
+        throw err
+      else {
+        console.log('unzipped')
+      }
+    }
+  )
+  unzip.flush()
+
+  return writeDonePromise
 }
-*/
+
 
 test('files are generated', async t => {
   await utils.setup()
@@ -69,29 +94,8 @@ test('files are generated', async t => {
   t.equal(files.length, 5, msg)
   t.equal(expectedFiles.sort().join(), files.sort().join())
 
-  // Unzip the zipped file in place.
   const zipfile = join(utils.testReportsDir.reportsDir, 'timeseries-tidy.csv.gz')
-  const unzip = zlib.createGunzip()
-  const writable = fs.createWriteStream(zipfile.replace('.gz', ''))
-  const writeDone = new Promise(fulfill => writable.on("finish", fulfill))
-  stream.pipeline(
-    fs.createReadStream(zipfile),
-    unzip,
-    writable,
-    (err) => {
-      if (err)
-        t.fail(err)
-      else {
-        t.pass('unzipped')
-      }
-    }
-  )
-  unzip.flush()
-
-  console.log('waiting until file fully unzipped ...')
-  await writeDone
-  console.log('... done.')
-
+  await unzipInPlace(zipfile)
   t.ok(fs.existsSync(zipfile.replace('.gz', '')), 'unzipped file exists')
 
   function assertContentsEqual (filename) {
