@@ -82,16 +82,18 @@ test('files are generated', async t => {
   const reportStatus = await utils.waitForDynamoTable('report-status', 10000, 200)
   console.table(reportStatus)
 
-  const expectedFiles = [
+  const reports = [
     'locations.json',
     'timeseries-byLocation.json',
     'timeseries-jhu.csv',
     'timeseries-tidy.csv.gz',
     'timeseries.csv'
   ]
-  let files = await waitForGeneratedFiles(5)
-  const msg = `expected 5 files, got ${files.length} (${files.join()})`
-  t.equal(files.length, 5, msg)
+
+  const expectedFiles = reports.concat([ 'baseData.json' ])
+  let files = await waitForGeneratedFiles(6)
+  const msg = `expected 6 files, got ${files.length} (${files.join()})`
+  t.equal(files.length, 6, msg)
   t.equal(expectedFiles.sort().join(), files.sort().join())
 
   const zipfile = join(utils.testReportsDir.reportsDir, 'timeseries-tidy.csv.gz')
@@ -104,7 +106,11 @@ test('files are generated', async t => {
     const clean = f => fs.readFileSync(f, 'UTF-8').replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD')
     t.equal(clean(expected), clean(actual), `validate ${filename}`)
   }
-  for (const f of expectedFiles.map(f => f.replace('.gz', ''))) {
+
+  // Don't bother checking baseData.json content; it's not in our list
+  // of published reports, and is used as an incidental step to
+  // generate the actual reports.
+  for (const f of reports.map(f => f.replace('.gz', ''))) {
     assertContentsEqual(f)
   }
 
