@@ -63,7 +63,7 @@ process.on('uncaughtException', err => {
 async function teardown () {
   fakeCrawlSites.deleteAllFiles()
   testCache.teardown()
-  // testReportsDir.teardown()
+  testReportsDir.teardown()
   await sandbox.end()
 }
 
