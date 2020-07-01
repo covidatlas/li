@@ -60,12 +60,6 @@ function baseCsv (baseJson) {
   })
 }
 
-/*
-TODO use this
-function writeHeaders (cols, writableStream) {
-  writeableStream.write(stringify([ cols.map(c => c.header) ]))
-}
-*/
 
 /** timeseries.csv source.
  *
