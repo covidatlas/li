@@ -171,30 +171,24 @@ async function timeseriesTidy (baseJson, writeableStream) {
   let cols = [ 'date', 'type', 'value' ].reduce((a, s) => {
     return a.concat([ { key: s, header: s } ])
   }, baseCsvColumns)
+
   const headings = cols.map(c => c.header)
-  src.push(stringify([ headings ]))
 
-  const recCount = baseJson.length
-
-  const columns = cols.map(c => c.key)
-  baseJson.forEach((rec, index) => {
-
-    if (index % 50 === 0)
-      console.log(`writing timeseriesTidy, record ${index + 1} of ${recCount}`)
-
+  const mapRecord = rec => {
+    const recs = []
     Object.keys(rec.timeseries).forEach(dt => {
       Object.keys(rec.timeseries[dt]).forEach(k => {
-        const outrec = {
-          ...rec,
-          date: dt,
-          type: k,
-          value: rec.timeseries[dt][k]
-        }
-
-        src.push(stringify([ outrec ], { columns }))
+        const outrec = { ...rec, date: dt, type: k, value: rec.timeseries[dt][k] }
+        recs.push(outrec)
       })
     })
-  })
+    return stringify(recs, { columns: cols.map(c => c.key) })
+  }
+
+  const writeBatch = result => src.push(result.join(''))
+
+  // Batch size for this is small as each location can contain many records.
+  batchedCsvWrite('timeseries-tidy.csv', makeBatches(baseJson, 10), headings, mapRecord, writeBatch)
 
   src.push(null)
   gzip.flush()
