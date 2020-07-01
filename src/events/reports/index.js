@@ -22,16 +22,12 @@ async function doGeneration (hsh) {
   try {
     await reportStatus(f, 'generating')
 
-    let s = null
-    if (!hsh.skipSave)
-      s = getWritableStream(f)
+    const { writestream, promise } = getWritableStream(f)
 
-    await hsh.generate(s)
-
-    if (!hsh.skipSave) {
-      s.end()
-      await copyFileToArchive(f)
-    }
+    await hsh.generate(writestream)
+    writestream.end()
+    await promise
+    await copyFileToArchive(f)
 
     await reportStatus(f, 'success')
   }
@@ -67,10 +63,10 @@ async function handleEvent (event) {
   const reports = [
     {
       filename: 'baseData.json',
-      generate: async function () {
+      generate: async function (s) {
         baseJson = await generateData.buildBaseJson( { _sourcesPath }, updateBaseJsonStatus )
-      },
-      skipSave: true
+        await s.write(JSON.stringify(baseJson, null, 2))
+      }
     },
     {
       filename: 'locations.json',

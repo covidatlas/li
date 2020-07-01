@@ -23,7 +23,10 @@ function getWritableStream (filename) {
   fs.mkdirSync(reportPath, { recursive: true })
 
   const file = join(reportPath, filename)
-  return fs.createWriteStream(file)
+  return {
+    writestream: fs.createWriteStream(file),
+    promise: Promise.resolve(true)
+  }
 }
 
 // eslint-disable-next-line no-unused-vars

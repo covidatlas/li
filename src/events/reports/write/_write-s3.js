@@ -49,12 +49,15 @@ function getWritableStream (filename) {
   }
 
   const s3 = new aws.S3()
-  s3.upload(params, function (err, data) {
+  const promise = s3.upload(params, function (err, data) {
     console.log(`Error: ${err}\nData: ${data}`)
     throw err
-  })
+  }).promise()
 
-  return pass
+  return {
+    writestream: pass,
+    promise
+  }
 }
 
 
