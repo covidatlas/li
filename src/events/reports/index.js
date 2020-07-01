@@ -21,14 +21,14 @@ async function doGeneration (hsh) {
   let result = null
   try {
     await reportStatus(f, 'generating')
-
     const { writestream, promise } = getWritableStream(f)
-
+    console.log(`${f}: calling generate`)
     await hsh.generate(writestream)
     writestream.end()
+    console.log(`${f}: waiting for writestream promise`)
     await promise
+    console.log(`${f}: copying to archive`)
     await copyFileToArchive(f)
-
     await reportStatus(f, 'success')
   }
   catch (err) {
