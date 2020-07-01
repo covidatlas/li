@@ -1,5 +1,7 @@
 const caseDataFields = require('@architect/shared/constants/case-data-fields.js')
 const stringify = require('csv-stringify/lib/sync')
+const { createGzip } = require('zlib')
+const stream = require('stream')
 
 function removeFields (rec, fields) {
   for (const f of fields)
@@ -124,14 +126,27 @@ function timeseriesJhu (baseJson, writeableStream) {
  * kills the whole process, so we need to write it directly to a
  * compressed file.
  */
-function timeseriesTidy (baseJson, writeableStream) {
+async function timeseriesTidy (baseJson, writeableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
+
+  const src = new stream.Readable()
+  const gzip = createGzip()
+
+  stream.pipeline(
+    src, gzip, writeableStream,
+    (err) => {
+      if (err)
+        throw err
+      else
+        gzip.flush()
+    }
+  )
 
   let cols = [ 'date', 'type', 'value' ].reduce((a, s) => {
     return a.concat([ { key: s, header: s } ])
   }, baseCsvColumns)
   const headings = cols.map(c => c.header)
-  writeableStream.write(stringify([ headings ]))
+  src.push(stringify([ headings ]))
 
   const columns = cols.map(c => c.key)
   baseCsv(baseJson).forEach(rec => {
@@ -143,10 +158,29 @@ function timeseriesTidy (baseJson, writeableStream) {
           type: k,
           value: rec.timeseries[dt][k]
         }
-        writeableStream.write(stringify([ outrec ], { columns }))
+
+        console.log('WRITING DATA: ' + stringify([ outrec ], { columns }))
+        src.push(stringify([ outrec ], { columns }))
       })
     })
   })
+
+  src.push(null)
+  gzip.flush()
+
+  // Adding a promise here to wait until the writeableStream is
+  // finished.
+  //
+  // This routine created _hours_ of debugging as the streams weren't
+  // completely flushing during unit tests, so the tests couldn't
+  // verify the generated file content after the routine had run.  I
+  // expected that this would cause issues when run in production, and
+  // so eventually reached this solution, after trying various ways to
+  // flush() or end() the different streams.
+  //
+  // Ref https://stackoverflow.com/questions/37837132/
+  //   how-to-wait-for-a-stream-to-finish-piping-nodejs
+  await new Promise(fulfill => writeableStream.on("finish", fulfill))
 }
 
 

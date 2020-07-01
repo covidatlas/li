@@ -21,10 +21,16 @@ async function doGeneration (hsh) {
   let result = null
   try {
     await reportStatus(f, 'generating')
+
     let s = null
     if (!hsh.skipSave)
       s = getWritableStream(f)
     await hsh.generate(s)
+
+    if (s) {
+      s.end()
+    }
+
     await reportStatus(f, 'success')
   }
   catch (err) {
@@ -66,23 +72,23 @@ async function handleEvent (event) {
     },
     {
       filename: 'locations.json',
-      generate: (s) => writeReports.locations(baseJson, s)
+      generate: async (s) => await writeReports.locations(baseJson, s)
     },
     {
       filename: 'timeseries-byLocation.json',
-      generate: (s) => writeReports.timeseriesByLocation(baseJson, s)
+      generate: async (s) => await writeReports.timeseriesByLocation(baseJson, s)
     },
     {
       filename: 'timeseries-jhu.csv',
-      generate: (s) => writeReports.timeseriesJhu(baseJson, s)
+      generate: async (s) => await writeReports.timeseriesJhu(baseJson, s)
     },
     {
-      filename: 'timeseries-tidy.csv',
-      generate: (s) => writeReports.timeseriesTidy(baseJson, s)
+      filename: 'timeseries-tidy.csv.gz',
+      generate: async (s) => await writeReports.timeseriesTidy(baseJson, s)
     },
     {
       filename: 'timeseries.csv',
-      generate: (s) => writeReports.timeseries(baseJson, s)
+      generate: async (s) => await writeReports.timeseries(baseJson, s)
     }
   ]
 
