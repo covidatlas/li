@@ -107,8 +107,8 @@ async function scrape (sourceKey) {
 }
 
 /** Generate reports from dynamoDB, using sources at sourcesPath. */
-async function generateReports (_sourcesPath, _reportsPath) {
-  const params = { _sourcesPath, _reportsPath }
+async function generateReports (_sourcesPath) {
+  const params = { _sourcesPath, _writeDir: testReportsDir.reportsDir }
   const event = makeEventMessage(params)
   await reportsHandler(event)
   await waitForDynamoTable('report-status', 5000, 250)

@@ -1,7 +1,23 @@
 const arc = require('@architect/functions')
+const fs = require('fs')
+const path = require('path')
+const aws = require('aws-sdk')
 const generateData = require('./generate-data/index.js')
 const writeReports = require('./write-reports/index.js')
-const { getWritableStream, copyFileToArchive } = require('./write/index.js')
+// const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
+
+
+// *******************************************************
+// GET RID OF
+// getReportsBucket
+// and hacks
+// remove xxx hack from if (process.env.NODE_ENV !== 'testing') {
+// *******************************************************
+
+// TODO get rid of this
+function getReportsBucket () {
+  return 'zzjzstagingtest12345'
+}
 
 
 /** Post a status update. */
@@ -14,27 +30,81 @@ async function reportStatus (filename, status, params = {}) {
 }
 
 
+function getWritableStream (reportPath, filename) {
+  fs.mkdirSync(reportPath, { recursive: true })
+  const file = path.join(reportPath, filename)
+  return fs.createWriteStream(file)
+}
+
+
+function uploadToS3 (reportPath, filename) {
+  const Bucket = getReportsBucket()
+  const Key = [ 'beta', 'latest', filename ].join('/')
+
+  const Body = fs.createReadStream(path.join(reportPath, filename))
+
+  const params = {
+    ACL: 'public-read',
+    Bucket,
+    Key,
+    Body
+  }
+
+  const s3 = new aws.S3()
+  s3.upload(params, function (err, data) {
+    if (err) {
+      console.log(`Error: ${err}\nData: ${data}`)
+      throw err
+    }
+  })
+}
+
+
+async function copyToArchive (filename) {
+  const s3 = new aws.S3()
+
+  const Bucket = getReportsBucket()
+
+  const key = [ 'beta', 'latest', filename ].join('/')
+
+  const archiveDate = new Date().toISOString().slice(0, 10)
+  const copyKey = [ 'beta', archiveDate, filename ].join('/')
+  console.log(`Copying /${key} to ${copyKey}`)
+  const copyParams = {
+    CopySource: `/${Bucket}/${key}`,
+    Bucket,
+    Key: copyKey
+  }
+  s3.copyObject(copyParams, function (err, data) {
+    if (err) {
+      console.log(`Error: ${err}\nData: ${data}`)
+      throw err
+    }
+  })
+}
+
+
 /** Generate and save a report, updating the status. */
-async function doGeneration (hsh) {
+async function doGeneration (hsh, folder) {
   const f = hsh.filename
 
-  let result = null
   try {
     await reportStatus(f, 'generating')
-    const { writestream, promise } = getWritableStream(f)
+    const writestream = getWritableStream(folder, f)
     console.log(`${f}: calling generate`)
     await hsh.generate(writestream)
     writestream.end()
-    console.log(`${f}: waiting for writestream promise`)
-    await promise
-    console.log(`${f}: copying to archive`)
-    await copyFileToArchive(f)
+    if (process.env.NODE_ENV !== 'testing') {
+      console.log(`${f}: uploading to s3`)
+      uploadToS3(folder, f)
+      console.log(`${f}: copying to archive`)
+      copyToArchive(f)
+    }
     await reportStatus(f, 'success')
   }
   catch (err) {
     const errMsg = [ err.message, err.stack ].join('\n')
     await reportStatus(f, 'failed', { error: errMsg })
-    return result
   }
 }
 
@@ -49,6 +119,20 @@ async function updateBaseJsonStatus (index, total) {
   reportStatus('baseData.json', `generating (${index + 1} of ${total})`)
 }
 
+
+/** Get the folder to write the reports to. */
+function getReportFolder (_writeDir) {
+  if (process.env.NODE_ENV === 'testing') {
+    if (!_writeDir)
+      throw new Error('_writeDir not specified')
+    return _writeDir
+  }
+
+  // Folder for lambda.
+  return '/tmp'
+}
+
+
 /**
  * Generate a report.
  */
@@ -58,7 +142,8 @@ async function handleEvent (event) {
   let baseJson = null
 
   // Integration tests can override where sources' code resides.
-  const { _sourcesPath } = event
+  // When running locally, specify _writeDir where reports will be written.
+  const { _sourcesPath, _writeDir } = event
 
   const reports = [
     {
@@ -92,8 +177,9 @@ async function handleEvent (event) {
 
   await Promise.all(reports.map(r => reportStatus(r.filename, 'pending')))
 
+  const folder = getReportFolder(_writeDir)
   for (const r of reports) {
-    await doGeneration(r)
+    await doGeneration(r, folder)
   }
 }
 

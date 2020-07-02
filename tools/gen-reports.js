@@ -8,10 +8,13 @@
  */
 
 const arc = require('@architect/functions')
+const { join } = require('path')
 
 ;(async () => {
   await arc.events.publish({
     name: 'reports',
-    payload: {}
+    payload: {
+      _writeDir: join(__dirname, '..', 'reports')
+    }
   })
 })()
