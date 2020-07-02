@@ -80,9 +80,16 @@ const baseCsvColumns = [
 
 /** timeseries.csv source.
  *
+ * This code uses a promise to ensure that the writeableStream has
+ * fully flushed to disk.  In prod, an older version of the code wrote
+ * directly to the writeableStream, but the stream seemed to buffer
+ * before writing, even though we explicitly called
+ * writeableStream.end().
  */
-function timeseries (baseJson, writeableStream) {
+async function timeseries (baseJson, writeableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
+
+  const writeDone = new Promise(fulfill => writeableStream.on("finish", fulfill))
 
   let cols = caseDataFields.concat('date').
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
@@ -95,16 +102,31 @@ function timeseries (baseJson, writeableStream) {
     return stringify(recs, { columns: cols.map(c => c.key) })
   }
 
-  const writeBatch = result => writeableStream.write(result.join(''))
+  const src = new stream.Readable()
+  stream.pipeline(
+    src, writeableStream,
+    (err) => {
+      if (err)
+        throw err
+    }
+  )
+
+  const writeBatch = result => src.push(result.join(''))
 
   batchedCsvWrite('timeseries.csv', makeBatches(baseJson, 20), headings, mapRecord, writeBatch)
+
+  src.push(null)
+  await writeDone
 }
 
 /** timeseries-jhu.csv source.
  *
  */
-function timeseriesJhu (baseJson, writeableStream) {
+async function timeseriesJhu (baseJson, writeableStream) {
   if (!baseJson) throw new Error('baseJson data is required')
+
+  const writeDone = new Promise(fulfill => writeableStream.on("finish", fulfill))
+
   const allDates = baseJson.reduce((dates, loc) => {
     return dates.concat(Object.keys(loc.timeseries))
   }, [])
@@ -124,9 +146,21 @@ function timeseriesJhu (baseJson, writeableStream) {
     return stringify([ reportRecord ], { columns: cols.map(c => c.key) } )
   }
 
-  const writeBatch = result => writeableStream.write(result.join(''))
+  const src = new stream.Readable()
+  stream.pipeline(
+    src, writeableStream,
+    (err) => {
+      if (err)
+        throw err
+    }
+  )
+
+  const writeBatch = result => src.push(result.join(''))
 
   batchedCsvWrite('timeseries-jhu.csv', makeBatches(baseJson, 50), headings, mapRecord, writeBatch)
+
+  src.push(null)
+  await writeDone
 }
 
 
