@@ -13,7 +13,6 @@ function setup () {
   }
   fs.mkdirSync(reportsDir)
   console.log(`Created test report dir ${reportsDir}`)
-  process.env.LI_REPORT_PATH = reportsDir
 }
 
 /** Delete the testing cache, and stop using it. */
@@ -22,7 +21,6 @@ function teardown () {
     fs.rmdirSync(reportsDir, { recursive: true })
   }
   console.log(`Deleted test report dir ${reportsDir}`)
-  delete process.env.LI_REPORT_PATH
 }
 
 /** Get all files from test cache. */
