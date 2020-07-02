@@ -4,20 +4,7 @@ const path = require('path')
 const aws = require('aws-sdk')
 const generateData = require('./generate-data/index.js')
 const writeReports = require('./write-reports/index.js')
-// const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
-
-
-// *******************************************************
-// GET RID OF
-// getReportsBucket
-// and hacks
-// remove xxx hack from if (process.env.NODE_ENV !== 'testing') {
-// *******************************************************
-
-// TODO get rid of this
-function getReportsBucket () {
-  return 'zzjzstagingtest12345'
-}
+const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
 
 
 /** Post a status update. */
@@ -37,10 +24,9 @@ function getWritableStream (reportPath, filename) {
 }
 
 
-function uploadToS3 (reportPath, filename) {
+async function uploadToS3 (reportPath, filename) {
   const Bucket = getReportsBucket()
   const Key = [ 'beta', 'latest', filename ].join('/')
-
   const Body = fs.createReadStream(path.join(reportPath, filename))
 
   const params = {
@@ -51,36 +37,25 @@ function uploadToS3 (reportPath, filename) {
   }
 
   const s3 = new aws.S3()
-  s3.upload(params, function (err, data) {
-    if (err) {
-      console.log(`Error: ${err}\nData: ${data}`)
-      throw err
-    }
-  })
+  await s3.upload(params).promise()
 }
 
 
 async function copyToArchive (filename) {
-  const s3 = new aws.S3()
-
   const Bucket = getReportsBucket()
-
   const key = [ 'beta', 'latest', filename ].join('/')
-
   const archiveDate = new Date().toISOString().slice(0, 10)
   const copyKey = [ 'beta', archiveDate, filename ].join('/')
+
   console.log(`Copying /${key} to ${copyKey}`)
   const copyParams = {
     CopySource: `/${Bucket}/${key}`,
     Bucket,
     Key: copyKey
   }
-  s3.copyObject(copyParams, function (err, data) {
-    if (err) {
-      console.log(`Error: ${err}\nData: ${data}`)
-      throw err
-    }
-  })
+
+  const s3 = new aws.S3()
+  await s3.copyObject(copyParams).promise()
 }
 
 
