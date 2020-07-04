@@ -1,10 +1,13 @@
 const arc = require('@architect/functions')
-const fs = require('fs')
-const path = require('path')
-const aws = require('aws-sdk')
+// const fs = require('fs')
+// const path = require('path')
+// const aws = require('aws-sdk')
+const { gzipSync } = require('zlib')
+const getBaseJson = require('./generate-data/_build-base-json.js')
 const generateData = require('./generate-data/index.js')
-const writeReports = require('./write-reports/index.js')
-const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
+// const writeReports = require('./write-reports/index.js')
+const { getWriter } = require('./write/index.js')
+// const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
 
 
 /** Post a status update. */
@@ -16,13 +19,12 @@ async function reportStatus (filename, status, params = {}) {
   console.log(`Report ${filename}: ${status}`)
 }
 
-
+/*
 function getWritableStream (reportPath, filename) {
   fs.mkdirSync(reportPath, { recursive: true })
   const file = path.join(reportPath, filename)
   return fs.createWriteStream(file)
 }
-
 
 async function uploadToS3 (reportPath, filename) {
   const Bucket = getReportsBucket()
@@ -40,7 +42,6 @@ async function uploadToS3 (reportPath, filename) {
   await s3.upload(params).promise()
 }
 
-
 async function copyToArchive (filename) {
   const Bucket = getReportsBucket()
   const key = [ 'beta', 'latest', filename ].join('/')
@@ -57,29 +58,24 @@ async function copyToArchive (filename) {
   const s3 = new aws.S3()
   await s3.copyObject(copyParams).promise()
 }
+*/
 
 
 /** Generate and save a report, updating the status. */
 async function doGeneration (hsh, folder) {
-  const f = hsh.filename
+  const filename = hsh.filename
 
   try {
-    await reportStatus(f, 'generating')
-    const writestream = getWritableStream(folder, f)
-    console.log(`${f}: calling generate`)
-    await hsh.generate(writestream)
-    writestream.end()
-    if (process.env.NODE_ENV !== 'testing') {
-      console.log(`${f}: uploading to s3`)
-      uploadToS3(folder, f)
-      console.log(`${f}: copying to archive`)
-      copyToArchive(f)
-    }
-    await reportStatus(f, 'success')
+    await reportStatus(filename, 'generating')
+    const data = await hsh.generate()
+    await reportStatus(filename, 'saving')
+    const writer = getWriter()
+    await writer.write( { data, filename, folder } )
+    await reportStatus(filename, 'success')
   }
   catch (err) {
     const errMsg = [ err.message, err.stack ].join('\n')
-    await reportStatus(f, 'failed', { error: errMsg })
+    await reportStatus(filename, 'failed', { error: errMsg })
   }
 }
 
@@ -123,30 +119,30 @@ async function handleEvent (event) {
   const reports = [
     {
       filename: 'baseData.json',
-      generate: async function (s) {
-        baseJson = await generateData.buildBaseJson( { _sourcesPath }, updateBaseJsonStatus )
-        await s.write(JSON.stringify(baseJson, null, 2))
+      generate: async function () {
+        baseJson = await getBaseJson({ _sourcesPath }, updateBaseJsonStatus)
+        return JSON.stringify(baseJson, null, 2)
       }
     },
     {
       filename: 'locations.json',
-      generate: async (s) => await writeReports.locations(baseJson, s)
+      generate: () => generateData.locations(baseJson)
     },
     {
       filename: 'timeseries-byLocation.json',
-      generate: async (s) => await writeReports.timeseriesByLocation(baseJson, s)
+      generate: () => generateData.timeseriesByLocation(baseJson)
     },
     {
       filename: 'timeseries-jhu.csv',
-      generate: async (s) => await writeReports.timeseriesJhu(baseJson, s)
+      generate: () => generateData.timeseriesJhu(baseJson)
     },
     {
       filename: 'timeseries-tidy.csv.gz',
-      generate: async (s) => await writeReports.timeseriesTidy(baseJson, s)
+      generate: () => gzipSync(generateData.timeseriesTidy(baseJson))
     },
     {
       filename: 'timeseries.csv',
-      generate: async (s) => await writeReports.timeseries(baseJson, s)
+      generate: () => generateData.timeseries(baseJson)
     }
   ]
 
