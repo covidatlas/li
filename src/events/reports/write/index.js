@@ -1,7 +1,7 @@
 const writeLocal = require('./_write-local.js')
 const writeS3 = require('./_write-s3.js')
 
-/** Get the correct s3 implementation. */
+/** Get the correct implementation. */
 function getWriter () {
   const local = process.env.NODE_ENV === 'testing'
   return local ? writeLocal : writeS3
@@ -23,6 +23,7 @@ async function copyFileToArchive (filename) {
 }
 
 module.exports = {
+  getWriter,
   writeFile,
   getWritableStream,
   copyFileToArchive
