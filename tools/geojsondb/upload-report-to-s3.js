@@ -23,6 +23,8 @@ async function upload (file) {
   console.log('Uploading ...')
   const put = s3.putObject(putParams)
   await put.promise()
+  console.log(`Uploaded report to ${Bucket}/${key} (NOTE: may need to change folder from beta!)`)
+
 }
 
 
