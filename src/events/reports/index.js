@@ -1,13 +1,8 @@
 const arc = require('@architect/functions')
-// const fs = require('fs')
-// const path = require('path')
-// const aws = require('aws-sdk')
 const { gzipSync } = require('zlib')
 const getBaseJson = require('./generate-data/_build-base-json.js')
 const generateData = require('./generate-data/index.js')
-// const writeReports = require('./write-reports/index.js')
 const { getWriter } = require('./write/index.js')
-// const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
 
 
 /** Post a status update. */
@@ -18,47 +13,6 @@ async function reportStatus (filename, status, params = {}) {
     then(data => data['report-status'].put(rpt))
   console.log(`Report ${filename}: ${status}`)
 }
-
-/*
-function getWritableStream (reportPath, filename) {
-  fs.mkdirSync(reportPath, { recursive: true })
-  const file = path.join(reportPath, filename)
-  return fs.createWriteStream(file)
-}
-
-async function uploadToS3 (reportPath, filename) {
-  const Bucket = getReportsBucket()
-  const Key = [ 'beta', 'latest', filename ].join('/')
-  const Body = fs.createReadStream(path.join(reportPath, filename))
-
-  const params = {
-    ACL: 'public-read',
-    Bucket,
-    Key,
-    Body
-  }
-
-  const s3 = new aws.S3()
-  await s3.upload(params).promise()
-}
-
-async function copyToArchive (filename) {
-  const Bucket = getReportsBucket()
-  const key = [ 'beta', 'latest', filename ].join('/')
-  const archiveDate = new Date().toISOString().slice(0, 10)
-  const copyKey = [ 'beta', archiveDate, filename ].join('/')
-
-  console.log(`Copying /${key} to ${copyKey}`)
-  const copyParams = {
-    CopySource: `/${Bucket}/${key}`,
-    Bucket,
-    Key: copyKey
-  }
-
-  const s3 = new aws.S3()
-  await s3.copyObject(copyParams).promise()
-}
-*/
 
 
 /** Generate and save a report, updating the status. */
@@ -79,11 +33,7 @@ async function doGeneration (hsh, folder) {
   }
 }
 
-/** Report status during generation of baseData.json.
- *
- * This report takes a while to build currently, due to a naive
- * implementation (of mine).  Report status during generation for
- * visibility. */
+/** Report status during generation of baseData.json. */
 async function updateBaseJsonStatus (index, total) {
   if (index % 100 !== 0)
     return

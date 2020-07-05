@@ -7,24 +7,6 @@ function getWriter () {
   return local ? writeLocal : writeS3
 }
 
-async function writeFile (filename, content) {
-  const writer = getWriter()
-  await writer.writeFile(filename, content)
-}
-
-function getWritableStream (filename) {
-  const writer = getWriter()
-  return writer.getWritableStream(filename)
-}
-
-async function copyFileToArchive (filename) {
-  const writer = getWriter()
-  return writer.copyFileToArchive(filename)
-}
-
 module.exports = {
-  getWriter,
-  writeFile,
-  getWritableStream,
-  copyFileToArchive
+  getWriter
 }

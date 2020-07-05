@@ -1,8 +1,6 @@
 const getBaseJson = require('./_build-base-json.js')
 const caseDataFields = require('@architect/shared/constants/case-data-fields.js')
 const stringify = require('csv-stringify/lib/sync')
-// const { createGzip } = require('zlib')
-// const stream = require('stream')
 
 
 /** Builds base report json data from dynamoDB data.
@@ -11,7 +9,6 @@ const stringify = require('csv-stringify/lib/sync')
  */
 async function buildBaseJson (params, updateBaseJsonStatus) {
   try {
-    console.log('calling getBaseJson')
     const ret = await getBaseJson(params, updateBaseJsonStatus)
     return ret
   }
@@ -51,37 +48,6 @@ function timeseriesByLocation (baseJson) {
   return JSON.stringify(content, null, 2)
 }
 
-/** Convert array to batches.
- *
- * e.g., makeBatches([1,2,3,44], 3) => [ [ 1, 2, 3 ], [ 44 ] ]
- */
-/*
-function makeBatches (arr, batchSize) {
-  const batches = []
-  let index = 0
-  while (index < arr.length)
-    batches.push(arr.slice(index, index += batchSize))
-  return batches
-}
-*/
-
-/** Divide recs up into batches.  Accumulate the output for each
- * mapRecord in an array, and at the end of each batch write the array
- * to the stream. Include the headings in the first array.  */
-/*
-function batchedCsvWrite (logname, batchedRecords, headings, mapRecord, writeBatch) {
-  batchedRecords.forEach((batch, bindex) => {
-    console.log(`${logname}: batch ${bindex + 1} of ${batchedRecords.length}`)
-    const batchContent = []
-    if (bindex === 0)
-      batchContent.push(stringify([ headings ]))
-
-    batchContent.push(batch.map(mapRecord))
-    writeBatch(batchContent)
-  })
-}
-*/
-
 /** Common fields to include in all CSV reports. */
 const baseCsvColumns = [
   'locationID',
@@ -104,14 +70,7 @@ function csvContent (baseJson, reduceRecord, cols) {
   return stringify(baseJson.reduce(reduceRecord, []), { columns: cols, header: true })
 }
 
-/** timeseries.csv source.
- *
- * This code uses a promise to ensure that the writeableStream has
- * fully flushed to disk.  In prod, an older version of the code wrote
- * directly to the writeableStream, but the stream seemed to buffer
- * before writing, even though we explicitly called
- * writeableStream.end().
- */
+/** timeseries.csv source. */
 function timeseries (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
 
