@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const glob = require('glob').sync
-const { readFileSync, writeFileSync } = require('fs')
+const fs = require('fs')
 const { basename, join, sep } = require('path')
 const { brotliCompressSync } = require('zlib')
 const fipsCodes = require('country-levels/fips.json')
@@ -49,7 +49,7 @@ const isBase64Encoded = true
 
 function buildMapper (type, locationIDBuilder) {
   return code => {
-    let file = readFileSync(code)
+    let file = fs.readFileSync(code)
     const item = {
       locationID: locationIDBuilder(code),
       payload: brotliCompressSync(file).toString('base64'),
@@ -98,9 +98,50 @@ console.log(`Processed ${counter} items`)
 
 const payload = JSON.stringify(fips.concat(iso1, iso2))
 const filename = 'geojson-db-payload.json'
-writeFileSync(join(__dirname, filename), payload)
+fs.writeFileSync(join(__dirname, filename), payload)
 console.log(`Wrote ${filename} (${payload.length / 1000}KB)`)
 
 console.log(`Stats:`, stats)
 
 console.timeEnd('Ran in')
+
+
+/**
+ * Write feature report file.
+ */
+
+console.time('Report in')
+
+const featureReportSrc = [
+  [ fipsFiles, fipIDBuilder ],
+  [ iso2Files, iso2IDBuilder ],
+  [ iso1Files, iso1IDBuilder ]
+]
+
+console.log('Generating features.json')
+let n = 0
+const featureReport = featureReportSrc.
+      map(pair => {
+        const [ files, locationIDBuilder ] = pair
+        return files.map(f => {
+          if (n % 100 === 0)
+            console.log(` ${n}`)
+          n++
+          return {
+            locationID: locationIDBuilder(f),
+            content: fs.readFileSync(f, 'utf-8')
+          }
+        })
+      }).
+      flat().
+      reduce((hsh, val) => {
+        return Object.assign(hsh, { [val.locationID]: val.content })
+      }, {})
+
+const content = JSON.stringify(featureReport)
+const report = 'features.json'
+fs.writeFileSync(join(__dirname, report), content)
+
+const fstats = fs.statSync(join(__dirname, report))
+console.log(`Wrote ${report} (${fstats['size'] / 1000} KB)`)
+console.timeEnd('Report in')
