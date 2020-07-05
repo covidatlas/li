@@ -6,6 +6,43 @@ This document briefly describes the reports, and how they differ from the old re
 
 If you are working with the data and note any discrepancies between this doc and the live data, please let us know by [opening an issue](https://github.com/covidatlas/li/issues/new/choose), notifying us on Slack, or (better yet!) updating the documentation and submitting a Pull Request.  Thank you!
 
+**Contents**
+
+  * [locationID](#locationid)
+  * [Report endpoint](#report-endpoint)
+  * [Report schedule](#report-schedule)
+  * [Report replacements](#report-replacements)
+    + [features.json](#featuresjson)
+      - [Sample Li extract](#sample-li-extract)
+    + [locations.json](#locationsjson)
+      - [CDS record](#cds-record)
+      - [Li record](#li-record)
+  * [timeseries-byLocation.json](#timeseries-bylocationjson)
+    + [CDS record](#cds-record-1)
+    + [Li record](#li-record-1)
+      - [Changes](#changes)
+      - [Multivalent data](#multivalent-data)
+  * [timeseries-jhu.csv](#timeseries-jhucsv)
+    + [CDS record](#cds-record-2)
+    + [Li record](#li-record-2)
+  * [timeseries-tidy.csv](#timeseries-tidycsv)
+    + [CDS record](#cds-record-3)
+    + [Li record](#li-record-3)
+  * [timeseries.csv](#timeseriescsv)
+    + [CDS record](#cds-record-4)
+    + [Li record](#li-record-4)
+  * [timeseries.json](#timeseriesjson)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+## locationID
+
+Every location in Li is identified with a unique `locationID`, comprised of iso1, iso2, and fips codes from https://github.com/hyperknot/country-levels.  Examples:
+
+* `iso1:US`: United States
+* `iso1:us#iso2:us-al`: State of Alabama
+* `iso1:us#iso2:us-al#fips:01125`: Tuscaloosa County, Alabama
+
 ## Report endpoint
 
 TODO (reports) endpoint
@@ -20,7 +57,7 @@ Note: sample reports are committed to this repository for test verification.  Th
 
 | CDS report | Li report |
 | --- | --- | --- |
-| features.json | TODO |
+| features.json | features.json |
 | locations.json | locations.json |
 | timeseries-byLocation.json | timeseries-byLocation.json |
 | timeseries-jhu.csv | timeseries-jhu.csv |
@@ -31,7 +68,52 @@ Note: sample reports are committed to this repository for test verification.  Th
 
 ### features.json
 
-TODO (reports) waiting for Zsolt's response re generating from geojson
+The source data for this report is from https://github.com/hyperknot/country-levels.  The report is generated and posted to s3 using `./tools/geojsondb`.  See the README in that folder.
+
+#### Sample Li extract
+
+The report is comprised of geojson and census data, keyed by `locationID`.
+
+```
+{
+  "iso1:us#iso2:us-al#fips:01001": {
+    "geometry": {
+      "coordinates": [
+        [
+          [ -86.918, 32.664 ],
+          [ -86.817, 32.66 ],
+          ...
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {
+      "area_m2": 1566509298,
+      "census_data": {
+        "AFFGEOID": "0500000US01001",
+        "ALAND": 1539602123,
+        "AWATER": 25706961,
+        "COUNTYNS": "00161526",
+        "LSAD": "06"
+      },
+      "center_lat": 32.54,
+      "center_lon": -86.64,
+      "countrylevel_id": "fips:01001",
+      "county_code": 1,
+      "fips": "01001",
+      "name": "Autauga County",
+      "name_long": "Autauga County, AL",
+      "population": 55869,
+      "state_code_int": 1,
+      "state_code_iso": "US-AL",
+      "state_code_postal": "AL",
+      "timezone": "America/Chicago"
+      },
+    "type": "Feature"
+  },
+  ...
+}
+```
 
 ### locations.json
 

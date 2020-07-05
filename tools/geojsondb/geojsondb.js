@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const glob = require('glob').sync
-const { readFileSync, writeFileSync } = require('fs')
+const fs = require('fs')
 const { basename, join, sep } = require('path')
 const { brotliCompressSync } = require('zlib')
 const fipsCodes = require('country-levels/fips.json')
@@ -47,71 +47,101 @@ function sizeCheck (item, type) {
 
 const isBase64Encoded = true
 
-let now = Date.now()
-const fips = fipsFiles.map(fip => {
+function buildMapper (type, locationIDBuilder) {
+  return code => {
+    let file = fs.readFileSync(code)
+    const item = {
+      locationID: locationIDBuilder(code),
+      payload: brotliCompressSync(file).toString('base64'),
+      isBase64Encoded
+    }
+    sizeCheck(item, type)
+    return item
+  }
+}
+
+function fipIDBuilder (fip) {
   let id = basename(fip, '.geojson')
   const data = fipsCodes[id]
-  let file = readFileSync(fip)
-  file = brotliCompressSync(file)
-  const payload = file.toString('base64')
-
   let iso2 = data.state_code_iso
   if (!iso2) throw ReferenceError(`Missing iso2 code for ${fip}`)
+  return `iso1:us#iso2:${iso2}#fips:${id}`.toLowerCase()
+}
 
-  const locationID = `iso1:us#iso2:${iso2}#fips:${id}`.toLowerCase()
-  const item = {
-    locationID,
-    payload,
-    isBase64Encoded
-  }
-  sizeCheck(item, 'fips')
-  return item
-})
+function iso2IDBuilder (state) {
+  let id = basename(state, '.geojson')
+  return `iso1:${id.substr(0, 2)}#iso2:${id}`.toLowerCase()
+}
+
+function iso1IDBuilder (country) {
+  let id = basename(country, '.geojson')
+  return `iso1:${id}`.toLowerCase()
+}
+
+const fipMapper = buildMapper('fips', fipIDBuilder)
+const iso2Mapper = buildMapper('iso2', iso2IDBuilder)
+const iso1Mapper = buildMapper('iso1', iso1IDBuilder)
+
+let now = Date.now()
+const fips = fipsFiles.map(fipMapper)
 stats.fipsTime = Date.now() - now
 
 now = Date.now()
-const iso2 = iso2Files.map(state => {
-  let id = basename(state, '.geojson')
-  let file = readFileSync(state)
-  file = brotliCompressSync(file)
-  const payload = file.toString('base64')
-
-  const locationID = `iso1:${id.substr(0, 2)}#iso2:${id}`.toLowerCase()
-  const item = {
-    locationID,
-    payload,
-    isBase64Encoded
-  }
-  sizeCheck(item, 'iso2')
-  return item
-})
+const iso2 = iso2Files.map(iso2Mapper)
 stats.iso2Time = Date.now() - now
 
 now = Date.now()
-const iso1 = iso1Files.map(country => {
-  let id = basename(country, '.geojson')
-  let file = readFileSync(country)
-  file = brotliCompressSync(file)
-  const payload = file.toString('base64')
-
-  const locationID = `iso1:${id}`.toLowerCase()
-  const item = {
-    locationID,
-    payload,
-    isBase64Encoded
-  }
-  sizeCheck(item, 'iso1')
-  return item
-})
+const iso1 = iso1Files.map(iso1Mapper)
 stats.iso1Time = Date.now() - now
 
 console.log(`Processed ${counter} items`)
 
 const payload = JSON.stringify(fips.concat(iso1, iso2))
 const filename = 'geojson-db-payload.json'
-writeFileSync(join(__dirname, filename), payload)
+fs.writeFileSync(join(__dirname, filename), payload)
 console.log(`Wrote ${filename} (${payload.length / 1000}KB)`)
 
 console.log(`Stats:`, stats)
 
 console.timeEnd('Ran in')
+
+
+/**
+ * Write feature report file.
+ */
+
+console.time('Report in')
+
+const featureReportSrc = [
+  [ fipsFiles, fipIDBuilder ],
+  [ iso2Files, iso2IDBuilder ],
+  [ iso1Files, iso1IDBuilder ]
+]
+
+console.log('Generating features.json')
+let n = 0
+const featureReport = featureReportSrc.
+      map(pair => {
+        const [ files, locationIDBuilder ] = pair
+        return files.map(f => {
+          if (n % 100 === 0)
+            console.log(` ${n}`)
+          n++
+          return {
+            locationID: locationIDBuilder(f),
+            content: fs.readFileSync(f, 'utf-8')
+          }
+        })
+      }).
+      flat().
+      reduce((hsh, val) => {
+        return Object.assign(hsh, { [val.locationID]: val.content })
+      }, {})
+
+const content = JSON.stringify(featureReport)
+const report = 'features.json'
+fs.writeFileSync(join(__dirname, report), content)
+
+const fstats = fs.statSync(join(__dirname, report))
+console.log(`Wrote ${report} (${fstats['size'] / 1000} KB)`)
+console.timeEnd('Report in')
