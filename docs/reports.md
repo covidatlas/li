@@ -27,80 +27,80 @@ This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _
 ### CDS record
 
 ```
-  {
-    "country": "Austria",
-    "url": "https://info.gesundheitsministerium.at/data/GenesenTodesFaelleBL.js",
-    "maintainers": [
-      {
-        "name": "Quentin Golsteyn",
-        "github": "qgolsteyn",
-        "flag": "<graphic>"
-      }
-    ],
-    "sources": [
-      {
-        "url": "https://info.gesundheitsministerium.at",
-        "name": "Austrian Ministry of Health"
-      }
-    ],
-    "state": "Lower Austria",
-    "rating": 0.5098039215686274,
-    "coordinates": [
-      15.7605,
-      48.221000000000004
-    ],
-    "tz": [
-      "Europe/Vienna"
-    ],
-    "featureId": "iso2:AT-3",
-    "population": 1653419,
-    "populationDensity": 86.1501096312734,
-    "countryId": "iso1:AT",
-    "stateId": "iso2:AT-3",
-    "name": "Lower Austria, Austria",
-    "level": "state"
-  },
+{
+  "country": "Austria",
+  "url": "https://info.gesundheitsministerium.at",
+  "maintainers": [
+    {
+      "name": "Quentin Golsteyn",
+      "github": "qgolsteyn",
+      "flag": "<graphic>"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://info.gesundheitsministerium.at",
+      "name": "Austrian Ministry of Health"
+    }
+  ],
+  "state": "Lower Austria",
+  "rating": 0.5098039215686274,
+  "coordinates": [
+    15.7605,
+    48.221000000000004
+  ],
+  "tz": [
+    "Europe/Vienna"
+  ],
+  "featureId": "iso2:AT-3",
+  "population": 1653419,
+  "populationDensity": 86.1501096312734,
+  "countryId": "iso1:AT",
+  "stateId": "iso2:AT-3",
+  "name": "Lower Austria, Austria",
+  "level": "state"
+},
 
 ```
 
 ### Li record
 
 ```
-  {
-    "locationID": "iso1:us#iso2:us-ca#fips:06007",
-    "slug": "butte-county-california-us",
-    "name": "Butte County, California, US",
-    "coordinates": [
-      -121.6,
-      39.67
-    ],
-    "countryID": "iso1:US",
-    "countryName": "United States",
-    "population": 219186,
-    "tz": "America/Los_Angeles",
-    "level": "county",
-    "stateID": "iso2:US-CA",
-    "stateName": "California",
-    "countyID": "fips:06007",
-    "countyName": "Butte County",
-    "created": "2020-06-26T01:21:44.104Z",
-    "sources": [
-      "json-source"
-    ],
-    "maintainers": [
-      {
-        "name": "John Smith",
-        "github": "jsmith42"
-      }
-    ],
-    "links": [
-      {
-        "name": "Canadian COVID Rolling Task Force",
-        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-      }
-    ],
-    "populationDensity": 51.7139
-  }
+{
+  "locationID": "iso1:us#iso2:us-ca#fips:06007",
+  "slug": "butte-county-california-us",
+  "name": "Butte County, California, US",
+  "coordinates": [
+    -121.6,
+    39.67
+  ],
+  "countryID": "iso1:US",
+  "countryName": "United States",
+  "population": 219186,
+  "tz": "America/Los_Angeles",
+  "level": "county",
+  "stateID": "iso2:US-CA",
+  "stateName": "California",
+  "countyID": "fips:06007",
+  "countyName": "Butte County",
+  "created": "2020-06-26T01:21:44.104Z",
+  "sources": [
+    "json-source"
+  ],
+  "maintainers": [
+    {
+      "name": "John Smith",
+      "github": "jsmith42"
+    }
+  ],
+  "links": [
+    {
+      "name": "Canadian COVID Rolling Task Force",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    }
+  ],
+  "populationDensity": 51.7139
+}
 ```
 
 ## timeseries-byLocation.json
@@ -109,94 +109,94 @@ This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _
 
 ```
 {
-    "Aargau, Switzerland": {
-        "coordinates": [
-            8.0725,
-            47.378
-        ],
-        "country": "Switzerland",
-        "countryId": "iso1:CH",
-        "dates": {
-            "2020-06-02": {
-                "cases": 1177,
-                "deaths": 43,
-                "discharged": 1060
-            },
-            ...
-            "2020-06-06": {
-                "cases": 1177,
-                "deaths": 43,
-                "discharged": 1060,
-                "growthFactor": 1
-            }
-        },
-        "featureId": "iso2:CH-AG",
-        "level": "state",
-        "maintainers": [
-            {
-                "flag": "\ud83c\udde8\ud83c\udde6",
-                "github": "qgolsteyn",
-                "name": "Quentin Golsteyn"
-            }
-        ],
-        "name": "Aargau, Switzerland",
-        "population": 678207,
-        "populationDensity": 485.70234973285847,
-        "rating": 0.43137254901960786,
-        "state": "Aargau",
-        "stateId": "iso2:CH-AG",
-        "tz": [
-            "Europe/Zurich"
-        ],
-        "url": "https://github.com/daenuprobst/covid19-cases-switzerland/"
-    },
+  "Aargau, Switzerland": {
+      "coordinates": [
+          8.0725,
+          47.378
+      ],
+      "country": "Switzerland",
+      "countryId": "iso1:CH",
+      "dates": {
+          "2020-06-02": {
+              "cases": 1177,
+              "deaths": 43,
+              "discharged": 1060
+          },
+          ...
+          "2020-06-06": {
+              "cases": 1177,
+              "deaths": 43,
+              "discharged": 1060,
+              "growthFactor": 1
+          }
+      },
+      "featureId": "iso2:CH-AG",
+      "level": "state",
+      "maintainers": [
+          {
+              "flag": "\ud83c\udde8\ud83c\udde6",
+              "github": "qgolsteyn",
+              "name": "Quentin Golsteyn"
+          }
+      ],
+      "name": "Aargau, Switzerland",
+      "population": 678207,
+      "populationDensity": 485.70234973285847,
+      "rating": 0.43137254901960786,
+      "state": "Aargau",
+      "stateId": "iso2:CH-AG",
+      "tz": [
+          "Europe/Zurich"
+      ],
+      "url": "https://github.com/daenuprobst/covid19/"
+  },
 ```
 
 ### Li record
 
 ```
-  {
-    "locationID": "iso1:us#iso2:us-ca#fips:06007",
-    "slug": "butte-county-california-us",
-    "name": "Butte County, California, US",
-    "coordinates": [
-      -121.6,
-      39.67
-    ],
-    "countryID": "iso1:US",
-    "countryName": "United States",
-    "population": 219186,
-    "tz": "America/Los_Angeles",
-    "level": "county",
-    "stateID": "iso2:US-CA",
-    "stateName": "California",
-    "countyID": "fips:06007",
-    "countyName": "Butte County",
-    "populationDensity": 51.7139,
-    "timeseries": {
-      "2020-05-21": {
-        "cases": 21,
-        "deaths": 4,
-        "tested": 210,
-        "hospitalized": 1,
-        "icu": 10
-      },
-      ...
+{
+  "locationID": "iso1:us#iso2:us-ca#fips:06007",
+  "slug": "butte-county-california-us",
+  "name": "Butte County, California, US",
+  "coordinates": [
+    -121.6,
+    39.67
+  ],
+  "countryID": "iso1:US",
+  "countryName": "United States",
+  "population": 219186,
+  "tz": "America/Los_Angeles",
+  "level": "county",
+  "stateID": "iso2:US-CA",
+  "stateName": "California",
+  "countyID": "fips:06007",
+  "countyName": "Butte County",
+  "populationDensity": 51.7139,
+  "timeseries": {
+    "2020-05-21": {
+      "cases": 21,
+      "deaths": 4,
+      "tested": 210,
+      "hospitalized": 1,
+      "icu": 10
     },
-    "timeseriesSources": {
-      "2020-05-21..2020-06-18": "us-ca",
-      "2020-06-19..2020-06-28": { "us-ca": [ "deaths", "tested" ], "jhu": [ "cases" ] }
-    },
-    "sources": [
-      "us-ca", "jhu"
-    ],
-    "maintainers": [
-      {
-        "name": "John Smith",
-        "github": "jsmith42"
-      }
-    ]
-  }
+    ...
+  },
+  "timeseriesSources": {
+    "2020-05-21..2020-06-18": "us-ca",
+    "2020-06-19": { "us-ca": [ "deaths" ], "jhu": [ "cases" ] }
+  },
+  "sources": [
+    "us-ca", "jhu"
+  ],
+  "maintainers": [
+    {
+      "name": "John Smith",
+      "github": "jsmith42"
+    }
+  ]
+}
 ```
 
 #### Changes
@@ -214,12 +214,12 @@ A shorthand is shown for the date ranges for which the sources supplied data.  F
 If there are conflicts in the data (e.g., multiple sources return `cases`, but they're inconsistent), a `warnings` element is added.  e.g.,
 
 ```
-  "warnings": {
-    "2020-06-19": {
-      "cases": "conflict (src1: 3, src2: 2, src3: 1)",
-      "deaths": "conflict (src2: 22, src3: 11)"
-    },
-    ...
+"warnings": {
+  "2020-06-19": {
+    "cases": "conflict (src1: 3, src2: 2, src3: 1)",
+    "deaths": "conflict (src2: 22, src3: 11)"
+  },
+  ...
 ```
 
 
