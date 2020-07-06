@@ -6,6 +6,7 @@ const loadCache = require('./load-cache/index.js')
 const parseCache = require('./parse-cache/index.js')
 const runScraper = require('./run-scraper/index.js')
 const normalizeData = require('./normalize-data/index.js')
+const consoleTable = require('./_console-table-data.js')
 
 /**
  * Executes the scrape
@@ -60,6 +61,10 @@ module.exports = async function scrape (event) {
      * Normalize output
      */
     const data = normalizeData(source, output, date)
+
+    /** Helpful during development. */
+    if (process.env.NODE_ENV === 'testing')
+      consoleTable(data)
 
     return data
   }
