@@ -63,7 +63,10 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: async (client) => arcgis.csvUrl(client, 7, 'ec4bffd48f7e495182226eee7962b422', 'DailyCaseCounts')
+          url: async (client) => {
+            const ret = arcgis.csvUrl(client, 7, 'ec4bffd48f7e495182226eee7962b422', 'DailyCaseCounts')
+            return { url: ret }
+          }
         },
       ],
       scrape (data) {
@@ -83,7 +86,10 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: async (client) => arcgis.csvUrl(client, 7, 'ec4bffd48f7e495182226eee7962b422', 'DailyCaseCounts')
+          url: async (client) => {
+            const ret = arcgis.csvUrl(client, 7, 'ec4bffd48f7e495182226eee7962b422', 'DailyCaseCounts')
+            return { url: ret }
+          }
         },
       ],
       scrape (data) {
@@ -104,7 +110,10 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: async (client) => arcgis.csvUrl(client, 7, 'ec4bffd48f7e495182226eee7962b422', 'DailyCaseCounts')
+          url: async (client) => {
+            const ret = await arcgis.csvUrl(client, 7, 'ec4bffd48f7e495182226eee7962b422', 'DailyCaseCounts')
+            return { url: ret }
+          }
         }
       ],
       scrape (data) {
@@ -125,7 +134,10 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: async (client) => arcgis.urlFromOrgId(client, 7, 'Z0rixLlManVefxqY', 'DailyCaseCounts')
+          url: async (client) => {
+            const ret = await arcgis.urlFromOrgId(client, 7, 'Z0rixLlManVefxqY', 'DailyCaseCounts')
+            return { url: ret }
+          }
         },
       ],
       scrape (data) {
