@@ -56,7 +56,7 @@ TODO (reports) schedule
 Note: sample reports are committed to this repository for test verification.  They're in `tests/integration/events/reports/expected-results`.
 
 | CDS report | Li report |
-| --- | --- | --- |
+| --- | --- |
 | features.json | features.json |
 | locations.json | locations.json |
 | timeseries-byLocation.json | timeseries-byLocation.json |
