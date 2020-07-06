@@ -167,5 +167,8 @@ module.exports = {
         return counties
       }
     }
+
+    // TODO (scrapers) us-sd stopped working ~2020-04-20
+    // Page https://doh.sd.gov/news/Coronavirus.aspx#SD currently is a PowerBI report.
   ]
 }
