@@ -6,7 +6,14 @@ const got = require('got')
 async function getNormal (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
-  let { cookies, rejectUnauthorized, url, headers } = options
+  let { cookies, url, headers } = options
+
+  const sslDefaults = {
+    rejectUnauthorized: true,
+    disableSSL: false
+  }
+  const sslOptions = Object.assign(sslDefaults, options.options)
+
   const responseHeaders = {
     'cache-control': 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
   }
@@ -18,7 +25,8 @@ async function getNormal (req) {
     const timeout = 30000
 
     // Important: this prevents SSL from failing
-    if (rejectUnauthorized) {
+    if (!sslOptions.rejectUnauthorized || sslOptions.disableSSL) {
+      console.log('disabling ssl')
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
 

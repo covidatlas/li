@@ -201,6 +201,7 @@ module.exports = {
   state: 'iso2:US-VA',
   country: 'iso1:US',
   aggregate: 'county',
+  timeseries: true,
   maintainers: [ maintainers.aed3, maintainers.jzohrab ],
   friendly:   {
     url: 'http://www.vdh.virginia.gov/',
@@ -315,7 +316,7 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: 'https://www.vdh.virginia.gov/content/uploads/sites/182/2020/03/VDH-COVID-19-PublicUseDataset-Cases.csv',
+          url: 'https://www.vdh.virginia.gov/content/uploads/sites/182/2020/05/VDH-COVID-19-PublicUseDataset-Cases.csv',
           options: { disableSSL: true }
         },
       ],
