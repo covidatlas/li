@@ -320,9 +320,30 @@ module.exports = {
         counties.push(t)
         return geography.addEmptyRegions(counties, _counties, 'county')
       }
+    },
+    {
+      startDate: '2020-05-11',
+      crawl: [
+        {
+          type: 'json',
+          url: 'https://services1.arcgis.com/YuVBSS7Y1of2Qud1/arcgis/rest/services/TN_Covid_Counties/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=NAME%20asc&resultOffset=0&resultRecordCount=96&cacheHint=true',
+          name: 'data',
+        }
+      ],
+      scrape (data) {
+        const counties = data.features.map(item => {
+          return {
+            county: geography.addCounty(item.attributes.NAME),
+            cases: item.attributes.TOTAL_Cases,
+            deaths: item.attributes.TOTAL_Deaths,
+            tested: item.attributes.TOTAL_Tests,
+            hospitalized: item.attributes.TOTAL_Hospitalized,
+            recovered: item.attributes.TOTAL_Recovered
+          }
+        })
+        counties.push(transform.sumData(counties))
+        return geography.addEmptyRegions(counties, _counties, 'county')
+      }
     }
   ]
-  // TODO (scrapers) us-tn stopped working after 2020-05-10.
-  // crawl for 'totals' returns "error", ""message" : "Token Required", which I've seen for 404's of arcgis.
-  // The crawl for 'data' still works though, and may still be parsable.
 }
