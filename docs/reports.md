@@ -24,7 +24,11 @@ This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _
 
 ## locations.json
 
-### CDS record
+<table>
+<tr><th>CDS record</th><th>Li record</th></tr>
+
+<tr>
+<td>
 
 ```
 {
@@ -63,7 +67,8 @@ This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _
 
 ```
 
-### Li record
+</td>
+<td>
 
 ```
 {
@@ -102,6 +107,10 @@ This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _
   "populationDensity": 51.7139
 }
 ```
+
+</td>
+</tr>
+</table>
 
 ## timeseries-byLocation.json
 
