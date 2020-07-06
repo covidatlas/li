@@ -27,7 +27,7 @@ const scraperHelpers = {
 module.exports = async function runScraper (scraper, parsed, date) {
   let params = {}
   // A single crawl passes back a single object
-  if (parsed.length === 1) params = parsed[0]['default']
+  if (parsed.length === 1) params = Object.values(parsed[0])[0]
   // Multiple crawls pass back an object with a named param for each `crawl.name`
   else {
     for (const item of parsed) {

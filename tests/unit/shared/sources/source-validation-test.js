@@ -71,6 +71,14 @@ test('validateSource catches problems', t => {
           { name: 'cases' /* dup. name */, type: 'page', url: 'https://somedata.html' }
         ],
         scrape (data) { return { cases: 42 + data.count } }
+      },
+      {
+        startDate: '2020-03-04',
+        crawl: [
+          { /* must have a name */ type: 'csv', data: 'table', url: 'https://somedata.csv' },
+          { name: 'cases', type: 'page', url: 'https://somedata.html' }
+        ],
+        scrape (data) { return { cases: 42 + data.count } }
       }
     ]
   }
@@ -93,11 +101,43 @@ test('validateSource catches problems', t => {
     '2020-03-01: Invalid crawler.type \'text\'; must be one of: page, headless, csv, tsv, pdf, json, raw',
     '2020-03-01: Crawler must have either url or paginated, but not both',
     '2020-03-01: Crawler paginated must be an async function',
+    '2020-03-04: Multiple crawlers must have a name',
     'Scraper must contain a startDate',
-    '2020-03-02: Single crawler must not have a name key',
-    '(missing startDate): Single crawler must not have a name key'
+    // '2020-03-02: Single crawler must not have a name key', // Not anymore.
+    // '(missing startDate): Single crawler must not have a name key'
   ]
   t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'expected errors caught')
+})
+
+
+// Ref https://github.com/covidatlas/li/issues/279,
+// "Allow single crawl to have a name"
+test('single source crawl can have a name', t => {
+
+  const src = {
+    country: 'iso1:us',
+    state: 'iso2:ca',
+    scrapers: [
+      {
+        startDate: '2020-03-01',
+        crawl: [
+          {
+            name: 'data',
+            type: 'csv',
+            url: 'https://somedata.csv'
+          }
+        ],
+        scrape ( { data } ) { return { cases: data.cases } }
+      }
+    ]
+  }
+
+  const result = validateSource(src)
+
+  const expectedErrors = []
+  t.deepEqual(result.errors.sort(), expectedErrors.sort(), 'no errors')
+
+  t.end()
 })
 
 
