@@ -31,7 +31,7 @@ module.exports = async function crawl (event) {
     for (let crawl of scraper.crawl) {
       let { type, url, paginated } = crawl
 
-      const _name = scraper.crawl.length > 1 ? crawl.name : 'default'
+      const _name = crawl.name || 'default'
       const baseResult = {
         // Caching metadata
         _sourceKey,

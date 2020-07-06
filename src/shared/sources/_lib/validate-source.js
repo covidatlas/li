@@ -105,14 +105,12 @@ function validateSource (source) {
       }
 
       // Crawl name keys
-      if (crawl.length === 1) {
-        requirement(!crawler.name, datedError('Single crawler must not have a name key'))
-      }
-      else {
-        requirement(crawler.name, 'Multiple crawlers must have a name')
+      if (crawl.length > 1) {
+        requirement(crawler.name, datedError('Multiple crawlers must have a name'))
         requirement(crawler.name !== 'default', datedError(`Crawler name cannot be 'default'`))
         requirement(/^[a-z]+$/.test(crawler.name), datedError(`Crawler name must be lowercase letters only`))
-        requirement(crawler.name.length <= 20, datedError(`Crawler name must be 20 chars or less`))
+        if (crawler.name)
+          requirement(crawler.name.length <= 20, datedError(`Crawler name must be 20 chars or less`))
         requirement(
           !crawlerNames[crawler.name], datedError(`Duplicate crawler name '${crawler.name}'; names must be unique`)
         )
