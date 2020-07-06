@@ -322,4 +322,7 @@ module.exports = {
       }
     }
   ]
+  // TODO (scrapers) us-tn stopped working after 2020-05-10.
+  // crawl for 'totals' returns "error", ""message" : "Token Required", which I've seen for 404's of arcgis.
+  // The crawl for 'data' still works though, and may still be parsable.
 }
