@@ -20,7 +20,7 @@ const normalizeTable = ({ $, tableSelector, table }) => {
 
   assert(
     $table.length > 0,
-    `No table found for selector "${tableSelector}"`
+    `No table found for tableSelector "${tableSelector}"`
   )
   const $rows = $table.find('tr')
   $rows.each((rowIndex, row) => {

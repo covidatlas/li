@@ -23,6 +23,24 @@ const _counties = [
 ]
 
 
+/** NH reports their data in a summary table with row headings. */
+function getTableNumber (summary, text) {
+  const rows = summary.
+        filter(row => row[0].includes(text))
+  if (rows.length === 0)
+    return undefined
+
+  // Some data is reported on multiple rows;
+  // e.g., 'Total Persons Tested  at Selected Laboratories, Polymerase Chain Reaction',
+  // 'Total Persons Tested  at Selected Laboratories, Antibody Laboratory Tests'
+  const total = rows.
+        map(row => row[1].split(' ')[0]).
+        map(s => parse.number(s)).
+        reduce((sum, v) => sum + v, 0)
+  return total
+}
+
+
 module.exports = {
   state: 'iso2:US-NH',
   country: 'iso1:US',
@@ -77,7 +95,7 @@ module.exports = {
       }
     },
     {
-      startDate: '2020-3-31',
+      startDate: '2020-03-31',
       crawl: [
         {
           type: 'pdf',
@@ -89,7 +107,7 @@ module.exports = {
       }
     },
     {
-      startDate: '2020-4-12',
+      startDate: '2020-04-12',
       crawl: [
         {
           type: 'page',
@@ -98,11 +116,11 @@ module.exports = {
         },
       ],
       scrape ($, date, { normalizeTable }) {
+        const counties = []
 
         const $countyTable = $('.county-table')
         const data = normalizeTable({ $, table: $countyTable })
 
-        const counties = []
         const Hillsborough = {
           county: 'Hillsborough County',
           cases: 0
@@ -112,8 +130,9 @@ module.exports = {
           if (name.includes('Hillsborough')) {
             Hillsborough.cases += parse.number(cases)
           } else if (!name.match(/County$|Total/)) {
+            const isUnassigned = [ 'TBD', 'Unknown', 'TBA' ].some(s => name.includes(s))
             counties.push({
-              county: name.includes('TBD') ? UNASSIGNED : geography.addCounty(name),
+              county: isUnassigned ? UNASSIGNED : geography.addCounty(name),
               cases: parse.number(cases)
             })
           }
@@ -122,23 +141,45 @@ module.exports = {
 
         const $summaryTable = $('.summary-list')
         const summary = normalizeTable({ $, table: $summaryTable })
-
-        const getTableNumber = text => {
-          const row = summary.find(s => s[0].includes(text))
-          if (!row)
-            return undefined
-          return parse.number(row[1].split(' ')[0])
-        }
-
-        const casesTotal = getTableNumber('Number of Persons with COVID-191')
-        const deathsTotal = getTableNumber('Deaths')
-        const recoveredTotals = getTableNumber('Recovered')
-        const testedTotals = getTableNumber('Tested Negative') + casesTotal
+        // console.log(JSON.stringify(summary))
         const totals = {
-          cases: casesTotal,
-          deaths: deathsTotal,
-          recovered: recoveredTotals,
-          tested: testedTotals
+          cases: getTableNumber(summary, 'Number of Persons with COVID-19'),
+          deaths: getTableNumber(summary, 'Deaths'),
+          recovered: getTableNumber(summary, 'Recovered'),
+          hospitalized: getTableNumber(summary, 'Persons Who Have Been Hospitalized'),
+          tested: getTableNumber(summary, 'Number of Persons with COVID-19') +
+            (getTableNumber(summary, 'Tested Negative') || 0) +
+            (getTableNumber(summary, 'Total Persons Tested') || 0)
+        }
+        counties.push(totals)
+        return counties
+      }
+    },
+    {
+      startDate: '2020-05-31',
+      crawl: [
+        {
+          type: 'page',
+          url: 'https://www.nh.gov/covid19/',
+          data: 'table'
+        },
+      ],
+      scrape ($, date, { normalizeTable }) {
+        const counties = []
+
+        /* NH started reported their county data in an unparsable PDF map via Tableau. */
+
+        const $summaryTable = $('.summary-list')
+        const summary = normalizeTable({ $, table: $summaryTable, tableSelector: 'barf' })
+
+        const totals = {
+          cases: getTableNumber(summary, 'Number of Persons with COVID-19'),
+          deaths: getTableNumber(summary, 'Deaths'),
+          recovered: getTableNumber(summary, 'Recovered'),
+          hospitalized: getTableNumber(summary, 'Persons Who Have Been Hospitalized'),
+          tested: getTableNumber(summary, 'Number of Persons with COVID-19') +
+            (getTableNumber(summary, 'Tested Negative') || 0) +
+            (getTableNumber(summary, 'Total Persons Tested') || 0)
         }
         counties.push(totals)
         return counties
