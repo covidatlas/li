@@ -345,4 +345,8 @@ module.exports = {
       }
     }
   ]
+  // TODO (scrapers) us-tx stopped working around 2020-05-10.
+  // On https://www.dshs.texas.gov/coronavirus/additionaldata/,
+  // they reference several Excel sheets that we could potentially
+  // parse.  There are several Excel libraries we could try.
 }
