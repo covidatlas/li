@@ -63,7 +63,7 @@ function _good_headers (data) {
   if (parse.string(data[0][0]) !== 'City/Town') {
     return false
   }
-  if (parse.string(data[1][0]) !== 'Rhode Island COVID-19 patients by city/town of residence') {
+  if (parse.string(data[0][1]) !== 'Rhode Island COVID-19 patients by city/town of residence') {
     return false
   }
   return true
@@ -114,7 +114,7 @@ module.exports = {
           url: 'https://health.ri.gov/data/covid-19/',
         },
       ],
-      scrape ($) {
+      scrape ($, date, { normalizeTable }) {
         const cities = []
         let regions = []
         // Need to pull this out explicitly because their html table includes
@@ -134,8 +134,10 @@ module.exports = {
           deaths: stateDeaths,
           aggregate: 'county'
         })
+
         const $table = $('th:contains("Rhode Island COVID-19 patients by city/town of residence")').closest('table')
-        const data = $table.parsetable(false, false, true)
+        const data = normalizeTable({ $, table: $table })
+
         if (!_good_headers(data)) {
           throw new Error('Unknown headers in html table')
         }
@@ -143,11 +145,11 @@ module.exports = {
         for (const county of _counties) {
           countyCases[county] = 0
         }
-        const numRows = data[0].length
+        const numRows = data.length
         const startRow = 1 // skip the headers
         for (let i = startRow; i < numRows; i++) {
-          const city = parse.string(data[0][i])
-          let cases = parse.string(data[1][i])
+          const city = parse.string(data[i][0])
+          let cases = parse.string(data[i][1])
           if (cases === '<5') {
             cases = 3 // pick something!
           } else {

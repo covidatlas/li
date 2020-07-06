@@ -8,13 +8,16 @@ const assert = require('assert')
  * Similar to cheerio-tableparser, but doesn't mirror the data structure,
  * has defaults that are appropriate for this project,
  * and throws where it can't yield a consistent data structure.
- * @param {{$: any, tableSelector: string}} options
+ * @param {{$: any, tableSelector: string, table: string}} options
  * @returns {string[][]} Array of arrays of strings, so you can iterate over rows, then columns.
  */
-const normalizeTable = ({ $, tableSelector }) => {
+const normalizeTable = ({ $, tableSelector, table }) => {
   const output = []
 
-  const $table = $(tableSelector)
+  let $table = table
+  if (!table)
+    $table = $(tableSelector)
+
   assert(
     $table.length > 0,
     `No table found for selector "${tableSelector}"`
