@@ -71,6 +71,7 @@ module.exports = {
       }
     },
     {
+      // Rolling two-week window, starting on today's date. (!)  Crazy, right?
       startDate: new Date((new Date().getTime()-(86400000*14))).toJSON().substr(0,10),
       crawl: [
         {
@@ -87,16 +88,35 @@ module.exports = {
       scrape ({ cases }, date, { cumulateObjects }) {
         assert(cases.data.length > 0, 'cases data is unreasonable')
 
-        const itemsByPOA = cases.data
-          .filter(({ Date: attributeDate }) => {
-            const matches = attributeDate.match(/(?<day>\d+)-(?<month>\w+)/)
-            const groups = matches && matches.groups || {}
-            const { day, month } = groups
-            return `2020-${parseMonth(month)}-${day}` === datetime.getYYYYMMDD(date)
-          }
-        )
+        // Add field, Date as YYYYMMDD.
+        cases.data = cases.data.map(d => {
+          const [ day, month ] = d.Date.split('-')
+          // If it's January right now, and the data is 'Dec', then
+          // that's from the previous year.
+          // (Hopefully this source will be replaced by then ...
+          // this logic and the scraper itself is a bit nuts.)
+          const now = new Date()
+          const nowMonth = now.getMonth()
+          const nowYear = now.getFullYear()
+          let useYear = nowYear
+          if (month === 'Dec' && nowMonth === 0 /* Jan. */)
+            useYear = useYear - 1
+          d.YYYYMMDD = `${useYear}-${parseMonth(month)}-${day}`
+          return d
+        })
 
-        assert(itemsByPOA.length > 0, `items for date ${date} not found`)
+        // Filter to only scrape the latest date.
+        const allDates = [ ...new Set(cases.data.map(d => d.YYYYMMDD)) ].sort()
+        const latestDate = allDates.slice(-1)[0]
+
+        let filterDate = date
+        if (filterDate > latestDate)
+          filterDate = latestDate
+        console.log(`scraping data from ${filterDate}`)
+        const byFilterDate = d => (d.YYYYMMDD === filterDate)
+
+        const itemsByPOA = cases.data.filter(byFilterDate)
+        assert(itemsByPOA.length > 0, `items for filter date ${filterDate} not found`)
 
         const cumulatedObject = cumulateObjects(itemsByPOA)
 
@@ -104,6 +124,7 @@ module.exports = {
           cases: cumulatedObject.Cases,
           recovered: cumulatedObject.Recovered,
           deaths: cumulatedObject.Deaths,
+          date: filterDate   // Explicitly set the date for the record.
         }
 
         assert(data.cases > 0, 'Cases are not reasonable')
