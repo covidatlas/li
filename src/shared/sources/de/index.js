@@ -1,5 +1,6 @@
 const assert = require("assert")
 const maintainers = require("../../sources/_lib/maintainers.js")
+const timeseriesFilter = require("../_lib/timeseries-filter.js")
 const parse = require("../../sources/_lib/parse.js")
 const transform = require("../../sources/_lib/transform.js")
 
@@ -55,7 +56,15 @@ module.exports = {
         },
       ],
       scrape (data, date) {
-        const datesData = data.find((row) => row.time_iso8601.startsWith(date))
+
+        // Sample date: '2020-06-03T11:30:11+02:00'
+        function toYYYYMMDD (datestring) {
+          return datestring.split('T')[0]
+        }
+
+        const { filterDate, func } = timeseriesFilter(data, 'time_iso8601', toYYYYMMDD, date)
+
+        const datesData = data.filter(func)[0]
         const statesData = pickBy(datesData, (value, key) =>
           key.startsWith("DE")
         )
@@ -70,11 +79,11 @@ module.exports = {
 
         const states = []
         for (const [ state, value ] of Object.entries(dataByState)) {
-          states.push({ state, ...value })
+          states.push({ state, ...value, date: filterDate })
         }
 
         const summedData = transform.sumData(states)
-        states.push(summedData)
+        states.push({ ...summedData, date: filterDate })
         assert(
           summedData.cases > 0,
           `Cases are not reasonable for date: ${date}`
