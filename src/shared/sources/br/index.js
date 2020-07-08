@@ -162,6 +162,79 @@ module.exports = {
         response.push(transform.sumData(response, { aggregate: 'state' }))
         return response
       }
+    },
+    {
+      // As of this date, Brazil changed their reporting; headless
+      // fetch only pulls down the top-level rows, so we can't report
+      // on states.
+      startDate: '2020-05-12',
+      crawl: [
+        {
+          type: 'headless',
+          data: 'list',
+          url: 'https://covid.saude.gov.br/',
+        },
+      ],
+      scrape ($) {
+        // Find entries, throws if doesn't find at least one.
+        const findMany = (el, selector) => {
+          const ret = el.find(selector)
+          if (ret.length === 0) throw new Error(`No match for ${selector}`)
+          return ret
+        }
+
+        const response = []
+        const entries = findMany($.root(), '.item-line')
+        let brazilEntry = entries.toArray().filter(e => $(e).find('.lb-nome.nome-cit').text().includes('Brasil'))
+        if (brazilEntry.length === 1) {
+          const entry = $(brazilEntry)
+          const titles = findMany(entry, '.header-list.tp-aux').text().trim()
+          const expectedTitles = new RegExp('CasosÓbitos.*')
+          if (!expectedTitles.test(titles))
+            throw new Error(`Title text (${titles}) did not match expected regex ${expectedTitles}`)
+
+          const values = findMany(entry, '.lb-nome.lb-value > b')
+          const d = []
+          values.each(function () {
+            const v = parseInt($(this).text().replace(/\./g, '').trim(), 10)
+            d.push(v)
+          })
+
+          // The headings (translated) are: Confirmed, Deaths, Incidence, Letality.
+          // I'm not sure what the last two are, so will only include Confirmed and Deaths.
+          const cases = d[0]
+          const deaths = d[1]
+          response.push({
+            cases,
+            deaths,
+            aggregate: 'state'
+          })
+        }
+        return response
+      }
+    },
+    {
+      // The Brazil page https://covid.saude.gov.br/ makes a number of
+      // calls to API endpoints ...  Perhaps this will be a stable
+      // endpoint.
+      startDate: '2020-07-07',
+      crawl: [
+        {
+          type: 'json',
+          url: 'https://xx9p7hp1p7.execute-api.us-east-1.amazonaws.com/prod/PortalEstado',
+        },
+      ],
+      scrape (data) {
+        const response = data.map(d => {
+          return {
+            state: `iso2:BR-${d.nome}`,
+            cases: d.casosAcumulado,
+            deaths: d.obitosAcumulado
+          }
+        })
+        response.push(transform.sumData(response))
+        return response
+      }
     }
   ]
 }

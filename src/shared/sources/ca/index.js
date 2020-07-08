@@ -1,7 +1,7 @@
 const assert = require('assert')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
-const datetime = require('../../datetime/index.js')
 const transform = require('../_lib/transform.js')
 const { UNASSIGNED } = require('../_lib/constants.js')
 
@@ -32,9 +32,18 @@ module.exports = {
           url: 'https://health-infobase.canada.ca/src/data/covidLive/covid19.csv'
         }
       ],
-      scrape ($, date, { getIso2FromName }) {
-        const states = $
-          .filter(row => row.date === datetime.getDDMMYYYY(date))
+      scrape (data, date, { getIso2FromName }) {
+
+        // Canada uses DD-MM-YYYY, e.g. '29-06-2020'
+        function toYYYYMMDD (datestring) {
+          const [ d, m, y ] = datestring.split('-')
+          return [ y, m, d ].join('-')
+        }
+
+        const { filterDate, func } = timeseriesFilter(data, 'date', toYYYYMMDD, date)
+
+        const states = data
+          .filter(func)
           .filter(row => 'Canada' !== row.prname)
           .map(row => ({
             state: getIso2FromName({ country, name: row.prname, nameToCanonical }),
@@ -42,12 +51,13 @@ module.exports = {
             deaths: parseOrUndefined(row.numdeaths),
             recovered: parseOrUndefined(row.numrecover),
             tested: parseOrUndefined(row.numtested),
+            date: filterDate
           }))
 
-        const summedData = transform.sumData(states)
+        const summedData = { ...transform.sumData(states), date: filterDate }
         states.push(summedData)
 
-        assert(summedData.cases > 0, 'Cases are not reasonable for date: ' + date)
+        assert(summedData.cases > 0, 'Cases are not reasonable for date: ' + filterDate)
         return states
       }
     }

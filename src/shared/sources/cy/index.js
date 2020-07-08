@@ -1,7 +1,7 @@
 const assert = require("assert")
 const maintainers = require("../_lib/maintainers.js")
+const timeseriesFilter = require("../_lib/timeseries-filter.js")
 const parse = require('../_lib/parse.js')
-const datetime = require("../../datetime/index.js")
 
 const country = "iso1:CY"
 
@@ -26,23 +26,28 @@ module.exports = {
         },
       ],
       scrape ($, date) {
-        const thisDatesRecord = $.result.records.find((record) => {
-          const [ dd, mm, yy ] = record.date.split("/").map(Number)
-          const recordDate = datetime.getYYYYMMDD(`20${yy}-${mm}-${dd}`)
-          return recordDate === date
-        })
-        assert(thisDatesRecord, `no record for date ${date}`)
 
-        const data = {
-          cases: parse.number(thisDatesRecord["total cases"]),
-          deaths: parse.number(thisDatesRecord["total deaths"]),
-          recovered: parse.number(thisDatesRecord["total recovered"]),
-          tested: parse.number(thisDatesRecord["total tests"]),
+        // Sample date: '13/3/2020'
+        function toYYYYMMDD (datestring) {
+          const [ d, m, y ] = datestring.split('/')
+          return [ y, m.padStart(2, '0'), d.padStart(2, '0') ].join('-')
         }
 
-        assert(data.cases > 0, "Cases are not reasonable for date: " + date)
+        const { filterDate, func } = timeseriesFilter($.result.records, 'date', toYYYYMMDD, date)
+
+        const data = $.result.records.filter(func).map(d => {
+          return {
+            cases: parse.number(d["total cases"]),
+            deaths: parse.number(d["total deaths"]),
+            recovered: parse.number(d["total recovered"]),
+            tested: parse.number(d["total tests"]),
+            date: filterDate
+          }
+        })
+
+        assert(data[0].cases > 0, "Cases are not reasonable for date: " + filterDate)
         return data
-      },
-    },
-  ],
+      }
+    }
+  ]
 }
