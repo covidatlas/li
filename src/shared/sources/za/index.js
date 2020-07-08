@@ -1,13 +1,10 @@
 const assert = require("assert")
 const maintainers = require("../_lib/maintainers.js")
 const parse = require("../_lib/parse.js")
-const datetime = require("../../datetime/index.js")
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 
 const country = "iso1:ZA"
 const provinceList = [ "EC", "FS", "GP", "KZN", "LP", "MP", "NC", "NW", "WC" ]
-
-const addDateSeparators = (date) =>
-  `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`
 
 module.exports = {
   country,
@@ -49,23 +46,29 @@ module.exports = {
           cases: 0,
         }
 
-        for (const item of data.cases) {
-          if (addDateSeparators(item.YYYYMMDD) === date) {
-            for (const col of Object.keys(item)) {
-              if (provinceList.findIndex((prov) => prov === col) !== -1) {
-                dataByProvince[col] = {
-                  ...dataByProvince[col],
-                  state: `iso2:ZA-${col}`,
-                  cases:
-                    parse.number(item[col]) ||
-                    (dataByProvince[col]
-                      ? dataByProvince[col].cases
-                      : undefined),
-                  deaths: 0,
-                }
-              } else if (col === "total") {
-                nationalData.cases = parse.number(item[col])
+        // ZA reports data as DD-MM-YYYY (e.g, '14-03-2020')
+        function toYYYYMMDD (datestring) {
+          const [ d, m, y ] = datestring.split('-')
+          return [ y, m, d ].join('-')
+        }
+
+        const { func } = timeseriesFilter(data.cases, 'date', toYYYYMMDD, date)
+
+        for (const item of data.cases.filter(func)) {
+          for (const col of Object.keys(item)) {
+            if (provinceList.findIndex((prov) => prov === col) !== -1) {
+              dataByProvince[col] = {
+                ...dataByProvince[col],
+                state: `iso2:ZA-${col}`,
+                cases:
+                parse.number(item[col]) ||
+                  (dataByProvince[col]
+                   ? dataByProvince[col].cases
+                   : undefined),
+                deaths: 0,
               }
+            } else if (col === "total") {
+              nationalData.cases = parse.number(item[col])
             }
           }
         }
@@ -76,14 +79,14 @@ module.exports = {
         )
 
         for (const item of data.tested) {
-          if (datetime.dateIsBeforeOrEqualTo(addDateSeparators(item.YYYYMMDD), date)) {
+          if (toYYYYMMDD(item.date) <= date) {
             nationalData.tested =
               parse.number(item.cumulative_tests) || nationalData.tested
           }
         }
 
         for (const item of data.deaths) {
-          if (datetime.dateIsBeforeOrEqualTo(addDateSeparators(item.YYYYMMDD), date)) {
+          if (toYYYYMMDD(item.date) <= date) {
             if (item.province) {
               dataByProvince[item.province].deaths += 1
             }
@@ -92,13 +95,10 @@ module.exports = {
           }
         }
 
-        assert(
-          nationalData.cases > 0,
-          `Cases are not reasonable for date: ${date}`
-        )
+        assert(nationalData.cases > 0, `National cases not reasonable for ${date}`)
 
         return [ nationalData, ...Object.values(dataByProvince) ]
-      },
-    },
-  ],
+      }
+    }
+  ]
 }
