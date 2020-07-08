@@ -129,7 +129,7 @@ module.exports = {
         }
 
         const result = geography.addEmptyRegions(counties, _counties, 'county')
-        result.push(transform.sumData(result))
+        result.push({ ...transform.sumData(result), date: filterDate })
         return result
       }
     }
