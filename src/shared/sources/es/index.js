@@ -2,10 +2,10 @@ const assert = require("assert")
 const maintainers = require("../_lib/maintainers.js")
 const parse = require("../_lib/parse.js")
 const transform = require("../_lib/transform.js")
+const timeseriesFilter = require("../_lib/timeseries-filter.js")
 
 const country = "iso1:ES"
 
-const dateKey = "fecha"
 const stateKey = "CCAA"
 
 const nameToCanonical = {
@@ -84,10 +84,17 @@ module.exports = {
         },
       ],
       scrape (data, date, { getIso2FromName }) {
+
+        // ES uses YYYY-MM-DD for their reporting.
+        const toYYYYMMDD = (datestring) => datestring
+
         const statesByIso = {}
         for (const [ key, items ] of Object.entries(data)) {
+
+          const { filterDate, func } = timeseriesFilter(items, 'fecha', toYYYYMMDD, date)
+
           items
-            .filter((row) => row[dateKey] === date)
+            .filter(func)
             .forEach((row) => {
               const iso2 = getIso2FromName({
                 country,
@@ -97,6 +104,7 @@ module.exports = {
               })
               statesByIso[iso2] = statesByIso[iso2] || {}
               statesByIso[iso2][key] = parse.number(row.total)
+              statesByIso[iso2].date = filterDate
             })
         }
 
@@ -109,7 +117,7 @@ module.exports = {
         }
 
         const summedData = transform.sumData(states)
-        states.push(summedData)
+        states.push({ ...summedData, date: states[0].date })
         assert(
           summedData.cases > 0,
           `Cases are not reasonable for date: ${date}`
