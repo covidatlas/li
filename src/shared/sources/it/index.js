@@ -1,7 +1,7 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
-const datetime = require('../../datetime/index.js')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 const transform = require('../_lib/transform.js')
 const { UNASSIGNED } = require('../_lib/constants.js')
 
@@ -41,8 +41,11 @@ module.exports = {
         }
       ],
       scrape ($, date, { getIso2FromName }) {
+        function toYYYYMMDD (datestring) { return datestring.substr(0, 10) }
+        const { func } = timeseriesFilter($, 'data', toYYYYMMDD, date)
+
         const states = $
-          .filter(row => row.data.substr(0, 10) === datetime.getYYYYMMDD(date))
+          .filter(func)
           .map(row => ({
             state: getIso2FromName({ country, name: row.denominazione_regione, isoMap, nameToCanonical }),
             cases: parse.number(row.totale_casi),
