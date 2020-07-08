@@ -29,9 +29,15 @@ test('date earlier than earliest date throws', t => {
 })
 
 test('date later than latest date returns latest date for filter', t => {
-  const f = timeseriesFilter(data, 'd', getYYYYMMDD, '2020-07-07')
+  const f = timeseriesFilter(data, 'd', getYYYYMMDD, '2020-01-16')
   t.equal(f.filterDate, '2020-01-15', 'using latest date')
   t.deepEqual(data.filter(f.func), [ { d: '15 / Jan / 2020', a: 15 } ], 'correct record returned')
+  t.end()
+})
+
+// Warning for stale data.
+test('date more than 5 days after latest date throws', t => {
+  t.throws(() => timeseriesFilter(data, 'd', getYYYYMMDD, '2020-07-07'))
   t.end()
 })
 

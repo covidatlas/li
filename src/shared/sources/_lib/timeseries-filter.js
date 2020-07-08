@@ -43,6 +43,23 @@ module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date) 
 
   const latestDate = allDates.slice(-1)[0]
 
+
+  function daysDifference (later, earlier) {
+    const dateFromYYYYMMDD = s => {
+      const [ yyyy, mm, dd ] = s.split('-').map(s => parseInt(s, 10))
+      return new Date(yyyy, mm - 1, dd)
+    }
+    const msPerDay = 1000 * 60 * 60 * 24
+    const staleDays = (dateFromYYYYMMDD(later) - dateFromYYYYMMDD(earlier)) / msPerDay
+    return Math.floor(staleDays)
+  }
+
+  if (date > latestDate) {
+    const daysDiff = daysDifference(date, latestDate)
+    if (daysDiff > 7)
+      throw new Error(`stale timeseries data, latest date avail is ${latestDate} (${daysDiff} days old})`)
+  }
+
   let filterDate = date
   if (filterDate > latestDate)
     filterDate = latestDate
