@@ -1,7 +1,7 @@
 const assert = require('assert')
-const datetime = require('../../datetime/index.js')
 const maintainers = require('../_lib/maintainers.js')
 const transform = require('../_lib/transform.js')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 const parse = require('../_lib/parse.js')
 
 const country = 'iso1:IE'
@@ -18,7 +18,7 @@ module.exports = {
     name: 'Ireland Open Data Portal',
     url: 'https://data.gov.ie/',
   },
-  maintainers: [ maintainers.qgolsteyn, maintainers.camjc ],
+  maintainers: [ maintainers.qgolsteyn, maintainers.camjc, maintainers.jzohrab ],
   scrapers: [
     {
       startDate: '2020-02-27',
@@ -29,29 +29,34 @@ module.exports = {
         }
       ],
       scrape ($, date, { getIso2FromName }) {
-        const casesByState = {}
+        // Sample TimeStamp: 2020/02/27 00:00:00+00
+        const toYYYYMMDD = (s) => s.split(' ')[0].replace(/\//g, '-')
+        const { func, filterDate } = timeseriesFilter($, 'TimeStamp', toYYYYMMDD, date)
 
-        for (const item of $) {
-          const itemDate = datetime.parse(
-            item["TimeStamp"].replace(/\//g, "-")
-          )
-          if (itemDate.startsWith(date)) {
-            casesByState[item.CountyName] = parse.number(item.ConfirmedCovidCases)
+        const states = $.filter(func).map(item => {
+          return {
+            state: getIso2FromName({ country, name: item.CountyName, isoMap }),
+            cases: parse.number(item.ConfirmedCovidCases),
+            date: filterDate
+
+            // Deaths and recovered are both empty in this and other arcgis data;
+            // better to not report than to report bad data.
+            // deaths: parse.number(item.ConfirmedCovidDeaths),
+            // recovered: parse.number(item.ConfirmedCovidRecovered),
           }
-        }
+        })
 
-        const states = []
-        for (const stateName of Object.keys(casesByState)) {
-          states.push({
-            state: getIso2FromName({ country, name: stateName, isoMap }),
-            cases: casesByState[stateName]
-          })
+        const emptyCountryRecord = {
+          country,
+          date: filterDate,
+          cases: 0,
+          // deaths: 0,
+          // recovered: 0
         }
-
-        const summedData = transform.sumData(states)
+        const summedData = Object.assign(emptyCountryRecord, transform.sumData(states))
         states.push(summedData)
 
-        assert(summedData.cases > 0, 'Cases are not reasonable for date: ' + date)
+        assert(summedData.cases >= 0, 'Cases are not reasonable for date: ' + date)
         return states
       }
     }
