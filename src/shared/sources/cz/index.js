@@ -1,6 +1,7 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:CZ'
@@ -21,7 +22,7 @@ module.exports = {
     name: 'Ministry of Health of the Czech Republic',
     url: 'https://onemocneni-aktualne.mzcr.cz/',
   },
-  maintainers: [ maintainers.camjc ],
+  maintainers: [ maintainers.camjc, maintainers.jzohrab ],
   scrapers: [
     {
       startDate: '2020-02-29',
@@ -40,17 +41,15 @@ module.exports = {
       scrape ({ cases, tested }, date) {
         const casesByRegion = {}
 
-        for (const item of cases) {
-          if (item[dateKeyForCasesCsv] === date) {
-            casesByRegion[item[regionKey]] = 1 + (casesByRegion[item[regionKey]] || 0)
-          }
+        const cfilt = timeseriesFilter(cases, dateKeyForCasesCsv, (s) => s, date)
+        for (const item of cases.filter(cfilt.func)) {
+          casesByRegion[item[regionKey]] = 1 + (casesByRegion[item[regionKey]] || 0)
         }
 
         let numTests
-        for (const item of tested) {
-          if (item[dateKeyForTestCSV] === date) {
-            numTests = parse.number(item[testsKey])
-          }
+        const tfilt = timeseriesFilter(tested, dateKeyForTestCSV, (s) => s, date)
+        for (const item of tested.filter(tfilt.func)) {
+          numTests = parse.number(item[testsKey])
         }
 
         const data = []
