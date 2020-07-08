@@ -1,8 +1,8 @@
 // Migrated from coronadatascraper, src/shared/scrapers/US/NY/index.js
 
 const srcShared = '../../../'
-const datetime = require(srcShared + 'datetime/index.js')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
+const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
@@ -74,12 +74,6 @@ const _counties = [
 ]
 
 
-/** Convert NY data 'Test Date' (eg, '03/02/2020') to yyyy-mm-dd. */
-function convertToYYYYMMDD (datestring) {
-  const [ m, d, y ] = datestring.split('/')
-  return [ y, m, d ].join('-')
-}
-
 module.exports = {
   state: 'iso2:US-NY',
   country: 'iso1:US',
@@ -100,27 +94,20 @@ module.exports = {
         },
       ],
       scrape (data, date) {
-        // Disregarding timezone.  NY only reports things by date, so
-        // there is no reason to assume that we need to shift data by
-        // an offset.
-        data = data.map(d => Object.assign(d, { YYYYMMDD: convertToYYYYMMDD(d['Test Date']) }))
 
-        // Filter to only scrape the latest date ...
-        const allDates = [ ...new Set(data.map(d => d.YYYYMMDD)) ].sort()
-        const latestDate = allDates.slice(-1)[0]
+        function toYYYYMMDD (datestring) {
+          const [ m, d, y ] = datestring.split('/')
+          return [ y, m, d ].join('-')
+        }
 
-        let filterDate = datetime.getYYYYMMDD(date)
-        if (filterDate > latestDate)
-          filterDate = latestDate
-        console.log(`scraping data from ${filterDate}`)
-        const todaysData = d => (d.YYYYMMDD === filterDate)
+        const { filterDate, func } = timeseriesFilter(data, 'Test Date', toYYYYMMDD, date)
 
-        const counties = data.filter(todaysData).map(row => {
+        const counties = data.filter(func).map(row => {
           return {
             county: geography.addCounty(parse.string(row.County)),
             cases: parse.number(row['Cumulative Number of Positives']),
             tested: parse.number(row['Cumulative Number of Tests Performed']),
-            date: row.YYYYMMDD    // Explicitly set the date.
+            date: filterDate    // Explicitly set the date.
           }
         })
 
