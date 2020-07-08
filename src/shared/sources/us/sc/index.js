@@ -137,7 +137,7 @@ module.exports = {
             const dashboardId = '3732035614af4246877e20c3a496e397'
             const layerName = 'COVID19_County_Polygon_SharingView2'  // they started updating this view
             const ret = await arcgis.csvUrl(client, serverNumber, dashboardId, layerName)
-            return ret
+            return { url: ret }
           }
         },
       ],
@@ -170,8 +170,28 @@ module.exports = {
         counties.push(transform.sumData(counties))
         return counties
       }
+    },
+    {
+      startDate: '2020-07-08',
+      crawl: [
+        {
+          type: 'json',
+          url: 'https://services2.arcgis.com/XZg2efAbaieYAXmu/ArcGIS/rest/services/COVID19/FeatureServer/0/query?where=1%3D1&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&returnGeometry=false&outFields=NAME%2C+Confirmed%2C+Recovered%2C+Death&resultOffset=0&resultRecordCount=1000&returnExceededLimitFeatures=true&f=pjson'
+        }
+      ],
+      scrape (data) {
+        let counties = data.features.map(f => f.attributes).
+              map(i => {
+                return {
+                  county: geography.addCounty(i.NAME),
+                  cases: parse.number(i.Confirmed),
+                  deaths: parse.number(i.Death)
+                }
+              })
+        counties = geography.addEmptyRegions(counties, _counties, 'county')
+        counties.push(transform.sumData(counties))
+        return counties
+      }
     }
-
-    // TODO (scrapers) us-sc no longer works as at 2020-06-08
   ]
 }
