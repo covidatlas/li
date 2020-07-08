@@ -24,6 +24,23 @@
  *   }
  *
  * See test cases for more examples.
+ *
+ ** USAGE:
+
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
+
+scrape (data, date) {
+
+  // NY reports data as MM-DD-YYYY (e.g, '05-27-2020')
+  function toYYYYMMDD (datestring) {
+    const [ m, d, y ] = datestring.split('/')
+    return [ y, m, d ].join('-')
+  }
+
+  const { filterDate, func } = timeseriesFilter(data, 'Test Date', toYYYYMMDD, date)
+
+  const counties = data.filter(func).map(row => {
+
  */
 module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date) {
   const result = {
