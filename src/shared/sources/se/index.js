@@ -1,7 +1,7 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const transform = require('../_lib/transform.js')
-const datetime = require('../../datetime/index.js')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 
 const country = 'iso1:SE'
 
@@ -51,16 +51,20 @@ module.exports = {
       ],
       scrape ($, date, { assertTotalsAreReasonable, getIso2FromName, cumulateObjects }) {
         assert($.features.length > 0, 'data is unreasonable')
+
+        // SE reports data as epoch ms (e.g., 1593561600000 for 2020-07-01T00:00:00.000Z)
+        function toYYYYMMDD (n) {
+          return new Date(n).toISOString().split('T')[0]
+        }
+
         const attributes = $.features
-          .map(({ attributes }) => attributes)
-          .filter((item) => datetime.dateIsBeforeOrEqualTo(item[datetimeKey], date))
+              .map(({ attributes }) => attributes)
+              .filter((item) => toYYYYMMDD(item[datetimeKey]) <= date)
+        assert(attributes.length > 0, `data fetch failed, no attributes before or at date: ${date}`)
 
-        assert(attributes.length > 0, `data fetch failed, no attributes for date: ${date}`)
-
-        const datesAttributes = attributes.find(item =>
-          date === datetime.getYYYYMMDD(item[datetimeKey])
-        )
-        assert(datesAttributes, `No data for date: ${date}`)
+        const { filterDate, func } = timeseriesFilter(attributes, datetimeKey, toYYYYMMDD, date)
+        const datesAttributes = attributes.filter(func)[0]
+        assert(datesAttributes, `No data for date: ${filterDate}`)
 
         const cumulatedObject = cumulateObjects(attributes)
 
@@ -69,7 +73,8 @@ module.exports = {
           if (!nonStateKeys.includes(key)) {
             states.push({
               state: getIso2FromName({ country, name: key.replace('_', ' '), isoMap, nameToCanonical }),
-              cases: value
+              cases: value,
+              date: filterDate
             })
           }
         }
@@ -77,6 +82,7 @@ module.exports = {
         const summedData = transform.sumData(states, {
           deaths: datesAttributes[deathsKey],
           ICU: datesAttributes[icuKey],
+          date: filterDate
         })
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: datesAttributes[casesKey] })
         states.push(summedData)
