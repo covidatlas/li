@@ -1,9 +1,8 @@
 /**
  * CloudFormation generated bucket names
  */
-module.exports = function getReportsBucket () {
-  const isProduction = process.env.NODE_ENV === 'production'
-  if (!isProduction)
-    return 'listaging-reportsbucket-1bjqfmfwopcdd'
-  return 'liproduction-reportsbucket-bhk8fnhv1s76'
+module.exports = function getReportsBucket (environment = process.env.NODE_ENV) {
+  return (environment !== 'production') ?
+    'listaging-reportsbucket-1bjqfmfwopcdd' :
+    'liproduction-reportsbucket-bhk8fnhv1s76'
 }
