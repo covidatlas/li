@@ -30,6 +30,12 @@ Generate analysis file.
 node analyze-reports.js
 ```
 
+Check a single `locationID` in the downloaded file.
+
+```
+node get-location-timeseries.js iso1:at#iso2:at-1
+```
+
 Import generated files into Google sheets and do analysis.
 
 ## Sample Google spreadsheet with analysis
