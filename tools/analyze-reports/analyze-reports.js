@@ -1,5 +1,3 @@
-const aws = require('aws-sdk')
-const reportsBucket = require('../../src/shared/utils/reports-bucket.js')
 const fs = require('fs')
 const path = require('path')
 const stringify = require('csv-stringify/lib/sync')
@@ -8,31 +6,6 @@ const stringify = require('csv-stringify/lib/sync')
 /**
  * Utils
  */
-
-
-/** Download file from s3 */
-async function downloadFile (bucketName, key, saveTo) {
-  const params = {
-    Bucket: bucketName,
-    Key: key
-  }
-  const s3 = new aws.S3()
-  console.log(`downloading ${key} from ${bucketName} ...`)
-  let data = null
-  try {
-    data = await s3.getObject(params).promise()
-    console.log('done')
-  }
-  catch (err) {
-    console.log('error')
-    console.log(err)
-    throw err
-  }
-
-  const saveToFilePath = path.join(saveTo, key.split('/').slice(-1)[0])
-  fs.writeFileSync(saveToFilePath, data.Body.toString())
-  console.log(`Wrote ${saveToFilePath}`)
-}
 
 
 /** Get array of dates covering all timeseries dates for all locations. */
@@ -91,16 +64,8 @@ function analyzeTimeseriesByLocation (locations) {
 
 
 async function main () {
-  const saveTo = path.join(__dirname, 'downloadedReports')
-  if (!fs.existsSync(saveTo)){
-    fs.mkdirSync(saveTo)
-  }
-
-  if (process.argv.length === 3 && process.argv[2] === '--download') {
-    await downloadFile(reportsBucket(), 'beta/latest/timeseries-byLocation.json', saveTo)
-  }
-
-  const fp = path.join(saveTo, 'timeseries-byLocation.json')
+  const downloadPath = path.join(__dirname, 'downloadedReports')
+  const fp = path.join(downloadPath, 'timeseries-byLocation.json')
   const json = JSON.parse(fs.readFileSync(fp))
   analyzeTimeseriesByLocation(json)
 }
