@@ -9,6 +9,15 @@ TBD docs
 
 ## Usage
 
+Install everything.
+
+```
+cd /to/parent/tools/directory
+npm install
+```
+
+Generate analysis files.
+
 ```
 cd /to/this/directory
 
@@ -18,3 +27,5 @@ node analyze-reports.js --download
 # Analyze without download
 node analyze-reports.js
 ```
+
+Import generated files into Google sheets and do analysis.
