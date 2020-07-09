@@ -11,25 +11,27 @@ const stringify = require('csv-stringify/lib/sync')
 
 
 /** Download file from s3 */
-function downloadFile (bucketName, key, saveTo) {
-  const saveToFilePath = path.join(saveTo, key.split('/').slice(-1)[0])
-
+async function downloadFile (bucketName, key, saveTo) {
   const params = {
     Bucket: bucketName,
     Key: key
   }
-
-  console.log(`downloading ${key} from ${bucketName} ...`)
   const s3 = new aws.S3()
-  s3.getObject(params, (err, data) => {
-    if (err) {
-      console.error(err)
-      throw err
-    }
+  console.log(`downloading ${key} from ${bucketName} ...`)
+  let data = null
+  try {
+    data = await s3.getObject(params).promise()
+    console.log('done')
+  }
+  catch (err) {
+    console.log('error')
+    console.log(err)
+    throw err
+  }
 
-    fs.writeFileSync(saveToFilePath, data.Body.toString())
-    console.log(`Wrote ${saveToFilePath}`)
-  })
+  const saveToFilePath = path.join(saveTo, key.split('/').slice(-1)[0])
+  fs.writeFileSync(saveToFilePath, data.Body.toString())
+  console.log(`Wrote ${saveToFilePath}`)
 }
 
 
@@ -88,15 +90,20 @@ function analyzeTimeseriesByLocation (locations) {
  */
 
 
-const saveTo = path.join(__dirname, 'downloadedReports')
-if (!fs.existsSync(saveTo)){
-  fs.mkdirSync(saveTo)
+async function main () {
+  const saveTo = path.join(__dirname, 'downloadedReports')
+  if (!fs.existsSync(saveTo)){
+    fs.mkdirSync(saveTo)
+  }
+
+  if (process.argv.length === 3 && process.argv[2] === '--download') {
+    await downloadFile(reportsBucket(), 'beta/latest/timeseries-byLocation.json', saveTo)
+  }
+
+  const fp = path.join(saveTo, 'timeseries-byLocation.json')
+  const json = JSON.parse(fs.readFileSync(fp))
+  analyzeTimeseriesByLocation(json)
 }
 
-if (process.argv.length === 3 && process.argv[2] === '--download') {
-  downloadFile(reportsBucket(), 'beta/latest/timeseries-byLocation.json', saveTo)
-}
 
-const fp = path.join(saveTo, 'timeseries-byLocation.json')
-const json = JSON.parse(fs.readFileSync(fp))
-analyzeTimeseriesByLocation(json)
+main()
