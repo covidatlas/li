@@ -1,5 +1,5 @@
 const aws = require('aws-sdk')
-const reportsBucket = require('../../src/shared/utils/reports-bucket.js')
+const getReportsBucket = require('../../src/shared/utils/reports-bucket.js')
 const fs = require('fs')
 const path = require('path')
 
@@ -45,7 +45,7 @@ async function main () {
     fs.mkdirSync(saveTo)
   }
 
-  await downloadFile(reportsBucket(), 'beta/latest/timeseries-byLocation.json', saveTo)
+  await downloadFile(getReportsBucket('production'), 'beta/latest/timeseries-byLocation.json', saveTo)
 }
 
 
