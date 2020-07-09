@@ -16,15 +16,17 @@ cd /to/parent/tools/directory
 npm install
 ```
 
-Generate analysis files.
+For the rest, `cd analyze-reports`.
+
+Download reports.
 
 ```
-cd /to/this/directory
+node download.js
+```
 
-# Download the file(s) from s3 prior to analysis
-node analyze-reports.js --download
+Generate analysis file.
 
-# Analyze without download
+```
 node analyze-reports.js
 ```
 
