@@ -18,6 +18,7 @@ exports.handler = async function regenerateTimeseries () {
   const source = await findNextInvoke(sources)
 
   if (source) {
+    console.log(`publishing generator event, with source = ${source}`)
     await arc.events.publish({
       name: 'regenerator',
       payload: {

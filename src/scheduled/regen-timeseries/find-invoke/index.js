@@ -19,11 +19,14 @@ module.exports = async function findNextInvoke (sources) {
   const newInvokes = sources.
         filter(s => !invokes.some(i => i.key === s._sourceKey)).
         map(s => { return { type, key: s._sourceKey } })
+  console.log(`newInvokes: ${JSON.stringify(newInvokes)}`)
   for (const i of newInvokes)
     await data.invokes.put(i)
 
   const invokeCandidates = invokes.concat(newInvokes)
+  console.log(`invokeCandidates: ${JSON.stringify(invokeCandidates)}`)
   const next = nextInvoke(invokeCandidates)
+  console.log(`next: ${JSON.stringify(next)}`)
 
   if (!next) {
     return
