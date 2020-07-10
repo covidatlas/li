@@ -39,7 +39,7 @@ test('gets first non-invoked by alpha even if invoked is very old', t => {
   t.end()
 })
 
-/*
+
 test('gets source that was invoked earliest', t => {
   const invokes = getInvokes([
     [ 'a', '1971-01-01T00:00:00.000Z' ],
@@ -76,4 +76,3 @@ test('returns null if execution was < 12 hours ago', t => {
   t.equal(nextInvoke(invokes, '2020-06-06T19:00:00.000Z'), null, '< 12 hrs')
   t.end()
 })
-*/
