@@ -19,8 +19,8 @@ module.exports = function nextInvoke (invokes, nowISOString) {
   twelveHrsAgo = new Date(twelveHrsAgo).toISOString()
 
   const invokesByStaleness = invokes.
-        sort(byDateThenKey).
-        filter(i => (!i.lastInvoke || i.lastInvoke < twelveHrsAgo))
+        filter(i => (!i.lastInvoke || i.lastInvoke < twelveHrsAgo)).
+        sort(byDateThenKey)
 
   if (invokesByStaleness.length === 0)
     return null
