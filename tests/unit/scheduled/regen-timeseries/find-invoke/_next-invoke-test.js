@@ -15,3 +15,14 @@ test('if nothing has been invoked get the next by alphabet', t => {
   t.equal(nextInvoke(invokes), 'a', 'return first')
   t.end()
 })
+
+
+test('get first non-invoked by alphabet', t => {
+  const invokes = getInvokes([
+    [ 'a', new Date().toISOString() ],
+    [ 'b', null ]
+  ])
+
+  t.equal(nextInvoke(invokes), 'b', 'not invoked yet')
+  t.end()
+})

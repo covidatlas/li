@@ -2,5 +2,13 @@
 
 module.exports = function nextInvoke (invokes) {
 
-  return invokes[0].key
+  const next = invokes.find(i => {
+    // Never regenerate more than every 12 hours
+    const meow = new Date()
+    let aBitAgo = meow.setHours(meow.getHours() - 12)
+    aBitAgo = new Date(aBitAgo).toISOString()
+    return !i.lastInvoke || aBitAgo > i.lastInvoke
+  })
+
+  return next.key
 }
