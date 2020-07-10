@@ -32,7 +32,7 @@ module.exports = async function fireEvents (source) {
           }
         })
       }, queue)
-      queue += 1000
+      queue += 200
     })
   })
 
