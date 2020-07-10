@@ -5,7 +5,8 @@ const transform = require('../_lib/transform.js')
 const country = 'iso1:NG'
 
 const nameToCanonical = { // Name differences get mapped to the canonical names
-  'Nassarawa': 'Nasarawa'
+  'FCT': 'Federal Capital Territory',
+  'Nassarawa': 'Nasarawa',
 }
 
 module.exports = {
