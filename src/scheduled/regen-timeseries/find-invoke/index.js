@@ -34,9 +34,9 @@ module.exports = async function findNextInvoke (sources) {
 
   await data.invokes.put({
     type,
-    key: next.key,
+    key: next,
     lastInvoke: new Date().toISOString()
   })
 
-  return next.key
+  return next
 }
