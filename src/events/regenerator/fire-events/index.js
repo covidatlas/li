@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
 const sorter = require('@architect/shared/utils/sorter.js')
 const datetime = require('@architect/shared/datetime/index.js')
+const getDatesRange = require('./_get-date-range.js')
 
 module.exports = async function fireEvents (source) {
   const { scrapers } = source
@@ -10,12 +11,7 @@ module.exports = async function fireEvents (source) {
 
   // In the future perhaps we can do something smarter than starting from startDate
   const today = new Date()
-  const d = new Date(earliest)
-  let dates = []
-  while (d < today) {
-    d.setDate(d.getDate() + 1)
-    dates.push(datetime.getYYYYMMDD(d))
-  }
+  const dates = getDatesRange(earliest, datetime.getYYYYMMDD(today))
 
   // The return of el cheapo queue
   let queue = 0
