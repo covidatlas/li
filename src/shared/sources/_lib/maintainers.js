@@ -83,5 +83,15 @@ module.exports = {
     state: 'Seoul',
     city: 'Gwanak-gu',
     flag: '🇰🇷'
+},
+  appastair: {
+    name: 'Alastair Gilfillan',
+    email: 'alastair@alastair.pro',
+    github: 'appastair',
+    twitter: 'Appastair',
+    country: 'iso1:AU',
+    state: 'New South Wales',
+    city: 'Sydney',
+    flag: '🇦🇺'
   }
 }
