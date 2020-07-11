@@ -246,7 +246,7 @@ module.exports = {
         assert.equal(missing.length, 0, msg)
         const counties = []
         const filteredData = data.filter(d => {
-          return ![ 'OUT OF STATE', 'UNKNOWN', '' ].includes(d.FULL_)
+          return ![ 'OUT OF STATE', 'UNKNOWN', 'INTERNATIONAL', '' ].includes(d.FULL_)
         })
         for (const county of filteredData) {
           counties.push({
