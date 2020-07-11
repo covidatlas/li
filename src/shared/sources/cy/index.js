@@ -43,7 +43,7 @@ module.exports = {
             cases: parse.number(d["total cases"]),
             deaths: parse.number(d["total deaths"]),
             recovered: parse.number(d["total recovered"]),
-            tested: parse.number(d["total tests"]),
+            tested: d["total tests"] === ":" ? undefined : parse.number(d["total tests"]),
             date: filterDate,
           }
         })
