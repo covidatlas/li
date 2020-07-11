@@ -24,7 +24,7 @@ function getScrapeDateField (cases, date) {
   }
   const firstDate = datetime.getYYYYMMDD(new Date(`${dates[ 0 ]} 12:00:00`))
   if (scrapeDate < firstDate) {
-    throw new Error(`Timeseries starts later than ${scrapeDate}`)
+    throw new Error(`Requested date ${scrapeDate} < earliest date ${firstDate}`)
   }
 
   const parts = scrapeDate.split('-').map(s => parseInt(s, 10))
@@ -50,7 +50,7 @@ module.exports = {
   ],
   scrapers: [
     {
-      startDate: '2020-03-18',
+      startDate: '2020-01-23',
       crawl: [
         {
           type: 'csv',
