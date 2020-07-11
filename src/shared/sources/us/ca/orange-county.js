@@ -6,18 +6,18 @@ const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
 
 // Nice div'd layout on screen = annoying to get values.
-function getHeadingValue ($, heading) {
+function getHeadingValue ($, heading, selector = 'div.panel-body > h1') {
   const h2s = $('h2').toArray()
   const h2 = h2s.find(
-    h => $(h).text().trim().includes(heading)
+    h => $(h).text().trim().toLowerCase().includes(heading.toLowerCase())
   )
   assert(h2, `Found h2 with text ${heading}`)
   const cell = $(h2)
         .parent()
         .parent()
-        .find('div.panel-body > h1')
+        .find(selector)
   const txt = cell.text()
-  assert(txt !== '', 'Have non-empty cell')
+  assert(txt !== '', `Should have non-empty cell for heading "${heading}" under "${selector}"`)
   return parse.number(txt)
 }
 
@@ -95,6 +95,25 @@ module.exports = {
           cases: getHeadingValue($, 'Cumulative Cases to Date'),
           deaths: getHeadingValue($, 'Cumulative Deaths to Date'),
           tested: getHeadingValue($, 'Cumulative Tests To Date')
+        }
+      }
+    },
+    {
+      startDate: '2020-06-27',
+      crawl: [
+        {
+          type: 'page',
+          url: 'https://occovid19.ochealthinfo.com/coronavirus-in-oc',
+        },
+      ],
+      scrape ($) {
+        return {
+          cases: getHeadingValue($, 'Cumulative Cases to Date', 'div.panel-heading > h3'),
+          deaths: getHeadingValue($, 'Cumulative Deaths to Date', 'div.panel-heading > h3'),
+          tested: getHeadingValue($, 'Cumulative Tests To Date', 'div.panel-heading > h3'),
+          recovered: getHeadingValue($, 'Cumulative Recovered to Date', 'div.panel-heading > h3'),
+          hospitalized_current: getHeadingValue($, 'Cases Currently Hospitalized', 'div.panel-heading > h3'),
+          icu_current: getHeadingValue($, 'Cases Currently in ICU', 'div.panel-heading > h3'),
         }
       }
     }

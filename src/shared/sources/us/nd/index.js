@@ -140,22 +140,38 @@ module.exports = {
         },
       ],
       scrape (data) {
-        const counties = data.map((location) => {
-          return {
-            county:
-              location.County === "Unknown"
-                ? UNASSIGNED
-                : geography.addCounty(location.County),
-            cases: parse.number(location["Total Positive"]),
-            tested: parse.number(location["Total Tested"]),
-            // TODO: Recovered and Deaths exist now
+        const counties = data.map((rec) => {
+          // Base result.
+          const result = {
+            county: rec.County === "Unknown" ? UNASSIGNED : geography.addCounty(rec.County),
+            cases: parse.number(rec['Total Positive'])
           }
+
+          // The csv file has different headings depending on the
+          // date.  I don't feel it's worth it having separate
+          // scrapers for every date, so I'll handle the variable
+          // headings in this one scraper.
+          const mappings = [
+            [ 'Total Tested', 'tested' ],
+            [ 'Unique Individuals Tested', 'tested' ],
+            [ 'Total Recovered', 'recovered' ],
+            [ 'Deaths', 'deaths' ]
+          ]
+
+          return mappings.reduce((hsh, mapping) => {
+            const [ src, dest ] = mapping
+            if (rec[src] !== undefined)
+              hsh[dest] = parse.number(rec[src])
+            return hsh
+          }, result)
         })
+
         const summedData = transform.sumData(counties)
         counties.push(summedData)
         assert(summedData.cases > 0, "Cases are not reasonable")
+
         return geography.addEmptyRegions(counties, _counties, "county")
-      },
-    },
-  ],
+      }
+    }
+  ]
 }

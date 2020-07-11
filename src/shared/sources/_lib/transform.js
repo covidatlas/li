@@ -1,4 +1,4 @@
-// const datetime = require('./datetime/index.js')
+const caseFields = require('../../constants/case-data-fields.js')
 
 module.exports = {
   getGrowthfactor,
@@ -65,16 +65,6 @@ function removePrivate (data) {
  * Sum the passed array of data into a single object with the properties of the optional, second argument
  */
 function sumData (dataArray, object) {
-  const caseFields = [
-    'cases',
-    'recovered',
-    'active',
-    'deaths',
-    'tested',
-    'hospitalized',
-    'icu',
-    'discharged'
-  ]
   const summedData = { ...object }
   for (const data of dataArray) {
     for (const field of caseFields) {
