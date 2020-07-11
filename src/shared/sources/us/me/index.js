@@ -82,6 +82,35 @@ module.exports = {
       assert(summedData.cases > 0, 'Cases are not reasonable')
       return counties
       }
+    },
+    {
+      startDate: '2020-07-10',
+      crawl: [
+        {
+          type: 'csv',
+          url: 'https://docs.google.com/spreadsheets/d/13Rbm5zKKLTFNyLZ2Z9YYHc5v6YpO_erMz1pZwiUtfiQ/gviz/tq?tqx=out:csv&sheet=cases_by_county'
+        },
+      ],
+      scrape (data) {
+        const counties = data.map(d => {
+          let county = geography.addCounty(d.PATIENT_COUNTY)
+          if (county === 'Unknown County')
+            county = UNASSIGNED
+          return {
+            county,
+            cases: parse.number(d.CASES),
+            deaths: parse.number(d.DEATHS),
+            recovered: parse.number(d.RECOVERIES),
+            hospitalized: parse.number(d.HOSPITALIZATIONS),
+            date: d.DATA_AS_OF_DT
+          }
+        })
+
+        const summedData = transform.sumData(counties)
+        counties.push({ ...summedData, date: counties[0].date })
+        assert(summedData.cases > 0, 'Cases are not reasonable')
+        return counties
+      }
     }
   ]
 }
