@@ -67,9 +67,11 @@ function rollup (timeseries, levelsAndIds, locationID, level) {
   const cDates = children.map(c => Object.keys(c.timeseries)).flat()
   const dates = [ ...new Set(cDates) ].sort()
   for (const d of dates) {
-    result.timeseries[d] = sumChildRecords(children, d)
-    result.timeseriesSources[d] = 'rollup'
-    result.sources = [ 'rollup' ]
+    if (!result.timeseries[d]) {
+      result.timeseries[d] = sumChildRecords(children, d)
+      result.timeseriesSources[d] = 'rollup'
+      result.sources = [ 'rollup' ]
+    }
   }
 
   return result
