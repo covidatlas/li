@@ -92,20 +92,39 @@ function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
 }
 
 
-test.only('single record rolls up to parents if parents do not exist', t => {
+test('single record rolls up to parents if parents do not exist', t => {
   records = makeRecords([
-    [ 'c1#s1#f1', '2020-06-19', 'src1', { cases: 10 } ]
+    [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ]
   ])
   const actual = addRollups(buildTimeseries(records))
 
   const expectedRecords = makeRecords([
     // Rollup of children
     [ 'c1',       '2020-06-19', 'rollup', { cases: 10 } ],
-    // Rollup of children
-    [ 'c1#s1',    '2020-06-19', 'rollup', { cases: 10 } ],
-
     // The source record.
-    [ 'c1#s1#f1', '2020-06-19', 'src1',   { cases: 10 } ]
+    [ 'c1#s1', '2020-06-19', 'src1',   { cases: 10 } ]
+  ])
+  const expected = buildTimeseries(expectedRecords)
+
+  assertTimeseriesEqual(t, actual, expected)
+  t.end()
+})
+
+
+test.only('two child records on same date roll up to parents if parents do not exist', t => {
+  records = makeRecords([
+    [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+    [ 'c1#s2', '2020-06-19', 'src1', { cases: 20 } ]
+  ])
+  const actual = addRollups(buildTimeseries(records))
+
+  const expectedRecords = makeRecords([
+    // Child records from above
+    [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+    [ 'c1#s2', '2020-06-19', 'src1', { cases: 20 } ],
+
+    // Rollup of children
+    [ 'c1',       '2020-06-19', 'rollup', { cases: 30 } ],
   ])
   const expected = buildTimeseries(expectedRecords)
 
