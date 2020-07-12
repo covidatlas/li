@@ -74,11 +74,18 @@ function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
   const a = toString(actual)
   const e = toString(expected)
 
+  // Print out results side-by-side.
   if (a !== e) {
-    console.log('ACTUAL:')
-    console.log(a)
-    console.log('\nEXPECTED:')
-    console.log(e)
+    const actualOut = [ 'ACTUAL', '='.repeat(30) ].concat(a.split('\n'))
+    const expectedOut = [ 'EXPECTED', '='.repeat(30) ].concat(e.split('\n'))
+    while (actualOut.length < expectedOut.length)
+      actualOut.push('')
+    while (expectedOut.length < actualOut.length)
+      expectedOut.push('')
+
+    for (let i = 0; i < actualOut.length; i++) {
+      console.log(actualOut[i].padEnd(40, ' ') + expectedOut[i])
+    }
   }
 
   t.equal(a, e, msg)
