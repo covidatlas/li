@@ -1,43 +1,33 @@
 # Analyze reports
 
-TBD docs
+A handful of scripts to analyze generated reports.
+
+This is very much work-in-progress.  Ideally checks would be converted to AWS Lambdas and auto-generated reports for continuous checks.
 
 
-## WORK-IN-PROGRESS - things we can do
+## Installation
 
-
-
-## Usage
-
-Install everything.
+Install everything:
 
 ```
-cd /to/parent/tools/directory
+cd tools
 npm install
+cd analyze-reports
 ```
 
-For the rest, `cd analyze-reports`.
+## Scripts
 
-Download reports.
+| Script | Description |
+| --- | --- |
+| `node download.js` | Download report from production reports bucket. |
+| `node analyze-reports.js` | Generate analysis file. |
+| `node get-location-timeseries.js iso1:at#iso2:at-1` | Check a single `locationID` in the downloaded file. |
 
-```
-node download.js
-```
 
-Generate analysis file.
+## Google spreadsheet analysis
 
-```
-node analyze-reports.js
-```
+Import any generated files into Google sheets and hack away.
 
-Check a single `locationID` in the downloaded file.
+Sample Link: https://docs.google.com/spreadsheets/d/1Xeq7nJdEbXtYpDR9LlXva2pZJfjNJtonDn7vSKuTFX0/edit#gid=766064631
 
-```
-node get-location-timeseries.js iso1:at#iso2:at-1
-```
-
-Import generated files into Google sheets and do analysis.
-
-## Sample Google spreadsheet with analysis
-
-Link: https://docs.google.com/spreadsheets/d/1Xeq7nJdEbXtYpDR9LlXva2pZJfjNJtonDn7vSKuTFX0/edit#gid=766064631
+Ideally, these reports and analysis would be created on automatic jobs and be posted to live somewhere.
