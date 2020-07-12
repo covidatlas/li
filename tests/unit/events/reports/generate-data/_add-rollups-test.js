@@ -166,7 +166,29 @@ const testcases = [
       [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
       [ 'c1#s2', '2020-06-19', 'src1', { cases: 20 } ]
     ]
+  },
+
+  {
+    title: 'parent record is merged with child record if child records supply missing data',
+
+    records: [
+      [ 'c1', '2020-06-19', 'src1', { cases: 50 } ],
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10, deaths: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { deaths: 20 } ]
+    ],
+
+    createsRollup: [
+      // Parent record is left alone.
+      [ 'c1', '2020-06-19', 'src1', { cases: 50 } ],
+      // The rollup created is _as-if- a synthetic record were added for the parent.
+      [ 'c1', '2020-06-19', 'rollup', { deaths: 30 } ],
+
+      // Source records
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10, deaths: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { deaths: 20 } ]
+    ]
   }
+
 
 ]
 
@@ -190,9 +212,6 @@ testcases.filter(tc => !tc.deactivated).forEach(tc => {
 
 
 /*
-single location
-
-rollup of two locations to higher level
 
 top level, mid level has data, bottom level also has data ... uses
 data from middle.
@@ -202,8 +221,6 @@ can even handle city-level data, though that's unusual
 two locations with data at different dates rolling up to higher
 
 two locations rolling up to different top level
-
-if higher level data is present, it's left alone
 
 higher has some data but not all (eg has cases but not deaths) gets
 data from lower cases (eg for deaths); sources includes 'rollup'
