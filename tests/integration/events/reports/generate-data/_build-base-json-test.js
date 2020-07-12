@@ -49,31 +49,24 @@ test('smoke test report with single location', async t => {
 
   const params = { _sourcesPath: sourcesPath }
   const actual = await getBaseJson(params, updateStatus)
-  t.equal(actual.length, 1, 'single record in report')
 
   t.deepEqual(statusUpdates, [ '0 of 1' ], 'location status updates sent')
 
-  const j = JSON.stringify(actual, null, 2).
-        split('\n').
-        // Substack tape or the postprocessing hides lines that have '..' --
-        // hacking around to get it to show up.
-        map(s => s.replace('2020-05-21..2020-05-22', '2020-05-21 .. 2020-05-22')).
-        join('\n')
-  console.log(j)
+  // Generated json has timestamps in it which is not deterministic,
+  // replace with generic tokens.
+  function clean (h, debugTitle) {
+    const s = JSON.stringify(h, null, 2).
+          replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/g, '__DATETIME__').
+          replace(/\.\./g, ' .. ')  // Required, or tape hides the lines!
 
-  // Note: don't check the detail, just basic structure. Other tests
-  // check dynamoDB writes and timeseries generation.
-  const first = actual[0]
-  t.ok(first.locationID, 'have location ID')
-  t.equal(first.locationID, 'iso1:us#iso2:us-ca#fips:06007')
-  t.ok(first.timeseries, 'have timeseries key')
-  t.equal(expectedDates.sort().join(), Object.keys(first.timeseries).sort().join(), 'all timeseries dates present')
-  t.ok(first.timeseriesSources, 'have timeseriesSources key')
-  t.ok(Object.keys(first.timeseriesSources).length > 0, `have timeseriesSources keys`)
-  t.equal(first.sources.length, 1, 'have 1 source')
-  t.equal(first.sources.join(), 'json-source')
-  t.equal(first.maintainers.length, 1, 'maintainers')
-  t.equal(first.links.length, 1, 'links')
+    if (debugTitle)
+      [ debugTitle, '============', s ].forEach(x => console.log(x))
+
+    return s
+  }
+  // eslint-disable-next-line
+  const expected = require('./expected.json')
+  t.equal(clean(expected), clean(actual, 'ACTUAL'), 'validate json')
 
   await utils.teardown()
   t.end()
