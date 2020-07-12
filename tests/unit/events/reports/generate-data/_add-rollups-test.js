@@ -134,6 +134,7 @@ test('two child records on same date roll up to parents if parents do not exist'
 const testcases = [
 
   {
+    disabled: true,
     title: 'two child records on same date roll up to parents if parents do not exist',
 
     records: [
@@ -169,6 +170,7 @@ const testcases = [
   },
 
   {
+    disabled: true,
     title: 'parent record is merged with child record if child records supply missing data',
 
     records: [
@@ -192,6 +194,9 @@ const testcases = [
 
 ]
 
+
+if (testcases.filter(tc => tc.disabled).length > 0)
+  console.log('Warning: disabled test cases in _add-rollups-test.js ??')
 
 testcases.filter(tc => !tc.deactivated).forEach(tc => {
   const { title, records, createsRollup } = tc
