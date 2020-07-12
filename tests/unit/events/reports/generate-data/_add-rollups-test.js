@@ -7,7 +7,7 @@ const buildTimeseries = require(src + '/_build-timeseries.js')
 const addRollups = require(src + '/_add-rollups.js')
 
 /** Data for call to buildTimeseries. */
-let records = []
+// let records = []
 
 /** Expected response for buildTimeseries(records). */
 // let expected = []
@@ -71,7 +71,6 @@ function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
   const a = toString(actual)
   const e = toString(expected)
 
-  // if (a !== e)
   printSideBySide(a, e)
 
   t.equal(a, e, msg)
@@ -79,7 +78,7 @@ function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
 
 
 test('single record rolls up to parents if parents do not exist', t => {
-  records = makeRecords([
+  const records = makeRecords([
     [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ]
   ])
   const actual = addRollups(buildTimeseries(records))
@@ -98,7 +97,7 @@ test('single record rolls up to parents if parents do not exist', t => {
 
 
 test('two child records on same date roll up to parents if parents do not exist', t => {
-  records = makeRecords([
+  const records = makeRecords([
     [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
     [ 'c1#s2', '2020-06-19', 'src1', { cases: 20, deaths: 22 } ]
   ])
@@ -117,6 +116,61 @@ test('two child records on same date roll up to parents if parents do not exist'
   assertTimeseriesEqual(t, actual, expected)
   t.end()
 })
+
+
+/** Test cases.
+ *
+ * These test cases are executed in sequence.  Summary of test execution:
+ *
+ * 1. A timeseries is created using 'records', and rollups are added.
+ *
+ * 2. A timeseries is created using 'createsRollup', but rollups are
+ * _not_ added.  This recordset contain fake records that are
+ * equivalent to the synthetic records created during rollup creation,
+ * in addition to the original source 'records'.
+ *
+ * 3. Comparison -- these two timeseries should be exactly equivalent.
+ */
+const testcases = [
+
+  {
+    // deactivated: true,
+    title: 'two child records on same date roll up to parents if parents do not exist',
+
+    records: [
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { cases: 20, deaths: 22 } ]
+    ],
+
+    createsRollup: [
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { cases: 20, deaths: 22 } ],
+
+      // Rollup of children
+      [ 'c1', '2020-06-19', 'rollup', { cases: 30, deaths: 22 } ]
+    ]
+
+  }
+
+]
+
+
+testcases.filter(tc => !tc.deactivated).forEach(tc => {
+  const { title, records, createsRollup } = tc
+
+  test(title, t => {
+    // Timeseries plus rollups.
+    const srcRecords = makeRecords(records)
+    const actual = addRollups(buildTimeseries(srcRecords))
+
+    // Create a timeseries _only_ using "createsRollup" records.
+    const expected = buildTimeseries(makeRecords(createsRollup))
+
+    assertTimeseriesEqual(t, actual, expected)
+    t.end()
+  })
+})
+
 
 
 /*
