@@ -1,0 +1,64 @@
+[
+  {
+    "locationID": "iso1:us#iso2:us-ca#fips:06007",
+    "slug": "butte-county-california-us",
+    "name": "Butte County, California, US",
+    "area": {
+      "squareMeters": 4348071591,
+      "landSquareMeters": 4238438186,
+      "waterSquareMeters": 105311003
+    },
+    "coordinates": [
+      -121.6,
+      39.67
+    ],
+    "countryID": "iso1:US",
+    "countryName": "United States",
+    "population": 219186,
+    "tz": "America/Los_Angeles",
+    "level": "county",
+    "stateID": "iso2:US-CA",
+    "stateName": "California",
+    "countyID": "fips:06007",
+    "countyName": "Butte County",
+    "created": "2020-07-12T14:17:00.660Z",
+    "populationDensity": 51.7139,
+    "lat": 39.67,
+    "long": -121.6,
+    "maintainers": [
+      {
+        "name": "John Smith",
+        "github": "jsmith42"
+      }
+    ],
+    "links": [
+      {
+        "name": "Canadian COVID Rolling Task Force",
+        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      }
+    ],
+    "timeseries": {
+      "2020-05-21": {
+        "cases": 21,
+        "deaths": 4,
+        "tested": 210,
+        "hospitalized": 1,
+        "icu": 10
+      },
+      "2020-05-22": {
+        "cases": 22,
+        "deaths": 4,
+        "tested": 220,
+        "hospitalized": 2,
+        "icu": 11,
+        "growthFactor": 1.05
+      }
+    },
+    "timeseriesSources": {
+      "2020-05-21..2020-05-22": "json-source"
+    },
+    "sources": [
+      "json-source"
+    ]
+  }
+]
