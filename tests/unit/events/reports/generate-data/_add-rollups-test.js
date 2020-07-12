@@ -63,6 +63,33 @@ function makeRecords (arr) {
 }
 
 
+function printSideBySide (actual, expected) {
+  const printLine = (actualSide, expectedSide, sep = ' ') => {
+    const s = [
+      actualSide.padEnd(35, ' '),
+      sep.repeat(5),
+      expectedSide
+    ].join(' ')
+    console.log(s)
+  }
+
+  printLine('ACTUAL', 'EXPECTED')
+  printLine('='.repeat(30), '='.repeat(30))
+
+  const actualOut = actual.split('\n')
+  const expectedOut = expected.split('\n')
+  while (actualOut.length < expectedOut.length)
+    actualOut.push('')
+  while (expectedOut.length < actualOut.length)
+    expectedOut.push('')
+
+  for (let i = 0; i < actualOut.length; i++) {
+    const sep = actualOut[i] !== expectedOut[i] ? '*' : ' '
+    printLine(actualOut[i], expectedOut[i], sep)
+  }
+}
+
+
 /** Compare deterministically-printed timeseries. */
 function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
   function toString (json) {
@@ -74,19 +101,8 @@ function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
   const a = toString(actual)
   const e = toString(expected)
 
-  // Print out results side-by-side.
-  if (a !== e) {
-    const actualOut = [ 'ACTUAL', '='.repeat(30) ].concat(a.split('\n'))
-    const expectedOut = [ 'EXPECTED', '='.repeat(30) ].concat(e.split('\n'))
-    while (actualOut.length < expectedOut.length)
-      actualOut.push('')
-    while (expectedOut.length < actualOut.length)
-      expectedOut.push('')
-
-    for (let i = 0; i < actualOut.length; i++) {
-      console.log(actualOut[i].padEnd(40, ' ') + expectedOut[i])
-    }
-  }
+  // if (a !== e)
+  printSideBySide(a, e)
 
   t.equal(a, e, msg)
 }
@@ -111,7 +127,7 @@ test('single record rolls up to parents if parents do not exist', t => {
 })
 
 
-test.only('two child records on same date roll up to parents if parents do not exist', t => {
+test('two child records on same date roll up to parents if parents do not exist', t => {
   records = makeRecords([
     [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
     [ 'c1#s2', '2020-06-19', 'src1', { cases: 20 } ]

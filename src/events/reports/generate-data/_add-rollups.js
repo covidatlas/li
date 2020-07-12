@@ -31,6 +31,19 @@ function allLocationsAndLevels (locationIDs) {
 }
 
 
+function sumChildRecords (children, date) {
+  const allFields = children.map(c => Object.keys(c.timeseries[date])).flat()
+  const fields = [ ...new Set(allFields) ]
+  const seed = fields.reduce((hsh, f) => Object.assign(hsh, { [f]: 0 }), {})
+  return children.reduce((hsh, c) => {
+    const childRec = c.timeseries[date]
+    for (const [ f, v ] of Object.entries(childRec))
+      hsh[f] += v
+    return hsh
+  }, seed)
+}
+
+
 function rollup (timeseries, levelsAndIds, locationID, level) {
 
   // Build on existing timeseries entry for locationID, if any.
@@ -54,7 +67,7 @@ function rollup (timeseries, levelsAndIds, locationID, level) {
   const cDates = children.map(c => Object.keys(c.timeseries)).flat()
   const dates = [ ...new Set(cDates) ].sort()
   for (const d of dates) {
-    result.timeseries[d] = children[0].timeseries[d]
+    result.timeseries[d] = sumChildRecords(children, d)
     result.timeseriesSources[d] = 'rollup'
     result.sources = [ 'rollup' ]
   }
