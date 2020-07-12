@@ -55,8 +55,8 @@ function rollup (timeseries, levelsAndIds, locationID, level) {
   const dates = [ ...new Set(cDates) ].sort()
   for (const d of dates) {
     result.timeseries[d] = children[0].timeseries[d]
-    result.timeseriesSources[d] = children[0].timeseriesSources[d]
-    result.sources = children[0].sources
+    result.timeseriesSources[d] = 'rollup'
+    result.sources = [ 'rollup' ]
   }
 
   return result

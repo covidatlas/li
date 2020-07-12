@@ -45,6 +45,68 @@ test('single lower level rolls up to higher levels if higher level is empty', t 
 })
 
 
+/** Make dynamoDB records.  Get country/state/county from locationID. */
+function makeRecords (arr) {
+
+  function record (locationID, date, source, caseData) {
+    const ret = Object.assign({ locationID, date, source }, caseData)
+    ret.dateSource = [ date, source ].join('#')
+
+    const [ country, state, county ] = locationID.split('#')
+    if (country) ret.country = country
+    if (state) ret.state = state
+    if (county) ret.county = county
+
+    return ret
+  }
+  return arr.map(a => record(...a))
+}
+
+
+/** Compare deterministically-printed timeseries. */
+function assertTimeseriesEqual (t, actual, expected, msg = 'timeseries') {
+  function toString (json) {
+    const hsh = {}
+    Object.keys(json).sort().forEach(k => hsh[k] = json[k])
+    return JSON.stringify(hsh, null, 2)
+  }
+
+  const a = toString(actual)
+  const e = toString(expected)
+
+  if (a !== e) {
+    console.log('ACTUAL:')
+    console.log(a)
+    console.log('\nEXPECTED:')
+    console.log(e)
+  }
+
+  t.equal(a, e, msg)
+}
+
+
+test.only('single record rolls up to parents if parents do not exist', t => {
+  records = makeRecords([
+    [ 'c1#s1#f1', '2020-06-19', 'src1', { cases: 10 } ]
+  ])
+  const actual = addRollups(buildTimeseries(records))
+
+  const expectedRecords = makeRecords([
+    // Rollup of children
+    [ 'c1',       '2020-06-19', 'rollup', { cases: 10 } ],
+    // Rollup of children
+    [ 'c1#s1',    '2020-06-19', 'rollup', { cases: 10 } ],
+
+    // The source record.
+    [ 'c1#s1#f1', '2020-06-19', 'src1',   { cases: 10 } ]
+  ])
+  const expected = buildTimeseries(expectedRecords)
+
+  assertTimeseriesEqual(t, actual, expected)
+  t.end()
+})
+
+
 /*
 single location
 
