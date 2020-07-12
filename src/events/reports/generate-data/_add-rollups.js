@@ -69,7 +69,7 @@ function rollup (timeseries, levelsAndIds, locationID, level) {
  *
  * e.g, if timeseries has locationID a#b#c, the tree is as follows:
  *
- * level   locID
+ * level   locationID
  *   1       a
  *   2       b
  *   3       c

@@ -10,24 +10,32 @@ const addRollups = require(src + '/_add-rollups.js')
 let records = []
 
 /** Expected response for buildTimeseries(records). */
-let expected = []
+// let expected = []
 
-test('lower levels roll up to higher levels if higher levels are empty', t => {
+/** Print things by locationID (key) */
+function printTimeseries (json) {
+  const hsh = {}
+  Object.keys(json).sort().forEach(k => hsh[k] = json[k])
+  console.log(JSON.stringify(hsh, null, 2))
+}
+
+test('single lower level rolls up to higher levels if higher level is empty', t => {
   records = [ {
     cases: 10,
-    country: 'iso1:US',
-    state: 'iso2:US-CA',
-    county: 'fips:06007',
-    locationID: 'iso1:us#iso2:us-ca#fips:06007',
-    dateSource: '2020-06-19#json-source',
+    country: 'c1',
+    state: 's1',
+    county: 'f1',
+    locationID: 'c1#s1#f1',
+    dateSource: '2020-06-19#src1',
     date: '2020-06-19',
     source: 'src1',
     priority: 1
   } ]
   const actual = addRollups(buildTimeseries(records))
 
-  console.log(JSON.stringify(actual, null, 2))
-  const expectedKeys = [ 'iso1:us', 'iso1:us#iso2:us-ca', 'iso1:us#iso2:us-ca#fips:06007'  ]
+  printTimeseries(actual)
+
+  const expectedKeys = [ 'c1', 'c1#s1', 'c1#s1#f1'  ]
   t.deepEqual(Object.keys(actual).sort(), expectedKeys.sort(), 'location ID')
   for (const k of expectedKeys) {
     t.deepEqual(Object.keys(actual[k].timeseries), [ '2020-06-19' ], `dates for ${k}`)
@@ -47,7 +55,7 @@ data from middle.
 
 can even handle city-level data, though that's unusual
 
-two locations with data at different dates rolluing up to higher
+two locations with data at different dates rolling up to higher
 
 two locations rolling up to different top level
 
@@ -63,6 +71,8 @@ if no higher level, the lower levels roll up to make the higher level
 if higher level exists, and lower levels don't roll up to match the
 higher level, print warning
 
+top level has data for some dates, but uses rollup for others
+
 sources say "rollup" for each date where it was a rollup
 
 growth factor should be added after rollups
@@ -73,6 +83,7 @@ Full reports can handle "rollup" items
 */
 
 
+/*
 function makeRecords (arr) {
   function record (locationID, date, source, caseData, priority = null) {
     const rec = Object.assign({ locationID, date, source }, caseData)
@@ -82,6 +93,7 @@ function makeRecords (arr) {
   }
   return arr.map(a => record(...a))
 }
+*/
 
 /*
 
