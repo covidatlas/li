@@ -1,3 +1,4 @@
+const createMultivalentRecord = require('./_multivalent-record.js')
 
 /** Creates full list of locationIDs and levels from those implied in
  * locationIDs.
@@ -44,6 +45,7 @@ function sumChildRecords (children, date) {
 }
 
 
+// TODO switch args 2 and 3
 function rollup (timeseries, levelsAndIds, locationID, level) {
 
   // Build on existing timeseries entry for locationID, if any.
@@ -63,15 +65,25 @@ function rollup (timeseries, levelsAndIds, locationID, level) {
   // TODO: keep parent value if present
   // TODO: set missing parent value to sum of children value, and set source and timeseriesSource to rollup.
   // TODO: "reduceSources" needs to occur after this step, b/c this step may add 'rollup' as the source for some fields.
-  // Placeholder: just assign child to result.
   const cDates = children.map(c => Object.keys(c.timeseries)).flat()
   const dates = [ ...new Set(cDates) ].sort()
   for (const d of dates) {
-    if (!result.timeseries[d]) {
-      result.timeseries[d] = sumChildRecords(children, d)
-      result.timeseriesSources[d] = 'rollup'
-      result.sources = [ 'rollup' ]
-    }
+    const parentRecord = result.timeseries[d] || {}
+    parentRecord.priority = 1
+    parentRecord.date = d
+    parentRecord.locationID = locationID
+
+    let rollup = sumChildRecords(children, d)
+    rollup = Object.assign(rollup, { locationID, date: d, source: 'rollup', priority: 0 })
+
+    // TODO (reporting) account for warnings in parent/child rollups.
+    const {
+      data, /* warnings, */ timeseriesSources, sources
+    } = createMultivalentRecord([ parentRecord, rollup ])
+
+    result.timeseries[d] = data
+    result.timeseriesSources[d] = timeseriesSources
+    result.sources = result.sources.concat(sources)
   }
 
   return result
@@ -89,8 +101,8 @@ function rollup (timeseries, levelsAndIds, locationID, level) {
  *   2       b
  *   3       c
  *
- * b) Starting at one level above the bottom of the tree (L = 2), for
- * each location loc at that level:
+ * b) Starting at tree depth - 1 (e.g., level L = 2 above), for each
+ * location loc at that level:
  *
  *    b0) add a new node to the rollup, if loc doesn't exist
  *    b1) get all locations at level L + 1 rolling up to loc
