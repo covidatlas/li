@@ -134,7 +134,6 @@ test('two child records on same date roll up to parents if parents do not exist'
 const testcases = [
 
   {
-    // deactivated: true,
     title: 'two child records on same date roll up to parents if parents do not exist',
 
     records: [
@@ -143,13 +142,30 @@ const testcases = [
     ],
 
     createsRollup: [
-      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
-      [ 'c1#s2', '2020-06-19', 'src1', { cases: 20, deaths: 22 } ],
-
       // Rollup of children
-      [ 'c1', '2020-06-19', 'rollup', { cases: 30, deaths: 22 } ]
-    ]
+      [ 'c1', '2020-06-19', 'rollup', { cases: 30, deaths: 22 } ],
 
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { cases: 20, deaths: 22 } ]
+    ]
+  },
+
+  {
+    title: 'existing parent record is left alone, even if it does not match the rolled up children',
+
+    records: [
+      [ 'c1', '2020-06-19', 'src1', { cases: 50 } ],
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { cases: 20 } ]
+    ],
+
+    createsRollup: [
+      // Parent record is left alone.
+      [ 'c1', '2020-06-19', 'src1', { cases: 50 } ],
+      // Source records
+      [ 'c1#s1', '2020-06-19', 'src1', { cases: 10 } ],
+      [ 'c1#s2', '2020-06-19', 'src1', { cases: 20 } ]
+    ]
   }
 
 ]
