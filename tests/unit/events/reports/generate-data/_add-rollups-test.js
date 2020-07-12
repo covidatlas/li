@@ -12,38 +12,6 @@ let records = []
 /** Expected response for buildTimeseries(records). */
 // let expected = []
 
-/** Print things by locationID (key) */
-function printTimeseries (json) {
-  const hsh = {}
-  Object.keys(json).sort().forEach(k => hsh[k] = json[k])
-  console.log(JSON.stringify(hsh, null, 2))
-}
-
-test('single lower level rolls up to higher levels if higher level is empty', t => {
-  records = [ {
-    cases: 10,
-    country: 'c1',
-    state: 's1',
-    county: 'f1',
-    locationID: 'c1#s1#f1',
-    dateSource: '2020-06-19#src1',
-    date: '2020-06-19',
-    source: 'src1',
-    priority: 1
-  } ]
-  const actual = addRollups(buildTimeseries(records))
-
-  printTimeseries(actual)
-
-  const expectedKeys = [ 'c1', 'c1#s1', 'c1#s1#f1'  ]
-  t.deepEqual(Object.keys(actual).sort(), expectedKeys.sort(), 'location ID')
-  for (const k of expectedKeys) {
-    t.deepEqual(Object.keys(actual[k].timeseries), [ '2020-06-19' ], `dates for ${k}`)
-    t.equal(actual[k].timeseries[ '2020-06-19' ].cases, 10, `cases for ${k}`)
-  }
-  t.end()
-})
-
 
 /** Make dynamoDB records.  Get country/state/county from locationID. */
 function makeRecords (arr) {
@@ -63,6 +31,8 @@ function makeRecords (arr) {
 }
 
 
+/** Convenience: print long json strings side-by-side for easy visual
+ * comparison. */
 function printSideBySide (actual, expected) {
   const printLine = (actualSide, expectedSide, sep = ' ') => {
     const s = [
