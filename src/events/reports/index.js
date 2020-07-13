@@ -79,6 +79,10 @@ async function handleEvent (event) {
       generate: () => generateData.locations(baseJson)
     },
     {
+      filename: 'locations.csv',
+      generate: () => generateData.locationsCsv(baseJson)
+    },
+    {
       filename: 'timeseries-byLocation.json',
       generate: () => generateData.timeseriesByLocation(baseJson)
     },
@@ -87,12 +91,16 @@ async function handleEvent (event) {
       generate: () => generateData.timeseriesJhu(baseJson)
     },
     {
-      filename: 'timeseries-tidy.csv.gz',
-      generate: () => gzipSync(generateData.timeseriesTidy(baseJson))
-    },
-    {
       filename: 'timeseries.csv',
       generate: () => generateData.timeseries(baseJson)
+    },
+    {
+      filename: 'timeseries-tidy-small.csv',
+      generate: () => generateData.timeseriesTidySmall(baseJson)
+    },
+    {
+      filename: 'timeseries-tidy.csv.gz',
+      generate: () => gzipSync(generateData.timeseriesTidy(baseJson))
     }
   ]
 

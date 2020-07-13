@@ -1,0 +1,6 @@
+locationID,date,type,value
+iso1:us#iso2:us-ca#fips:06007,2020-06-28,cases,21
+iso1:us#iso2:us-ca#fips:06007,2020-06-28,deaths,4
+iso1:us#iso2:us-ca#fips:06007,2020-06-28,tested,200
+iso1:us#iso2:us-ca#fips:06007,2020-06-28,hospitalized,5
+iso1:us#iso2:us-ca#fips:06007,2020-06-28,icu,2
