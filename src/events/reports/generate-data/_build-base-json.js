@@ -42,6 +42,32 @@ function uniqueByKey (arr, key) {
 }
 
 
+/**
+ * Get all locations, paginated scan.
+ */
+async function getAllLocations (data) {
+  console.log('getting all locations')
+  // Iterative recursion.
+  async function get (startKey = null, items = []) {
+    const params = {}
+    if (startKey)
+      params.ExclusiveStartKey = startKey
+    const r = await data.locations.scan(params)
+
+    items = items.concat(r.Items)
+    console.log(`params ${JSON.stringify(params)} got ${r.Items.length} locations`)
+
+    if (r.LastEvaluatedKey)
+      return await get(r.LastEvaluatedKey, items)
+
+    console.log(`total ${items.length} locations`)
+    return items
+  }
+
+  return await get()
+}
+
+
 /** Dummy function for status updates. */
 // eslint-disable-next-line no-unused-vars
 async function baseJsonStatus (index, total) {}
@@ -52,9 +78,9 @@ async function baseJsonStatus (index, total) {}
  * Pass in params._sourcesPath to override the default sources path. */
 async function getBaseJson (params, statusCallback = baseJsonStatus) {
   const data = await arc.tables()
-  const locations = await data.locations.scan({}).
-        then(result => result.Items).
+  const locations = await getAllLocations(data).
         then(result => result.sort((a, b) => a.locationID < b.locationID ? -1 : 1))
+
   const result = []
   for (var i = 0; i < locations.length; ++i) {
     statusCallback(i, locations.length)
