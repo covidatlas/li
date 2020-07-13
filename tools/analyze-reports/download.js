@@ -20,7 +20,7 @@ async function downloadFile (bucketName, key, saveTo) {
   let data = null
   try {
     data = await s3.getObject(params).promise()
-    console.log('done')
+    console.log(`done ${key}`)
   }
   catch (err) {
     console.log('error')
@@ -45,7 +45,10 @@ async function main () {
     fs.mkdirSync(saveTo)
   }
 
-  await downloadFile(getReportsBucket('production'), 'beta/latest/timeseries-byLocation.json', saveTo)
+  const reports = [ 'timeseries-byLocation.json', 'baseData.json' ]
+  const bucket = getReportsBucket('production')
+  const promises = reports.map(r => downloadFile(bucket, [ 'beta', 'latest', r ].join('/'), saveTo))
+  await Promise.all(promises)
 }
 
 
