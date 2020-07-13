@@ -84,6 +84,7 @@ test('files are generated', async t => {
 
   const reports = [
     'locations.json',
+    'locations.csv',
     'timeseries-byLocation.json',
     'timeseries-jhu.csv',
     'timeseries-tidy-small.csv',
@@ -92,9 +93,9 @@ test('files are generated', async t => {
   ]
 
   const expectedFiles = reports.concat([ 'baseData.json' ])
-  let files = await waitForGeneratedFiles(7)
-  const msg = `expected 7 files, got ${files.length} (${files.join()})`
-  t.equal(files.length, 7, msg)
+  let files = await waitForGeneratedFiles(expectedFiles.length)
+  const msg = `expected ${expectedFiles.length} files, got ${files.length} (${files.join()})`
+  t.equal(files.length, expectedFiles.length, msg)
   t.equal(files.sort().join(), expectedFiles.sort().join())
 
   const zipfile = join(utils.testReportsDir.reportsDir, 'timeseries-tidy.csv.gz')

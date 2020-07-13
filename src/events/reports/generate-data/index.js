@@ -70,6 +70,19 @@ function csvContent (baseJson, reduceRecord, cols) {
   return stringify(baseJson.reduce(reduceRecord, []), { columns: cols, header: true })
 }
 
+
+/** locations.csv source. */
+function locationsCsv (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
+
+  const reduceRecord = (arr, rec) => {
+    arr.push(rec)
+    return arr
+  }
+
+  return csvContent(baseJson, reduceRecord, baseCsvColumns)
+}
+
 /** timeseries.csv source. */
 function timeseries (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
@@ -162,6 +175,7 @@ module.exports = {
   locations,
   timeseriesByLocation,
 
+  locationsCsv,
   timeseriesJhu,
   timeseriesTidy,
   timeseriesTidySmall,

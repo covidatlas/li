@@ -79,6 +79,10 @@ async function handleEvent (event) {
       generate: () => generateData.locations(baseJson)
     },
     {
+      filename: 'locations.csv',
+      generate: () => generateData.locationsCsv(baseJson)
+    },
+    {
       filename: 'timeseries-byLocation.json',
       generate: () => generateData.timeseriesByLocation(baseJson)
     },
