@@ -47,26 +47,32 @@ module.exports = {
       ],
       scrape ($) {
         const data = {
-          cases: paragraphMatcher({
-            $,
-            selector: `.page-content p:contains("cases in Victoria")`,
-            regex: /cases in Victoria \w* (?<dataPoint>[\d,]+)/
-          }),
+          cases:
+            paragraphMatcher({
+              $,
+              selector: `.page-content *:contains("cases in Victoria")`,
+              regex: /cases in Victoria \w* (?<dataPoint>[\d,]+)/,
+            }) ||
+            paragraphMatcher({
+              $,
+              selector: `.page-content *:contains("new cases of coronavirus")`,
+              regex: /(?<dataPoint>[\d,]+) new cases of coronavirus/,
+            }),
           deaths: paragraphMatcher({
             $,
-            selector: `.page-content p:contains("people have died")`,
-            regex: /To date, (?<dataPoint>[\d,]+) people have died/
+            selector: `.page-content *:contains("people have died")`,
+            regex: /To date, (?<dataPoint>[\d,]+) people have died/,
           }),
           recovered: paragraphMatcher({
             $,
-            selector: `.page-content p:contains("have recovered")`,
-            regex: /(?<dataPoint>[\d,]+) people have recovered/
+            selector: `.page-content *:contains("have recovered")`,
+            regex: /(?<dataPoint>[\d,]+) people have recovered/,
           }),
           tested: paragraphMatcher({
             $,
-            selector: `.page-content p:contains("More than")`,
-            regex: /More than (?<dataPoint>[\d,]+) test/
-          })
+            selector: `.page-content *:contains("More than")`,
+            regex: /More than (?<dataPoint>[\d,]+) test/,
+          }),
         }
 
         assert(data.cases > 0, 'Cases are not reasonable')
