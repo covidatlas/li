@@ -1,5 +1,4 @@
 const arc = require('@architect/functions')
-const { gzipSync } = require('zlib')
 const getBaseJson = require('./generate-data/_build-base-json.js')
 const generateData = require('./generate-data/index.js')
 const { getWriter } = require('./write/index.js')
@@ -98,10 +97,13 @@ async function handleEvent (event) {
       filename: 'timeseries-tidy-small.csv',
       generate: () => generateData.timeseriesTidySmall(baseJson)
     },
+    /*
+      // Disabling this report -- it always crashes.
     {
       filename: 'timeseries-tidy.csv.gz',
       generate: () => gzipSync(generateData.timeseriesTidy(baseJson))
     }
+    */
   ]
 
   await Promise.all(reports.map(r => reportStatus(r.filename, 'pending')))
