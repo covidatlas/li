@@ -4,8 +4,6 @@ const test = require('tape')
 const { join } = require('path')
 const fs = require('fs')
 const utils = require('../../_lib/utils.js')
-const zlib = require('zlib')
-const stream = require('stream')
 
 async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 500) {
   return new Promise(resolve => {
@@ -30,6 +28,13 @@ async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 5
 
 /** Unnecessarily complicated code to ensure that the unzipped file is
  * actually unzipped and on disk when we expect it. */
+/**
+ * DISABLED -- no longer creating timeseries-tidy.csv.gz, but this is
+ * complex enough to justify keeping it in case we need to zip
+ * anything in the future.  It is _VERY POSSIBLE_ that all of this
+ * garbage can be replaced by something simple like gunzip sync,
+ * if such a library exists.  Too busy to search for this right now.
+ * Regards, jz.
 async function unzipInPlace (zipfile) {
   const unzip = zlib.createGunzip()
   const writable = fs.createWriteStream(zipfile.replace('.gz', ''))
@@ -56,6 +61,7 @@ async function unzipInPlace (zipfile) {
 
   return writeDonePromise
 }
+*/
 
 
 test('files are generated', async t => {
@@ -88,7 +94,6 @@ test('files are generated', async t => {
     'timeseries-byLocation.json',
     'timeseries-jhu.csv',
     'timeseries-tidy-small.csv',
-    'timeseries-tidy.csv.gz',
     'timeseries.csv'
   ]
 
@@ -98,9 +103,11 @@ test('files are generated', async t => {
   t.equal(files.length, expectedFiles.length, msg)
   t.equal(files.sort().join(), expectedFiles.sort().join())
 
+  /*
   const zipfile = join(utils.testReportsDir.reportsDir, 'timeseries-tidy.csv.gz')
   await unzipInPlace(zipfile)
   t.ok(fs.existsSync(zipfile.replace('.gz', '')), 'unzipped file exists')
+  */
 
   function assertContentsEqual (filename) {
     const actual = join(utils.testReportsDir.reportsDir, filename)

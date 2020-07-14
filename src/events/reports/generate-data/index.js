@@ -125,7 +125,9 @@ function timeseriesJhu (baseJson) {
 }
 
 
-/** timeseries-tidy.csv source. */
+/**
+ // Disabling this report, it always crashes.
+// timeseries-tidy.csv source.
 function timeseriesTidy (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
 
@@ -145,6 +147,7 @@ function timeseriesTidy (baseJson) {
 
   return csvContent(baseJson, reduceRecord, cols)
 }
+*/
 
 
 /** timeseries-tidy-small.csv source. */
@@ -177,7 +180,6 @@ module.exports = {
 
   locationsCsv,
   timeseriesJhu,
-  timeseriesTidy,
   timeseriesTidySmall,
   timeseries
 }
