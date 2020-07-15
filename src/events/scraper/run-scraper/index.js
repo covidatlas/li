@@ -1,4 +1,5 @@
 const assertTotalsAreReasonable = require('./scraper-helpers/assert-totals-are-reasonable')
+const csvParseSync = require('./scraper-helpers/csv-parse-sync')
 const cumulateObjects = require('./scraper-helpers/cumulate-objects')
 const fipsCodes = require('./scraper-helpers/fips-codes')
 const getDataWithTestedNegativeApplied = require('./scraper-helpers/get-data-with-tested-negative-applied')
@@ -12,6 +13,7 @@ const transposeArrayOfArrays = require('./scraper-helpers/transpose-array-of-arr
 
 const scraperHelpers = {
   assertTotalsAreReasonable,
+  csvParseSync,
   cumulateObjects,
   fipsCodes,
   getDataWithTestedNegativeApplied,
