@@ -1,6 +1,6 @@
 {
   "name": "li",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "scripts": {
     "help": "node tools/show-help.js",
     "start": "arc sandbox",
