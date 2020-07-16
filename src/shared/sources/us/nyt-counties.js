@@ -38,30 +38,28 @@ module.exports = {
 
         const { filterDate, func } = timeseriesFilter(data, 'date', toYYYYMMDD, date)
 
-        const locations = []
-        const locationsByState = {}
-        data.filter(func).
-          filter(row => row.fips).
-          forEach(row => {
-            const locationObj = {
-              county: `fips:${row.fips}`,
-              state: row.state,
-              cases: parse.number(row.cases),
-              deaths: parse.number(row.deaths),
-              date: filterDate
-            }
-            locationsByState[locationObj.state] = locationsByState[locationObj.state] || []
-            locationsByState[locationObj.state].push(locationObj)
-            locations.push(locationObj)
-          })
+        const counties = data.filter(func).
+              filter(row => row.fips && row.state).
+              map(row => {
+                return {
+                  county: `fips:${row.fips}`,
+                  state: row.state,
+                  cases: parse.number(row.cases),
+                  deaths: parse.number(row.deaths),
+                  date: filterDate
+                }
+              })
 
         // Rollup states
-        for (const [ state, stateLocations ] of Object.entries(locationsByState)) {
-          const rec = transform.sumData(stateLocations, { state })
+        const stateNames = [ ...new Set(counties.map(loc => loc.state)) ]
+        const states = stateNames.map(state => {
+          const rec = transform.sumData(counties.filter(loc => loc.state === state), { state })
           rec.date = filterDate
-          locations.push(rec)
-        }
-        return locations
+          return rec
+        })
+
+        const allRecords = counties.concat(states)
+        return allRecords
       }
     }
   ]
