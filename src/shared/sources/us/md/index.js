@@ -124,7 +124,7 @@ module.exports = {
         return counties
       }
     }
-    // TODO (scrapers) us-md - create a new us-md-arcgis-timeseries scraper with sources
+    // TODO (scrapers) us-md - stopped at 2020-05-19, new data is on arcgis
     // https://coronavirus.maryland.gov/datasets/mdcovid19-casesbycounty/data
     // https://coronavirus.maryland.gov/datasets/mdcovid19-confirmeddeathsbycounty/data
     // https://coronavirus.maryland.gov/datasets/mdcovid19-totalpopulationtestedbycounty/data
