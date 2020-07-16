@@ -39,7 +39,6 @@ module.exports = {
         },
       ],
       scrape (rows) {
-        console.table(rows)
         const data = rows[0]
         // On 2020-4-28, MO switched from recording dates as UTC
         // (eg, "2020-04-27T18:13:20.273Z") to epoch (eg,
