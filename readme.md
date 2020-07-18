@@ -29,7 +29,7 @@ details on exactly what each field in the dataset means.
 
 The prior version of this project, [coronadatascraper](https://github.com/covidatlas/coronadatascraper), generates and hosts reports at https://coronadatascraper.com/#home.  Eventually, these reports will be discontinued, but no date is set yet.
 
-* [Migrating from CDS data to Li data](./docs/migrating_from_cds_to_li.md)
+* [Migrating from CDS data to Li data](./docs/reports.md)
 
 
 # Developers
