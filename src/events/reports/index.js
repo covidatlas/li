@@ -78,6 +78,10 @@ async function handleEvent (event) {
       generate: () => generateData.latestJson(baseJson)
     },
     {
+      filename: 'latest.csv',
+      generate: () => generateData.latestCsv(baseJson)
+    },
+    {
       filename: 'locations.json',
       generate: () => generateData.locations(baseJson)
     },

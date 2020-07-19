@@ -97,6 +97,25 @@ function locationsCsv (baseJson) {
   return csvContent(baseJson, reduceRecord, baseCsvColumns)
 }
 
+
+/** latest.csv source. */
+function latestCsv (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
+
+  let cols = caseDataFields.
+      reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
+
+  const reduceRecord = (arr, rec) => {
+    const dates = Object.keys(rec.timeseries).sort()
+    const lastTs = rec.timeseries[ dates.slice(-1)[0] ]
+    arr.push({ ...rec, ...lastTs })
+    return arr
+  }
+
+  return csvContent(baseJson, reduceRecord, cols)
+}
+
+
 /** timeseries.csv source. */
 function timeseries (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
@@ -190,6 +209,7 @@ module.exports = {
   buildBaseJson,
 
   latestJson,
+  latestCsv,
 
   locations,
   timeseriesByLocation,
