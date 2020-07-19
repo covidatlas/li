@@ -202,7 +202,7 @@ Replaces `data.json` report.
 
 ```
 {
-  "url": "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv",
+  "url": "https://...[snip].../us-counties.csv",
   "country": "United States",
   "aggregate": "county",
   "curators": [
