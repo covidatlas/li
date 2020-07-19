@@ -101,6 +101,7 @@ test('files are generated', async t => {
 
   const reports = [
     'baseData.json',
+    'latest.json',
     'locations.json',
     'locations.csv',
     'timeseries-byLocation.json',
