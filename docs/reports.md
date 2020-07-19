@@ -1,15 +1,22 @@
 This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _If you note any errors in this doc, please [open an issue](https://github.com/covidatlas/li/issues/new/choose), notify us on Slack, or issue a Pull Request._
 
-- [General notes](#general-notes)
-- [locations.json](#locationsjson)
-- [locations.csv](#locationscsv)
-- [timeseries-byLocation.json](#timeseries-bylocationjson)
-  * [Combining Data Sources](#combining-data-sources)
-- [timeseries-jhu.csv](#timeseries-jhucsv)
-- [timeseries-tidy-small.csv](#timeseries-tidy-smallcsv)
-- [timeseries.csv](#timeseriescsv)
-- [timeseries.json](#timeseriesjson)
-- [features.json](#featuresjson)
+- [Changes from coronadatascraper.com reports](#changes-from-coronadatascrapercom-reports)
+  * [Major changes](#major-changes)
+  * [Minor changes](#minor-changes)
+  * [General notes](#general-notes)
+- [Locations](#locations)
+  * [locations.json](#locationsjson)
+  * [locations.csv](#locationscsv)
+  * [features.json](#featuresjson)
+- [Latest](#latest)
+  * [latest.json](#latestjson)
+  * [latest.csv](#latestcsv)
+- [Timeseries](#timeseries)
+  * [timeseries-byLocation.json](#timeseries-bylocationjson)
+      - [Combining Data Sources](#combining-data-sources)
+  * [timeseries-jhu.csv](#timeseries-jhucsv)
+  * [timeseries-tidy-small.csv](#timeseries-tidy-smallcsv)
+  * [timeseries.csv](#timeseriescsv)
 
 <!-- <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small> -->
 
