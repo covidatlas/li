@@ -5,6 +5,9 @@ const { join } = require('path')
 const fs = require('fs')
 const utils = require('../../_lib/utils.js')
 
+
+/** Report generation saves files to disk.  Rather than using
+ * filewatchers, poll until an expected file count is reached. */
 async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 500) {
   return new Promise(resolve => {
     let remaining = timeoutms
@@ -26,42 +29,52 @@ async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 5
 }
 
 
-/** Unnecessarily complicated code to ensure that the unzipped file is
- * actually unzipped and on disk when we expect it. */
-/**
- * DISABLED -- no longer creating timeseries-tidy.csv.gz, but this is
- * complex enough to justify keeping it in case we need to zip
- * anything in the future.  It is _VERY POSSIBLE_ that all of this
- * garbage can be replaced by something simple like gunzip sync,
- * if such a library exists.  Too busy to search for this right now.
- * Regards, jz.
-async function unzipInPlace (zipfile) {
-  const unzip = zlib.createGunzip()
-  const writable = fs.createWriteStream(zipfile.replace('.gz', ''))
+/** Convenience: print long json strings side-by-side for visual
+ * comparison. */
+function printSideBySide (actual, expected) {
 
-  // This promise is _required_ to ensure that everything actually
-  // gets written to disk!
-  const writeDonePromise = new Promise(
-    fulfill => writable.on("finish", fulfill)
-  )
+  const actualOut = actual.split('\n')
+  const expectedOut = expected.split('\n')
 
-  stream.pipeline(
-    fs.createReadStream(zipfile),
-    unzip,
-    writable,
-    (err) => {
-      if (err)
-        throw err
-      else {
-        console.log('unzipped')
-      }
-    }
-  )
-  unzip.flush()
+  // Pad the arrays of output until they're both equal
+  // (simplifies subsequent printing).
+  while (actualOut.length < expectedOut.length)
+    actualOut.push('')
+  while (expectedOut.length < actualOut.length)
+    expectedOut.push('')
 
-  return writeDonePromise
+  const maxLen = Math.max( ...actualOut.map(s => s.length) )
+  const printLine = (actualSide, expectedSide, sep = ' ') => {
+    const s = [
+      actualSide.padEnd(maxLen + 2, ' '),
+      sep.repeat(5),
+      expectedSide
+    ].join(' ')
+    console.log(s)
+  }
+
+  printLine('ACTUAL', 'EXPECTED')
+  printLine('='.repeat(30), '='.repeat(30))
+  for (let i = 0; i < actualOut.length; i++) {
+    const sep = actualOut[i] !== expectedOut[i] ? '*' : ' '
+    printLine(actualOut[i], expectedOut[i], sep)
+  }
 }
-*/
+
+
+/** Compare generated report in testReportsDir to same filename in
+ * ./expected-results/. */
+function assertContentsEqual (t, filename) {
+  const clean = f => fs.readFileSync(f, 'UTF-8').
+        replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD').
+        replace(/T\d{2}:\d{2}:\d{2}\.\d{3}Z/g, 'THH:NN:SS.mmmZ').
+        trim()
+  const actual = clean(join(utils.testReportsDir.reportsDir, filename))
+  const expected = clean(join(__dirname, 'expected-results', filename))
+  if (actual !== expected && filename.match(/json$/))
+    printSideBySide(actual, expected)
+  t.equal(expected, actual, `validate ${filename}`)
+}
 
 
 test('files are generated', async t => {
@@ -82,13 +95,14 @@ test('files are generated', async t => {
   const locations = await utils.waitForDynamoTable('locations', 10000, 200)
   t.equal(locations.length, 1, `Sanity check, have 1 location: ${JSON.stringify(locations, null, 2)}`)
 
-  // Override load path for sources, since we're using fake sources
-  // for these tests.
   await utils.generateReports(utils.sourcesPath, utils.testReportsDir.reportsDir)
   const reportStatus = await utils.waitForDynamoTable('report-status', 10000, 200)
   console.table(reportStatus)
 
   const reports = [
+    'baseData.json',
+    'latest.json',
+    'latest.csv',
     'locations.json',
     'locations.csv',
     'timeseries-byLocation.json',
@@ -97,31 +111,13 @@ test('files are generated', async t => {
     'timeseries.csv'
   ]
 
-  const expectedFiles = reports.concat([ 'baseData.json' ])
-  let files = await waitForGeneratedFiles(expectedFiles.length)
-  const msg = `expected ${expectedFiles.length} files, got ${files.length} (${files.join()})`
-  t.equal(files.length, expectedFiles.length, msg)
-  t.equal(files.sort().join(), expectedFiles.sort().join())
+  let files = await waitForGeneratedFiles(reports.length)
+  const msg = `expected ${reports.length} files, got ${files.length} (${files.join()})`
+  t.equal(files.length, reports.length, msg)
+  t.equal(files.sort().join(), reports.sort().join())
 
-  /*
-  const zipfile = join(utils.testReportsDir.reportsDir, 'timeseries-tidy.csv.gz')
-  await unzipInPlace(zipfile)
-  t.ok(fs.existsSync(zipfile.replace('.gz', '')), 'unzipped file exists')
-  */
-
-  function assertContentsEqual (filename) {
-    const actual = join(utils.testReportsDir.reportsDir, filename)
-    const expected = join(__dirname, 'expected-results', filename)
-    const clean = f => fs.readFileSync(f, 'UTF-8').replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD')
-    t.equal(clean(expected), clean(actual), `validate ${filename}`)
-  }
-
-  // Don't bother checking baseData.json content; it's not in our list
-  // of published reports, and is used as an incidental step to
-  // generate the actual reports.
-  for (const f of reports.map(f => f.replace('.gz', ''))) {
-    assertContentsEqual(f)
-  }
+  for (const f of reports)
+    assertContentsEqual(t, f)
 
   await utils.teardown()
   t.end()

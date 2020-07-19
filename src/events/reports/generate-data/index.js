@@ -26,6 +26,20 @@ function removeFields (rec, fields) {
 }
 
 
+/** latest.json source. */
+function latestJson (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
+  const content = baseJson.map(loc => {
+    const dates = Object.keys(loc.timeseries).sort()
+    const lastTs = loc.timeseries[ dates.slice(-1)[0] ]
+    const rec = Object.assign({}, loc)
+    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
+    return { ...rec, ...lastTs }
+  })
+  return JSON.stringify(content, null, 2)
+}
+
+
 /** locations.json source. */
 function locations (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
@@ -82,6 +96,25 @@ function locationsCsv (baseJson) {
 
   return csvContent(baseJson, reduceRecord, baseCsvColumns)
 }
+
+
+/** latest.csv source. */
+function latestCsv (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
+
+  let cols = caseDataFields.
+      reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
+
+  const reduceRecord = (arr, rec) => {
+    const dates = Object.keys(rec.timeseries).sort()
+    const lastTs = rec.timeseries[ dates.slice(-1)[0] ]
+    arr.push({ ...rec, ...lastTs })
+    return arr
+  }
+
+  return csvContent(baseJson, reduceRecord, cols)
+}
+
 
 /** timeseries.csv source. */
 function timeseries (baseJson) {
@@ -174,6 +207,9 @@ function timeseriesTidySmall (baseJson) {
 
 module.exports = {
   buildBaseJson,
+
+  latestJson,
+  latestCsv,
 
   locations,
   timeseriesByLocation,
