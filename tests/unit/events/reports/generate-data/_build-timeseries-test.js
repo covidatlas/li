@@ -31,7 +31,7 @@ test('single record builds single timeseries', t => {
   } ]
   const actual = buildTimeseries(records)
   t.deepEqual(Object.keys(actual), [ 'iso1:us#iso2:us-ca#fips:06007' ], 'location ID')
-  t.deepEqual(Object.keys(actual['iso1:us#iso2:us-ca#fips:06007'].timeseries), [ '2020-06-19' ], 'dates')
+  t.deepEqual(Object.keys(actual['iso1:us#iso2:us-ca#fips:06007'].dates), [ '2020-06-19' ], 'dates')
   t.end()
 })
 
@@ -54,7 +54,7 @@ test('two dates from single source', t => {
 
   const actual = buildTimeseries(records)
   t.deepEqual(Object.keys(actual), [ 'loc1' ], 'location ID')
-  t.deepEqual(Object.keys(actual.loc1.timeseries), [ '2020-06-19', '2020-06-20' ], 'dates')
+  t.deepEqual(Object.keys(actual.loc1.dates), [ '2020-06-19', '2020-06-20' ], 'dates')
   t.end()
 })
 
@@ -67,8 +67,8 @@ test('multiple locations', t => {
 
   const actual = buildTimeseries(records)
   t.deepEqual(Object.keys(actual), [ 'loc1', 'loc2' ], 'location ID')
-  t.deepEqual(Object.keys(actual.loc1.timeseries), [ '2020-06-19', '2020-06-20' ], 'loc1 dates')
-  t.deepEqual(Object.keys(actual.loc2.timeseries), [ '2020-06-19' ], 'loc2 dates')
+  t.deepEqual(Object.keys(actual.loc1.dates), [ '2020-06-19', '2020-06-20' ], 'loc1 dates')
+  t.deepEqual(Object.keys(actual.loc2.dates), [ '2020-06-19' ], 'loc2 dates')
   t.end()
 })
 
@@ -84,7 +84,7 @@ test('sanity check, multiple data points', t => {
 
   const actual = buildTimeseries(records)
   t.deepEqual(Object.keys(actual), [ 'loc1' ], 'location ID')
-  t.deepEqual(Object.keys(actual.loc1.timeseries), [ '2020-06-19', '2020-06-20' ], 'dates')
+  t.deepEqual(Object.keys(actual.loc1.dates), [ '2020-06-19', '2020-06-20' ], 'dates')
   t.end()
 })
 
@@ -152,7 +152,7 @@ test('combined data sources collapse correctly', t => {
   }
 
   const actual = buildTimeseries(records)
-  t.deepEqual(actual.loc1.timeseriesSources, expected, 'timeseriesSources')
+  t.deepEqual(actual.loc1.dateSources, expected, 'dateSources')
   t.end()
 })
 
@@ -165,8 +165,8 @@ test('characterization test: no case data', t => {
 
   expected = {
     loc1: {
-      timeseries: { '2020-06-19': {} },
-      timeseriesSources: { '2020-06-19': {} },
+      dates: { '2020-06-19': {} },
+      dateSources: { '2020-06-19': {} },
       sources: []
     }
   }

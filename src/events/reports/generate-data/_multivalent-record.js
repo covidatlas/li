@@ -85,7 +85,7 @@ function assertAllSame (records, field) {
  * priority to determine which value to use for each field. */
 function createMultivalentRecord (records) {
 
-  const emptyRecord = { data: {}, warnings: {}, timeseriesSources: {}, sources: [] }
+  const emptyRecord = { data: {}, warnings: {}, dateSources: {}, sources: [] }
   if (records.length === 0)
     return emptyRecord
 
@@ -109,14 +109,14 @@ function createMultivalentRecord (records) {
   const result = fields.reduce((hsh, f) => {
     const { field, value, source, warning } = f
     hsh.data[field] = value
-    hsh.timeseriesSources[field] = source
+    hsh.dateSources[field] = source
     hsh.sources.push(source)
     if (warning)
       hsh.warnings[field] = warning
     return hsh
   }, emptyRecord)
 
-  result.timeseriesSources = reduceSources(result.timeseriesSources)
+  result.dateSources = reduceSources(result.dateSources)
   result.sources = [ ...new Set(result.sources) ].sort()
   return result
 }

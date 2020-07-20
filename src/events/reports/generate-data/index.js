@@ -30,10 +30,10 @@ function removeFields (rec, fields) {
 function latestJson (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
   const content = baseJson.map(loc => {
-    const dates = Object.keys(loc.timeseries).sort()
-    const lastTs = loc.timeseries[ dates.slice(-1)[0] ]
+    const dates = Object.keys(loc.dates).sort()
+    const lastTs = loc.dates[ dates.slice(-1)[0] ]
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
+    removeFields(rec, [ 'dates', 'dateSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
     return { ...rec, ...lastTs }
   })
   return JSON.stringify(content, null, 2)
@@ -45,7 +45,7 @@ function locations (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
   const content = baseJson.map(loc => {
     const rec = Object.assign({}, loc)
-    removeFields(rec, [ 'timeseries', 'timeseriesSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
+    removeFields(rec, [ 'dates', 'dateSources', 'warnings', 'area', 'created', 'updated', 'lat', 'long' ])
     return rec
   })
   return JSON.stringify(content, null, 2)
@@ -106,8 +106,8 @@ function latestCsv (baseJson) {
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
 
   const reduceRecord = (arr, rec) => {
-    const dates = Object.keys(rec.timeseries).sort()
-    const lastTs = rec.timeseries[ dates.slice(-1)[0] ]
+    const dates = Object.keys(rec.dates).sort()
+    const lastTs = rec.dates[ dates.slice(-1)[0] ]
     arr.push({ ...rec, ...lastTs })
     return arr
   }
@@ -124,8 +124,8 @@ function timeseries (baseJson) {
       reduce((a, f) => a.concat([ { key: f, header: f } ]), baseCsvColumns)
 
   const reduceRecord = (arr, rec) => {
-    Object.keys(rec.timeseries).map(dt => {
-      arr.push({ ...rec, ...rec.timeseries[dt], date: dt })
+    Object.keys(rec.dates).map(dt => {
+      arr.push({ ...rec, ...rec.dates[dt], date: dt })
     })
     return arr
   }
@@ -138,7 +138,7 @@ function timeseriesJhu (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
 
   const allDates = baseJson.reduce((dates, loc) => {
-    return dates.concat(Object.keys(loc.timeseries))
+    return dates.concat(Object.keys(loc.dates))
   }, [])
   const dates = [ ...new Set(allDates) ].sort()
 
@@ -148,7 +148,7 @@ function timeseriesJhu (baseJson) {
 
   const reduceRecord = (arr, rec) => {
     // Convert all 'cases' to { 'date1': count1, 'date2': count2, ... }
-    const ts = rec.timeseries
+    const ts = rec.dates
     const cases = Object.keys(ts).reduce((hsh, dt) => Object.assign(hsh, { [dt]: ts[dt].cases }), {})
     arr.push(Object.assign(rec, cases))
     return arr
@@ -169,9 +169,9 @@ function timeseriesTidy (baseJson) {
   }, baseCsvColumns)
 
   const reduceRecord = (arr, rec) => {
-    Object.keys(rec.timeseries).forEach(dt => {
-      Object.keys(rec.timeseries[dt]).forEach(k => {
-        const r = { ...rec, date: dt, type: k, value: rec.timeseries[dt][k] }
+    Object.keys(rec.dates).forEach(dt => {
+      Object.keys(rec.dates[dt]).forEach(k => {
+        const r = { ...rec, date: dt, type: k, value: rec.dates[dt][k] }
         arr.push(r)
       })
     })
@@ -192,9 +192,9 @@ function timeseriesTidySmall (baseJson) {
   }, [])
 
   const reduceRecord = (arr, rec) => {
-    Object.keys(rec.timeseries).forEach(dt => {
-      Object.keys(rec.timeseries[dt]).forEach(k => {
-        const r = { locationID: rec.locationID, date: dt, type: k, value: rec.timeseries[dt][k] }
+    Object.keys(rec.dates).forEach(dt => {
+      Object.keys(rec.dates[dt]).forEach(k => {
+        const r = { locationID: rec.locationID, date: dt, type: k, value: rec.dates[dt][k] }
         arr.push(r)
       })
     })

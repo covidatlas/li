@@ -32,7 +32,7 @@ test('single record builds single record', t => {
   expected = {
     data: { cases: 10 },
     warnings: {},
-    timeseriesSources: 'src1',
+    dateSources: 'src1',
     sources: [ 'src1' ]
   }
 
@@ -80,7 +80,7 @@ test('data from multiple sources are combined if fields are distinct', t => {
   expected = {
     data: { cases: 10, deaths: 20 },
     warnings: {},
-    timeseriesSources: { src1: [ 'cases' ], src2: [ 'deaths' ] },
+    dateSources: { src1: [ 'cases' ], src2: [ 'deaths' ] },
     sources: [ 'src1', 'src2' ]
   }
 
@@ -97,7 +97,7 @@ test('higher priority source overwrites lower priority source', t => {
   expected = {
     data: { cases: 1 },
     warnings: {},
-    timeseriesSources: 'src2',
+    dateSources: 'src2',
     sources: [ 'src2' ]
   }
 
@@ -114,7 +114,7 @@ test('lower priority source is used if higher priority source is missing data fo
   expected = {
     data: { cases: 2222, deaths: 1, tested: 0 },
     warnings: {},
-    timeseriesSources: { src1: [ 'deaths', 'tested' ], src2: [ 'cases' ] },
+    dateSources: { src1: [ 'deaths', 'tested' ], src2: [ 'cases' ] },
     sources: [ 'src1', 'src2' ]
   }
 
@@ -131,7 +131,7 @@ test('two sources with same priority and same value is ok, chooses latest one al
   expected = {
     data: { cases: 1, deaths: 2222 },
     warnings: {},
-    timeseriesSources: 'src2',
+    dateSources: 'src2',
     sources: [ 'src2' ]
   }
 
@@ -153,7 +153,7 @@ test('same priority but different values adds warning, uses larger value', t => 
   expected = {
     data: { cases: 3 },
     warnings: { cases: 'conflict (src1: 3, src2: 2)' },
-    timeseriesSources: 'src1',
+    dateSources: 'src1',
     sources: [ 'src1' ]
   }
 
@@ -171,7 +171,7 @@ test('conflicting lower priority sources are ignored', t => {
   expected = {
     data: { cases: 1 },
     warnings: {},
-    timeseriesSources: 'src3',
+    dateSources: 'src3',
     sources: [ 'src3' ]
   }
 
@@ -197,7 +197,7 @@ test('sanity check, multiple data points', t => {
       cases: 'conflict (src1: 3, src2: 2, src3: 1)',
       deaths: 'conflict (src2: 22, src3: 11)'
     },
-    timeseriesSources: { src1: [ 'cases' ], src2: [ 'deaths' ], src3: [ 'tested' ] },
+    dateSources: { src1: [ 'cases' ], src2: [ 'deaths' ], src3: [ 'tested' ] },
     sources: [ 'src1', 'src2', 'src3' ]
   }
 
@@ -211,7 +211,7 @@ test('sanity check, multiple data points', t => {
  * to be adjusted. */
 test('characterization test: no case data', t => {
   records = [ { locationID: 'loc1', date: '2020-06-19', source: 's' } ]
-  expected = { data: {}, warnings: {}, timeseriesSources: {}, sources: [] }
+  expected = { data: {}, warnings: {}, dateSources: {}, sources: [] }
   validate(t)
   t.end()
 })
@@ -219,7 +219,7 @@ test('characterization test: no case data', t => {
 
 test('sanity check, empty recordset does not throw', t => {
   records = []
-  expected = { data: {}, warnings: {}, timeseriesSources: {}, sources: [] }
+  expected = { data: {}, warnings: {}, dateSources: {}, sources: [] }
   validate(t)
   t.end()
 })
