@@ -37,7 +37,7 @@
         "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       }
     ],
-    "timeseries": {
+    "dates": {
       "YYYY-MM-DD": {
         "cases": 21,
         "deaths": 4,
@@ -46,7 +46,7 @@
         "icu": 2
       }
     },
-    "timeseriesSources": {
+    "dateSources": {
       "YYYY-MM-DD": "json-source"
     },
     "sources": [

@@ -37,7 +37,7 @@
         "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       }
     ],
-    "timeseries": {
+    "dates": {
       "2020-05-21": {
         "cases": 21,
         "deaths": 4,
@@ -54,7 +54,7 @@
         "growthFactor": 1.05
       }
     },
-    "timeseriesSources": {
+    "dateSources": {
       "2020-05-21..2020-05-22": "json-source"
     },
     "sources": [
