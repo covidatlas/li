@@ -381,7 +381,7 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
   "countyID": "fips:06007",
   "countyName": "Butte County",
   "populationDensity": 51.7139,
-  "timeseries": {
+  "dates": {
     "2020-05-21": {
       "cases": 21,
       "deaths": 4,
@@ -391,7 +391,7 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
     },
     ...
   },
-  "timeseriesSources": {
+  "dateSources": {
     "2020-05-21..2020-06-18": "us-ca",
     "2020-06-19": { "us-ca": [ "deaths" ], "jhu": [ "cases" ] }
   },
@@ -413,15 +413,15 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
 
 #### Changes
 
-* added locationID, slug, sources, timeseriesSources, potentially add warnings
+* added locationID, slug, sources, dateSources, potentially add warnings
 * tz is not in an array
 * removed rating, url, featureId
 
 #### Combining Data Sources
 
-The data fields in a given record can be supplied by many sources: one source may return cases and deaths, and another return hospitalizations and tests.  The field `timeseriesSources` shows where each field comes from.
+The data fields in a given record can be supplied by many sources: one source may return cases and deaths, and another return hospitalizations and tests.  The field `dateSources` shows where each field comes from.
 
-A shorthand is shown for the date ranges for which the sources supplied data.  For example, `"2020-05-21 .. 2020-06-18": "src"` means that `src` supplied the data from 05-21 to 06-18.
+A shorthand is shown for the date ranges for which the sources supplied data.  For example, `"2020-05-21..2020-06-18": "src"` means that `src` supplied the data from 05-21 to 06-18.
 
 If there are conflicts in the data (e.g., multiple sources return `cases`, but they're inconsistent), a `warnings` element is added.  e.g.,
 
