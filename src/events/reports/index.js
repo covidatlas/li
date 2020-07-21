@@ -7,7 +7,8 @@ const { getWriter } = require('./write/index.js')
 
 /** Post a status update. */
 async function reportStatus (filename, status, params = {}) {
-  await updateStatus(filename, 'v1', status, params)
+  const version = '1'
+  await updateStatus(filename, version, status, params)
 }
 
 
