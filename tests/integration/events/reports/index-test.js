@@ -65,12 +65,15 @@ function printSideBySide (actual, expected) {
 /** Compare generated report in testReportsDir to same filename in
  * ./expected-results/. */
 function assertContentsEqual (t, filename) {
+  const d = utils.testReportsDir.reportsDir  // shorthand
+  const actualFilename = join(d, 'v1', filename)
+  const expectedFilename = join(__dirname, 'expected-results', filename)
   const clean = f => fs.readFileSync(f, 'UTF-8').
         replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD').
         replace(/T\d{2}:\d{2}:\d{2}\.\d{3}Z/g, 'THH:NN:SS.mmmZ').
         trim()
-  const actual = clean(join(utils.testReportsDir.reportsDir, filename))
-  const expected = clean(join(__dirname, 'expected-results', filename))
+  const actual = clean(actualFilename)
+  const expected = clean(expectedFilename)
   if (actual !== expected && filename.match(/json$/))
     printSideBySide(actual, expected)
   t.equal(expected, actual, `validate ${filename}`)
@@ -114,7 +117,8 @@ test('files are generated', async t => {
   let files = await waitForGeneratedFiles(reports.length)
   const msg = `expected ${reports.length} files, got ${files.length} (${files.join()})`
   t.equal(files.length, reports.length, msg)
-  t.equal(files.sort().join(), reports.sort().join())
+  const expectedFiles = reports.sort().map(s => join('v1', s)).join()
+  t.equal(files.sort().join(), expectedFiles)
 
   for (const f of reports)
     assertContentsEqual(t, f)
