@@ -26,7 +26,7 @@ function html (json) {
     return d
   })
 
-  const fields = [ 'report', 'status', 'error', 'updated' ]
+  const fields = [ 'report', 'version', 'status', 'error', 'updated' ]
   const headings = fields
   const ths = headings.map(h => `<th>${h}</th>`).join('')
   const trs = tblJson.map(d => {
