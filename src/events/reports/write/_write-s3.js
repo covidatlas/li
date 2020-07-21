@@ -5,7 +5,7 @@ async function write (params) {
   const { data, filename } = params
 
   const Bucket = getReportsBucket()
-  const key = [ 'beta', 'latest', filename ].join('/')
+  const key = `v1/latest/${filename}`
   const putParams = {
     ACL: 'public-read',
     Bucket,
@@ -17,7 +17,7 @@ async function write (params) {
   await put.promise()
 
   const archiveDate = new Date().toISOString().slice(0, 10)
-  const copyKey = [ 'beta', archiveDate, filename ].join('/')
+  const copyKey = `v1/${archiveDate}/${filename}`
   console.log(`Copying /${key} to ${copyKey}`)
   const copyParams = {
     CopySource: `/${Bucket}/${key}`,

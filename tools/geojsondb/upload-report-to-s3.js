@@ -10,8 +10,7 @@ async function upload (file) {
 
   const Bucket = getReportsBucket()
 
-  // TODO (reports) extract code for common reports folder
-  const key = [ 'beta', 'latest', 'features.json' ].join('/')
+  const key = 'v1/latest/features.json'
 
   const putParams = {
     ACL: 'public-read',
@@ -23,7 +22,7 @@ async function upload (file) {
   console.log('Uploading ...')
   const put = s3.putObject(putParams)
   await put.promise()
-  console.log(`Uploaded report to ${Bucket}/${key} (NOTE: may need to change folder from beta!)`)
+  console.log(`Uploaded report to ${Bucket}/${key}`)
 
 }
 
