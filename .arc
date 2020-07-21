@@ -66,9 +66,9 @@ status
   source *String
   event **String
 
-# Report generation status.
-report-status
+report-generation-status
   report *String
+  version **String
 
 # Running log of source status changes
 status-logs

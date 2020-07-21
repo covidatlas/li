@@ -2,9 +2,10 @@ const arc = require('@architect/functions')
 
 async function getJson () {
   const data = await arc.tables()
-  return await data['report-status'].scan({}).
+  const sortKey = rec => [ rec.version, rec.report ].join('/')
+  return data['report-generation-status'].scan({}).
     then(result => result.Items).
-    then(items => items.sort((a, b) => a.reportSource < b.reportSource ? -1 : 1))
+    then(items => items.sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1))
 }
 
 function toHtml (s) {

@@ -96,7 +96,7 @@ test('files are generated', async t => {
   t.equal(locations.length, 1, `Sanity check, have 1 location: ${JSON.stringify(locations, null, 2)}`)
 
   await utils.generateReports(utils.sourcesPath, utils.testReportsDir.reportsDir)
-  const reportStatus = await utils.waitForDynamoTable('report-status', 10000, 200)
+  const reportStatus = await utils.waitForDynamoTable('report-generation-status', 10000, 200)
   console.table(reportStatus)
 
   const reports = [
