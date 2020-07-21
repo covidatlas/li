@@ -12,7 +12,7 @@ process.env.NODE_ENV = 'testing'
 const test = require('tape')
 const utils = require('../../_lib/utils.js')
 const arc = require('@architect/functions')
-const updateStatus = require(`${utils.srcPath}/events/reports/_update-report-generation-status.js`)
+const updateStatus = require(`${utils.srcPath}/events/reports-v1/_update-report-generation-status.js`)
 
 
 /** The tests write to report-gen-status, so check content. */

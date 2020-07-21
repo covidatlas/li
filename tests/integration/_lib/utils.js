@@ -16,7 +16,7 @@ const fakeCrawlSites = require(path.join(intDir, '_lib', 'fake-crawl-sites.js'))
 const srcPath = path.join(__dirname, '..', '..', '..', 'src')
 const crawlerHandler = require(path.join(process.cwd(), 'src', 'events', 'crawler', 'index.js')).handler
 const scraperHandler = require(path.join(process.cwd(), 'src', 'events', 'scraper', 'index.js')).handler
-const reportsHandler = require(path.join(process.cwd(), 'src', 'events', 'reports', 'index.js')).handler
+const reportsV1Handler = require(path.join(process.cwd(), 'src', 'events', 'reports-v1', 'index.js')).handler
 
 /** Create AWS event payload for the crawl/scrape handlers. */
 function makeEventMessage (hsh) {
@@ -111,7 +111,7 @@ async function scrape (sourceKey) {
 async function generateReports (_sourcesPath) {
   const params = { _sourcesPath, _writeDir: testReportsDir.reportsDir }
   const event = makeEventMessage(params)
-  await reportsHandler(event)
+  await reportsV1Handler(event)
   await waitForDynamoTable('report-generation-status', 5000, 250)
 }
 

@@ -8,7 +8,7 @@
 const test = require('tape')
 
 const { join } = require('path')
-const sut = join(process.cwd(), 'src', 'events', 'reports', 'generate-data', '_build-timeseries.js')
+const sut = join(process.cwd(), 'src', 'events', 'reports-v1', 'generate-data', '_build-timeseries.js')
 const buildTimeseries = require(sut)
 
 /** Data for call to buildTimeseries. */

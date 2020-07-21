@@ -24,7 +24,7 @@ crawler     # Crawls our sources
 scraper     # Operates the scrapers
 locations   # Update location data
 regenerator # Regenerates a source from cache
-reports     # Generate reports
+reports-v1  # Generate v1 reports
 status      # Status updater
 
 

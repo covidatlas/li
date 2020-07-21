@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'testing'
 
 const test = require('tape')
 const utils = require('../../../_lib/utils.js')
-const getBaseJson = require('../../../../../src/events/reports/generate-data/_build-base-json.js')
+const getBaseJson = require('../../../../../src/events/reports-v1/generate-data/_build-base-json.js')
 
 /** Fake sources used by the tests. */
 const path = require('path')
