@@ -85,6 +85,8 @@ async function getBaseJson (params, statusCallback = baseJsonStatus) {
   for (var i = 0; i < locations.length; ++i) {
     statusCallback(i, locations.length)
     const loc = locations[i]
+    delete loc.created
+    delete loc.updated
     addPopulationDensity(loc)
     addLatLong(loc)
     const ts = await getTimeseriesForLocation(data, loc.locationID)
