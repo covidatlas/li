@@ -16,7 +16,7 @@ get /get/headless
 get /locations
 get /locations/:location
 get /status
-get /report_status
+get /reports/status
 get /invocations
 
 @events
