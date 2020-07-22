@@ -12,7 +12,7 @@ const { join } = require('path')
 
 ;(async () => {
   await arc.events.publish({
-    name: 'reports',
+    name: 'reports-v1',
     payload: {
       _writeDir: join(__dirname, '..', 'reports')
     }

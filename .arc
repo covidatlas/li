@@ -16,7 +16,7 @@ get /get/headless
 get /locations
 get /locations/:location
 get /status
-get /report_status
+get /reports/status
 get /invocations
 
 @events
@@ -24,7 +24,7 @@ crawler     # Crawls our sources
 scraper     # Operates the scrapers
 locations   # Update location data
 regenerator # Regenerates a source from cache
-reports     # Generate reports
+reports-v1  # Generate v1 reports
 status      # Status updater
 
 
@@ -66,9 +66,9 @@ status
   source *String
   event **String
 
-# Report generation status.
-report-status
+report-generation-status
   report *String
+  version **String
 
 # Running log of source status changes
 status-logs

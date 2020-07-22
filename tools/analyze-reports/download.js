@@ -47,7 +47,7 @@ async function main () {
 
   const reports = [ 'timeseries-byLocation.json', 'baseData.json' ]
   const bucket = getReportsBucket('production')
-  const promises = reports.map(r => downloadFile(bucket, [ 'beta', 'latest', r ].join('/'), saveTo))
+  const promises = reports.map(r => downloadFile(bucket, `v1/latest/${r}`, saveTo))
   await Promise.all(promises)
 }
 

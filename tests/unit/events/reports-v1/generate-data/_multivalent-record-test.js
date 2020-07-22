@@ -1,6 +1,6 @@
 const test = require('tape')
 const { join } = require('path')
-const sut = join(process.cwd(), 'src', 'events', 'reports', 'generate-data', '_multivalent-record.js')
+const sut = join(process.cwd(), 'src', 'events', 'reports-v1', 'generate-data', '_multivalent-record.js')
 const createMultivalentRecord = require(sut)
 
 

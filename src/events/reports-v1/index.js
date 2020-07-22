@@ -1,4 +1,5 @@
 const arc = require('@architect/functions')
+const updateStatus = require('./_update-report-generation-status.js')
 const getBaseJson = require('./generate-data/_build-base-json.js')
 const generateData = require('./generate-data/index.js')
 const { getWriter } = require('./write/index.js')
@@ -6,11 +7,8 @@ const { getWriter } = require('./write/index.js')
 
 /** Post a status update. */
 async function reportStatus (filename, status, params = {}) {
-  const rpt = { report: filename, status, ...params }
-  rpt.updated = new Date().toISOString()
-  await arc.tables().
-    then(data => data['report-status'].put(rpt))
-  console.log(`Report ${filename}: ${status}`)
+  const version = '1'
+  await updateStatus(filename, version, status, params)
 }
 
 

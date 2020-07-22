@@ -108,7 +108,6 @@ This doc compares a sample Corona Data Scraper (CDS) record with a Li record.  _
   "stateName": "California",
   "countyID": "fips:06007",
   "countyName": "Butte County",
-  "created": "2020-06-26T01:21:44.104Z",
   "sources": [
     "json-source"
   ],
