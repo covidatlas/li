@@ -40,6 +40,35 @@ test('single record', t => {
 })
 
 
+test('multiple dates single location', t => {
+
+  baseDataString = `[
+  {
+    "locationID": "iso1:us#iso2:us-ca#fips:06007",
+    "dates": {
+      "2020-06-15": { "cases": 15 },
+      "2020-06-19": { "deaths": 15 }
+    }
+  }
+]`
+
+  expectedOutputString = `{
+  "2020-06-15": {
+    "0": { "cases": 15 }
+  },
+  "2020-06-16": {},
+  "2020-06-17": {},
+  "2020-06-18": {},
+  "2020-06-19": {
+    "0": { "deaths": 15 }
+  }
+}`
+
+  assertMatchesExpected(t)
+  t.end()
+})
+
+
 /**
 Tests
 
@@ -47,4 +76,5 @@ multiple dates single location
 dates with gaps
 multiple locations different dates
 no timeseries still works
+date over year end
 */

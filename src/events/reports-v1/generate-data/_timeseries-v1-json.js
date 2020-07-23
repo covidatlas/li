@@ -23,14 +23,20 @@ function _minMaxDatesAcrossAllLocations (baseData) {
 function _dateRange (minYYYYMMDD, maxYYYYMMDD) {
   assert(minYYYYMMDD <= maxYYYYMMDD, `start ${minYYYYMMDD} <= end ${maxYYYYMMDD}`)
 
-  const firstDate = new Date(minYYYYMMDD)
-  const lastDate = new Date(maxYYYYMMDD)
-  let dateRange = []
-  const nextDay = (i) => { return new Date(i.getFullYear(), i.getMonth(), i.getDate() + 1) }
-  for (let i = firstDate; i <= lastDate; i = nextDay(i)) {
-    dateRange.push(i.toISOString().split('T')[0])
+  const result = []
+
+  // Have to muck around here b/c js dates are weird ...
+  // simply saying 'getDate() + 1' didn't work due to timezones etc.
+  const toYYYYMMDD = i => i.toISOString().split('T')[0]
+  const nextDay = (i) => {
+    return new Date(i.getFullYear(), i.getMonth(), i.getDate() + 1)
   }
-  return dateRange
+
+  const start = new Date(minYYYYMMDD)
+  for (let i = start; toYYYYMMDD(i) <= maxYYYYMMDD; i = nextDay(i)) {
+    result.push(toYYYYMMDD(i))
+  }
+  return result
 }
 
 /** Build timeseries.json. */
@@ -38,6 +44,7 @@ function buildTimeseriesV1Report (baseData) {
   const minMaxDates = _minMaxDatesAcrossAllLocations(baseData)
   const dates = _dateRange(minMaxDates.min, minMaxDates.max)
   const result = dates.reduce((h, dt) => { h[dt]={}; return h }, {})
+
   baseData.forEach((loc, index) => {
     const locDates = Object.keys(loc.dates || {})
     locDates.forEach(dt => result[dt][`${index}`] = loc.dates[dt])
