@@ -92,6 +92,10 @@ async function handleEvent (event) {
       generate: () => generateData.timeseriesByLocation(baseJson)
     },
     {
+      filename: 'timeseries.json',
+      generate: () => generateData.timeseriesJson(baseJson)
+    },
+    {
       filename: 'timeseries-jhu.csv',
       generate: () => generateData.timeseriesJhu(baseJson)
     },
