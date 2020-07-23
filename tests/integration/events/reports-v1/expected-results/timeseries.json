@@ -1,0 +1,11 @@
+{
+  "YYYY-MM-DD": {
+    "0": {
+      "cases": 21,
+      "deaths": 4,
+      "tested": 200,
+      "hospitalized": 5,
+      "icu": 2
+    }
+  }
+}

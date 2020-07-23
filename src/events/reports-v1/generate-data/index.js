@@ -1,4 +1,5 @@
 const getBaseJson = require('./_build-base-json.js')
+const buildTimeseriesV1Report = require('./_timeseries-v1-json.js')
 const caseDataFields = require('@architect/shared/constants/case-data-fields.js')
 const stringify = require('csv-stringify/lib/sync')
 
@@ -50,6 +51,15 @@ function locations (baseJson) {
   })
   return JSON.stringify(content, null, 2)
 }
+
+
+/** covidatlas.com-compliant timeseries.json source. */
+function timeseriesJson (baseJson) {
+  if (!baseJson) throw new Error('baseJson data is required')
+  const content = buildTimeseriesV1Report(baseJson)
+  return JSON.stringify(content, null, 2)
+}
+
 
 /** timeseries-byLocation.json source. */
 function timeseriesByLocation (baseJson) {
@@ -212,6 +222,7 @@ module.exports = {
   latestCsv,
 
   locations,
+  timeseriesJson,
   timeseriesByLocation,
 
   locationsCsv,

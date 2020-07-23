@@ -111,7 +111,8 @@ test('files are generated', async t => {
     'timeseries-byLocation.json',
     'timeseries-jhu.csv',
     'timeseries-tidy-small.csv',
-    'timeseries.csv'
+    'timeseries.csv',
+    'timeseries.json',
   ]
 
   let files = await waitForGeneratedFiles(reports.length)
