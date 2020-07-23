@@ -69,12 +69,102 @@ test('multiple dates single location', t => {
 })
 
 
-/**
-Tests
+test('multiple locations', t => {
 
-multiple dates single location
-dates with gaps
-multiple locations different dates
-no timeseries still works
-date over year end
-*/
+  baseDataString = `[
+  {
+    "locationID": "iso1:us#iso2:us-ca#fips:06007",
+    "dates": {
+      "2020-06-15": { "cases": 15 },
+      "2020-06-19": { "deaths": 15 }
+    }
+  },
+  {
+    "locationID": "loc2",
+    "dates": {
+      "2020-06-21": { "cases": 222 }
+    }
+  }
+
+]`
+
+  expectedOutputString = `{
+  "2020-06-15": {
+    "0": { "cases": 15 }
+  },
+  "2020-06-16": {},
+  "2020-06-17": {},
+  "2020-06-18": {},
+  "2020-06-19": {
+    "0": { "deaths": 15 }
+  },
+  "2020-06-20": {},
+  "2020-06-21": {
+    "1": { "cases": 222 }
+  }
+}`
+
+  assertMatchesExpected(t)
+  t.end()
+})
+
+
+test('location ignored if no dates', t => {
+
+  baseDataString = `[
+  {
+    "locationID": "iso1:us#iso2:us-ca#fips:06007",
+    "dates": {
+      "2020-06-15": { "cases": 15 },
+      "2020-06-19": { "deaths": 15 }
+    }
+  },
+  {
+    "locationID": "loc2"
+  }
+]`
+
+  expectedOutputString = `{
+  "2020-06-15": {
+    "0": { "cases": 15 }
+  },
+  "2020-06-16": {},
+  "2020-06-17": {},
+  "2020-06-18": {},
+  "2020-06-19": {
+    "0": { "deaths": 15 }
+  }
+}`
+
+  assertMatchesExpected(t)
+  t.end()
+})
+
+
+test('date range works over year end', t => {
+
+  baseDataString = `[
+  {
+    "locationID": "iso1:us#iso2:us-ca#fips:06007",
+    "dates": {
+      "2020-12-29": { "cases": 15 },
+      "2021-01-02": { "deaths": 15 }
+    }
+  }
+]`
+
+  expectedOutputString = `{
+  "2020-12-29": {
+    "0": { "cases": 15 }
+  },
+  "2020-12-30": {},
+  "2020-12-31": {},
+  "2021-01-01": {},
+  "2021-01-02": {
+    "0": { "deaths": 15 }
+  }
+}`
+
+  assertMatchesExpected(t)
+  t.end()
+})
