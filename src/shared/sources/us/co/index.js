@@ -262,6 +262,47 @@ module.exports = {
         counties.push(stateData)
         return counties
       }
+    },
+    {
+      startDate: '2020-07-26',
+      crawl: [
+        {
+          // https://hub.arcgis.com/datasets/CDPHE::colorado-covid-19-positive-cases-and-rates-of-infection-by-county-of-identification/data
+          type: 'csv',
+          url: 'https://opendata.arcgis.com/datasets/222c9d85e93540dba523939cfb718d76_0.csv',
+        },
+      ],
+      scrape (data) {
+        const requiredKeys = [
+          'FULL_',
+          'County_Pos_Cases',
+          'County_Population',
+          'County_Deaths',
+          'State_Number_Hospitalizations',
+          'State_Number_Tested'
+        ]
+        const actualKeys = Object.keys(data[0])
+        const missing = requiredKeys.filter(k => !actualKeys.includes(k))
+        const msg = `Missing required key(s): ${missing.join(', ')}`
+        assert.equal(missing.length, 0, msg)
+        const counties = []
+        const filteredData = data.filter(d => {
+          return ![ 'OUT OF STATE', 'UNKNOWN', 'INTERNATIONAL', '' ].includes(d.FULL_)
+        })
+        for (const county of filteredData) {
+          counties.push({
+            county: parse.string(county.FULL_),
+            cases: parse.number(county.County_Pos_Cases || '0'),
+            deaths: parse.number(county.County_Deaths || '0'),
+            population: parse.number(county.County_Population || '0')
+          })
+        }
+        const stateData = transform.sumData(counties)
+        stateData.hospitalized = parse.number(data[0].State_Number_Hospitalizations || '0')
+        stateData.tested = parse.number(data[0].State_Number_Tested || '0')
+        counties.push(stateData)
+        return counties
+      }
     }
   ]
 }
