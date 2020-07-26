@@ -25,11 +25,10 @@ TBD ... Read the [Data Fields](./docs/data_fields.md) documentation for
 details on exactly what each field in the dataset means.
 -->
 
-## Migrating from CoronaDataScraper
+## Reports
 
-The prior version of this project, [coronadatascraper](https://github.com/covidatlas/coronadatascraper), generates and hosts reports at https://coronadatascraper.com/#home.  Eventually, these reports will be discontinued, but no date is set yet.
-
-* [Migrating from CDS data to Li data](./docs/reports.md)
+* [V1 reports](./docs/reports-v1.md)
+* [Migrating from CDS data to Li data](./docs/reports-migrating-from-cds-to-li.md).  The prior version of this project, [coronadatascraper](https://github.com/covidatlas/coronadatascraper), generates and hosts reports at https://coronadatascraper.com/#home.  Eventually, these reports will be discontinued.
 
 
 # Developers
