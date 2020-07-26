@@ -248,7 +248,7 @@ module.exports = {
       ],
       scrape (data) {
         assert(data, 'fetch unsuccessful')
-        let counties = []
+        let result = []
         const unassigned = {
           county: UNASSIGNED,
           cases: 0,
@@ -257,13 +257,20 @@ module.exports = {
         }
         for (const county of data) {
           let countyName = _countyMap[county.County_1] || county.County_1
-          if (countyName === 'Unknown') {
+          if (countyName.toLowerCase() === 'state') {
+            result.push({
+              cases: parse.number(county.CasesAll),
+              tested: parse.number(county.T_total),
+              deaths: parse.number(getDeaths(county))
+            })
+          }
+          else if (countyName.toLowerCase() === 'unknown') {
             unassigned.cases += parse.number(county.CasesAll)
             unassigned.tested += parse.number(county.T_total)
             unassigned.deaths += parse.number(getDeaths(county))
           } else {
             countyName = geography.addCounty(parse.string(countyName))
-            counties.push({
+            result.push({
               county: countyName,
               cases: parse.number(county.CasesAll),
               tested: parse.number(county.T_total),
@@ -271,11 +278,10 @@ module.exports = {
             })
           }
         }
-        counties.push(unassigned)
-        counties.push(transform.sumData(counties))
-        counties = geography.addEmptyRegions(counties, _counties, 'county')
-        counties = counties.filter(({ county }) => county !== UNASSIGNED)
-        return counties
+        result.push(unassigned)
+        result = geography.addEmptyRegions(result, _counties, 'county')
+        result = result.filter(({ county }) => county !== UNASSIGNED)
+        return result
       }
     }
   ]
