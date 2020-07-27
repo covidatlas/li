@@ -7,7 +7,7 @@ module.exports = {
   state: 'iso2:US-CA',
   county: 'fips:06075',
   timeseries: true,
-  maintainers: [ maintainers.jbencina, maintainers['1ec5'], maintainers.jzohrab ],
+  maintainers: [ maintainers.jbencina, maintainers.mnguyen, maintainers.jzohrab ],
   friendly: {
     name: 'SF Department of Public Health',
     url: 'https://www.sfdph.org/dph/alerts/coronavirus.asp'

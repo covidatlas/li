@@ -91,7 +91,7 @@ module.exports = {
     state: 'Seoul',
     city: 'Gwanak-gu',
     flag: '🇰🇷'
-},
+  },
   appastair: {
     name: 'Alastair Gilfillan',
     email: 'alastair@alastair.pro',
@@ -101,5 +101,16 @@ module.exports = {
     state: 'New South Wales',
     city: 'Sydney',
     flag: '🇦🇺'
+  },
+  mnguyen: {
+    name: 'Minh Nguyễn',
+    url: 'http://notes.1ec5.org/',
+    github: '1ec5',
+    twitter: '1ec5',
+    country: 'USA',
+    state: 'CA',
+    county: 'Santa Clara County',
+    city: 'San José',
+    flag: '🇺🇸'
   }
 }
