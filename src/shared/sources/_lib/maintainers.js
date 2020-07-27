@@ -66,6 +66,14 @@ module.exports = {
     country: 'iso1:US',
     flag: '🇺🇸'
   },
+  sglyon: {
+    name: 'Spencer Lyon',
+    github: 'sglyon',
+    country: 'iso1:US',
+    state: 'FL',
+    county: 'Orange',
+    flag: '🇺🇸'
+  },
   slezakbs: {
     name: 'Brendan Slezak',
     email: 'brendan.slezak@geospark.io',
