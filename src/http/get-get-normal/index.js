@@ -8,6 +8,10 @@ async function getNormal (req) {
   options = JSON.parse(options)
   let { cookies, url, headers } = options
 
+  delete options.cookies
+  delete options.url
+  delete options.headers
+
   const sslDefaults = {
     rejectUnauthorized: true,
     disableSSL: false
@@ -52,7 +56,8 @@ async function getNormal (req) {
       throwHttpErrors: false,
       // Repeating defaults jic
       isStream: false,
-      encoding: 'utf8'
+      encoding: 'utf8',
+      ...options
     })
 
     const status = response.statusCode
@@ -100,8 +105,10 @@ async function getNormal (req) {
       }
     }
     else {
+      console.log('got resp body = ' + response.body)
       return {
         headers: responseHeaders,
+        body: JSON.stringify({ body: response.body }),
         statusCode: is2xx ? 500 : status || 599
       }
     }
