@@ -1,8 +1,8 @@
 // Migrated from coronadatascraper, src/shared/scrapers/US/CA/mercury-news.js
 
 const srcShared = '../../../'
-const datetime = require(srcShared + 'datetime/index.js')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
+const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
@@ -32,40 +32,37 @@ module.exports = {
         },
       ],
       scrape (data, date) {
-        let dateString = datetime.getYYYYMMDD(date)
 
-        const lastDate = data[0].Date
-        if (date > lastDate) {
-          const msg = `${dateString} is newer than last sample ${lastDate}`
-          console.error(`  🚨 ${msg}.   Using last sample anyway.`)
-          dateString = lastDate
-        }
+        // merc news reports date in proper format (e.g., "Date:
+        // '2020-07-29'"), so return it as-is.
+        function toYYYYMMDD (datestring) { return datestring }
 
-        const firstDate = data[data.length - 1].Date
-        if (date < firstDate) {
-          throw new Error(`Timeseries starts at ${firstDate}, but date is ${dateString}`)
-        }
+        const { filterDate, func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date)
 
-        const counties = []
-        for (const stateData of data.filter(d => d.Date === dateString)) {
-          const record = { county: geography.addCounty(stateData.County) }
+        const counties = data.filter(func).map(row => {
+          const record = {
+            county: geography.addCounty(row.County),
+            date: filterDate
+          }
           const propToField = {
             cases: 'Cases Total',
             tested: 'Tests Total',
             recovered: 'Recovered Total',
             deaths: 'Deaths Total',
             hospitalized: 'Hospital Confirmed Total',
-            icu: 'ICU Total'
+            hospitalized_current: 'Hospital Confirmed Current',
+            icu: 'ICU Total',
+            icu_current: 'ICU Current'
           }
           for (const [ k, f ] of Object.entries(propToField)) {
-            if (stateData[k] !== '')
-              record[k] = parse.number(stateData[f])
+            if (row[f] !== '')
+              record[k] = parse.number(row[f])
           }
-          counties.push(record)
-        }
+          return record
+        })
 
         if (counties.length === 0) {
-          throw new Error(`Timeseries does not contain a sample for ${dateString}`)
+          throw new Error(`Timeseries does not contain a sample for ${filterDate}`)
         }
 
         counties.push(transform.sumData(counties))
