@@ -65,7 +65,7 @@ module.exports = {
           throw new Error(`Timeseries does not contain a sample for ${filterDate}`)
         }
 
-        counties.push(transform.sumData(counties))
+        counties.push({ ...transform.sumData(counties), date: filterDate })
         return counties
       }
     }
