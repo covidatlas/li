@@ -412,17 +412,77 @@ module.exports = {
         {
           type: 'pdf',
           url: async (client) => {
+            console.log('getting url...')
             // The main page has an href that downloads a PDF.
             const entryUrl = 'https://www.coronavirus.kdheks.gov/160/COVID-19-in-Kansas'
             const { body } = await client({ url: entryUrl })
+            console.log('got body = ... long ...')
             const matches = body.match(
               /gcc01.safelinks.protection.outlook.com.*url=(.*?)&.*/
             )
+            console.log(`match count = ${matches.length}`)
             let url = null
             if (matches.length > 0)
               url = matches[1]
             assert(url, `no url found`)
             url = url.replace(/%3A/g, ':').replace(/%2F/g, '/')
+            console.log('got url = ' + url)
+            const { body2 } = await client({ url })
+            console.log('got body2 = ' + body2)
+            return ({ url })
+          }
+        },
+      ],
+      scrape (body) {
+        if (body === null) {
+          throw new Error(`No pdf at ${this.url}`)
+        }
+        return this._parseDailySummary(body)
+      }
+    },
+    {
+      startDate: '2020-07-29',
+      crawl: [
+        {
+          type: 'pdf',
+          url: async (client) => {
+            console.log('getting url 07-29')
+            // The main page has an href that points to an 'object moved' file
+            // which contains the latest data.  Garbage.
+            const entryUrl = 'https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---May-5'
+
+            /* curl -i entryUrl gives this:
+
+https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---May-5
+HTTP/2 301 
+
+<html><head><title>Object moved</title></head><body>
+<h2>Object moved to <a href="/DocumentCenter/View/1125/Historical---July-29?bidId=">here</a>.</h2>
+</body></html>
+
+             */
+
+            // const { body } = await client({ url: entryUrl, followRedirect: false })
+            // console.log('got body = ' + body)
+            /*
+            const { body } = await client({ url: entryUrl })
+            console.log('got body = ... long ...' + body)
+            const matches = body.match(
+              /gcc01.safelinks.protection.outlook.com.*url=(.*?)&. * /
+            )
+            console.log(`match count = ${matches.length}`)
+            let url = null
+            if (matches.length > 0)
+              url = matches[1]
+            assert(url, `no url found`)
+            url = url.replace(/%3A/g, ':').replace(/%2F/g, '/')
+            console.log('got url = ' + url)
+            const { body2 } = await client({ url })
+          console.log('got body2 = ' + body2)
+            */
+
+            // AFTER REDIRECT HACK
+            const url = 'https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---July-29'
             return ({ url })
           }
         },
