@@ -298,7 +298,13 @@ module.exports = {
           let name = cells[0]
           name = myCountyMap[name] || name
           let county = geography.addCounty(parse.string(name))
-          if ([ 'Unknown County', 'Non-Georgia Resident County' ].includes(county)) {
+          if (
+            [
+              "Unknown County",
+              "Non-Georgia Resident County",
+              "Non-GA Resident/Unknown State County",
+            ].includes(county)
+          ) {
             county = UNASSIGNED
           }
           const cases = parse.number(cells[1])
