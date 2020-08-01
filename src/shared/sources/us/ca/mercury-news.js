@@ -4,7 +4,6 @@ const srcShared = '../../../'
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
-const parse = require(srcShared + 'sources/_lib/parse.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
 
 module.exports = {
@@ -56,7 +55,7 @@ module.exports = {
           }
           for (const [ k, f ] of Object.entries(propToField)) {
             if (row[f] !== '')
-              record[k] = parse.number(row[f])
+              record[k] = parseInt(row[f], 10)
           }
           return record
         })
