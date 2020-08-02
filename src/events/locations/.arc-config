@@ -1,0 +1,4 @@
+@aws
+runtime nodejs12.x
+memory 3008
+timeout 900
