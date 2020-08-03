@@ -68,6 +68,41 @@ async function getAllLocations (data) {
 }
 
 
+/** Run asyncFunction array, poolSize at a time. */
+async function asyncPool (array, poolSize, onExit = () => {}) {
+  const result = []
+  const pool = []
+
+  // Promises leave the pool when they're resolved.
+  function leavePool (e) { pool.splice(pool.indexOf(e), 1) }
+
+  for (const item of array) {
+    const p = Promise.resolve(item())
+    result.push(p)
+    const e = p.then(() => { leavePool(e); onExit() })
+    pool.push(e)
+    if (pool.length >= poolSize)
+      await Promise.race(pool)
+  }
+  return Promise.all(result).then(r => r.flat())
+}
+
+
+function makeLocationLoad (data, loc, params) {
+  return async () => {
+    delete loc.created
+    delete loc.updated
+    addPopulationDensity(loc)
+    addLatLong(loc)
+    const ts = await getTimeseriesForLocation(data, loc.locationID)
+    const sources = ts.sources.map(s => getSource({ source: s, ...params }))
+    const maintainers = uniqueByKey(sources.map(s => s.maintainers).flat(), 'name')
+    const links = uniqueByKey(sources.map(s => s.friendly).flat(), 'url')
+    return { ...loc, maintainers, links, ...ts }
+  }
+}
+
+
 /** Dummy function for status updates. */
 // eslint-disable-next-line no-unused-vars
 async function baseJsonStatus (index, total) {}
@@ -81,21 +116,14 @@ async function getBaseJson (params, statusCallback = baseJsonStatus) {
   const locations = await getAllLocations(data).
         then(result => result.sort((a, b) => a.locationID < b.locationID ? -1 : 1))
 
-  const result = []
-  for (var i = 0; i < locations.length; ++i) {
-    statusCallback(i, locations.length)
-    const loc = locations[i]
-    delete loc.created
-    delete loc.updated
-    addPopulationDensity(loc)
-    addLatLong(loc)
-    const ts = await getTimeseriesForLocation(data, loc.locationID)
-    const sources = ts.sources.map(s => getSource({ source: s, ...params }))
-    const maintainers = uniqueByKey(sources.map(s => s.maintainers).flat(), 'name')
-    const links = uniqueByKey(sources.map(s => s.friendly).flat(), 'url')
-
-    result.push( { ...loc, maintainers, links, ...ts } )
+  let n = 0
+  const onExit = () => {
+    statusCallback(n, locations.length)
+    n += 1
   }
+
+  const promises = locations.map(loc => makeLocationLoad(data, loc, params))
+  const result = await asyncPool(promises, 10, onExit)
   return result
 }
 
