@@ -88,18 +88,19 @@ async function asyncPool (array, poolSize, onExit = () => {}) {
 }
 
 
-function makeLocationLoad (data, loc, params) {
-  return async () => {
-    delete loc.created
-    delete loc.updated
-    addPopulationDensity(loc)
-    addLatLong(loc)
-    const ts = await getTimeseriesForLocation(data, loc.locationID)
-    const sources = ts.sources.map(s => getSource({ source: s, ...params }))
-    const maintainers = uniqueByKey(sources.map(s => s.maintainers).flat(), 'name')
-    const links = uniqueByKey(sources.map(s => s.friendly).flat(), 'url')
-    return { ...loc, maintainers, links, ...ts }
-  }
+/** Each location has timeseries data.  From that, we derive other
+ * data.  This is separated from timeseries loading as it is
+ * cpu-bound, whereas timeseries loading is i/o bound (gathered in
+ * dynamoDB calls). */
+function addDerivedData (loc, params) {
+  delete loc.created
+  delete loc.updated
+  addPopulationDensity(loc)
+  addLatLong(loc)
+  const sources = loc.sources.map(s => getSource({ source: s, ...params }))
+  const maintainers = uniqueByKey(sources.map(s => s.maintainers).flat(), 'name')
+  const links = uniqueByKey(sources.map(s => s.friendly).flat(), 'url')
+  return { ...loc, maintainers, links }
 }
 
 
@@ -122,8 +123,18 @@ async function getBaseJson (params, statusCallback = baseJsonStatus) {
     n += 1
   }
 
-  const promises = locations.map(loc => makeLocationLoad(data, loc, params))
-  const result = await asyncPool(promises, 10, onExit)
+  // Timeseries data is loaded via an async pool, b/c each load calls
+  // dynamoDB (i/o bound).
+  const promises = locations.map(loc => {
+    return async () => {
+      const ts = await getTimeseriesForLocation(data, loc.locationID)
+      return { ...loc, ...ts }
+    }
+  })
+
+  // Load the rest of the derived data.
+  const result = await asyncPool(promises, 100, onExit).
+        then(locs => locs.map(loc => addDerivedData(loc, params)))
   return result
 }
 
