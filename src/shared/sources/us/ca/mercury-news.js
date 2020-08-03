@@ -55,7 +55,7 @@ module.exports = {
           }
           for (const [ k, f ] of Object.entries(propToField)) {
             if (row[f] !== '')
-              record[k] = parseInt(row[f], 10)
+              record[k] = parseInt(row[f].replace(/,/g, ''), 10)
           }
           return record
         })
