@@ -2,6 +2,12 @@ const arc = require('@architect/functions')
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
 const buildTimeseries = require('./_build-timeseries.js')
 
+
+/**
+ * Dynamo DB calls.
+ */
+
+
 async function getTimeseriesForLocation (data, locationID) {
   // Probably should not require pagination as we should only be
   // querying out a few rows tops (a single query operation can
@@ -12,33 +18,27 @@ async function getTimeseriesForLocation (data, locationID) {
       ':locationID': locationID
     }
   }
-  return data['case-data'].query(q).
-    then(result => result.Items).
+
+  // Iterative recursion.
+  async function get (startKey = null, items = []) {
+    const params = q
+    if (startKey)
+      params.ExclusiveStartKey = startKey
+    const r = await data['case-data'].query(params)
+
+    items = items.concat(r.Items)
+    // console.log(`params ${JSON.stringify(params)} got ${r.Items.length} cases`)
+
+    if (r.LastEvaluatedKey)
+      return await get(r.LastEvaluatedKey, items)
+
+    // console.log(`total ${items.length} case records`)
+    return items
+  }
+
+  return get().
     then(buildTimeseries).
-    then(data => data[locationID])
-}
-
-function addPopulationDensity (rec) {
-  if (rec.population && rec.area && rec.area.landSquareMeters) {
-    const pd = (rec.population / rec.area.landSquareMeters) * 1000000
-    rec.populationDensity = Math.round(pd * 10000) / 10000
-  }
-}
-
-function addLatLong (rec) {
-  if (rec.coordinates) {
-    rec.lat = rec.coordinates[1]
-    rec['long'] = rec.coordinates[0]
-  }
-}
-
-/** Given array of hashes, gets unique elements, where uniquness is
- * determined by key value. */
-function uniqueByKey (arr, key) {
-  const h = arr.
-        filter(p => p).
-        reduce((hsh, m) => { return { ...hsh, [m[key]]: m } }, {})
-  return Object.values(h)
+    then(result => result[locationID])
 }
 
 
@@ -87,11 +87,38 @@ async function asyncPool (array, poolSize, onExit = () => {}) {
   return Promise.all(result).then(r => r.flat())
 }
 
-
-/** Each location has timeseries data.  From that, we derive other
+/**
+ * Add derived data.
+ *
+ * Each location has timeseries data.  From that, we derive other
  * data.  This is separated from timeseries loading as it is
  * cpu-bound, whereas timeseries loading is i/o bound (gathered in
- * dynamoDB calls). */
+ * dynamoDB calls).
+ */
+
+function addPopulationDensity (loc) {
+  if (loc.population && loc.area && loc.area.landSquareMeters) {
+    const pd = (loc.population / loc.area.landSquareMeters) * 1000000
+    loc.populationDensity = Math.round(pd * 10000) / 10000
+  }
+}
+
+function addLatLong (loc) {
+  if (loc.coordinates) {
+    loc.lat = loc.coordinates[1]
+    loc['long'] = loc.coordinates[0]
+  }
+}
+
+/** Given array of hashes, gets unique elements, where uniquness is
+ * determined by key value. */
+function uniqueByKey (arr, key) {
+  const hsh = arr.filter(p => p).
+        reduce((h, m) => Object.assign(h, { [m[key]]: m }), {})
+  return Object.values(hsh)
+}
+
+
 function addDerivedData (loc, params) {
   delete loc.created
   delete loc.updated
@@ -103,6 +130,10 @@ function addDerivedData (loc, params) {
   return { ...loc, maintainers, links }
 }
 
+
+/**
+ * Get base json.
+ */
 
 /** Dummy function for status updates. */
 // eslint-disable-next-line no-unused-vars
