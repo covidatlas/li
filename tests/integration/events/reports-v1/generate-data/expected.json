@@ -43,18 +43,10 @@
         "tested": 210,
         "hospitalized": 1,
         "icu": 10
-      },
-      "2020-05-22": {
-        "cases": 22,
-        "deaths": 4,
-        "tested": 220,
-        "hospitalized": 2,
-        "icu": 11,
-        "growthFactor": 1.05
       }
     },
     "dateSources": {
-      "2020-05-21..2020-05-22": "json-source"
+      "2020-05-21": "json-source"
     },
     "sources": [
       "json-source"
