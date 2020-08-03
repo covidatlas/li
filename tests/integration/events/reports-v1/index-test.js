@@ -33,8 +33,11 @@ async function waitForGeneratedFiles (fileCount, timeoutms = 10000, interval = 5
  * comparison. */
 function printSideBySide (actual, expected) {
 
-  const actualOut = actual.split('\n')
-  const expectedOut = expected.split('\n')
+  function getStringArray (json) {
+    return JSON.stringify(json, null, 2).split('\n')
+  }
+  const actualOut = getStringArray(actual)
+  const expectedOut = getStringArray(expected)
 
   // Pad the arrays of output until they're both equal
   // (simplifies subsequent printing).
@@ -68,19 +71,37 @@ function assertContentsEqual (t, filename) {
   const d = utils.testReportsDir.reportsDir  // shorthand
   const actualFilename = join(d, 'v1', filename)
   const expectedFilename = join(__dirname, 'expected-results', filename)
-  const clean = f => fs.readFileSync(f, 'UTF-8').
+
+  function sortKeys (item) {
+    const keys = Object.keys(item).sort()
+    return keys.reduce((hsh, k) => {
+      return { ...hsh, [k]: item[k] }
+    })
+  }
+
+  function clean (f) {
+    console.log(`cleaning ${f}`)
+    let s = fs.readFileSync(f, 'UTF-8').
         replace(/\d{4}-\d{2}-\d{2}/g, 'YYYY-MM-DD').
         replace(/T\d{2}:\d{2}:\d{2}\.\d{3}Z/g, 'THH:NN:SS.mmmZ').
         trim()
+    if (filename.match(/timeseries.json$/))
+      return JSON.parse(s)
+    if (filename.match(/json$/))
+      return JSON.parse(s).map(sortKeys)
+    else
+      return s
+  }
   const actual = clean(actualFilename)
   const expected = clean(expectedFilename)
-  if (actual !== expected && filename.match(/json$/))
+
+  if (filename.match(/json$/) && JSON.stringify(actual) !== JSON.stringify(expected))
     printSideBySide(actual, expected)
-  t.equal(expected, actual, `validate ${filename}`)
+  t.deepEqual(expected, actual, `validate ${filename}`)
 }
 
 
-test('files are generated', async t => {
+test.only('files are generated', async t => {
   await utils.setup()
   t.equal(utils.testReportsDir.allFiles().length, 0, 'no files at start')
 
