@@ -8,37 +8,28 @@ const buildTimeseries = require('./_build-timeseries.js')
  */
 
 
+// Iterative recursion.
+async function recursiveGet (fn, params, startKey = null, items = []) {
+  if (startKey)
+    params.ExclusiveStartKey = startKey
+  const r = await fn(params)
+  items = items.concat(r.Items)
+  if (r.LastEvaluatedKey)
+    return await recursiveGet(fn, params, r.LastEvaluatedKey, items)
+  return items
+}
+
+
 async function getTimeseriesForLocation (data, locationID) {
-  // Probably should not require pagination as we should only be
-  // querying out a few rows tops (a single query operation can
-  // retrieve a maximum of 1 MB of data).
-  const q = {
+  const params = {
     KeyConditionExpression: 'locationID = :locationID',
     ExpressionAttributeValues: {
       ':locationID': locationID
     }
   }
-
-  // Iterative recursion.
-  async function get (startKey = null, items = []) {
-    const params = q
-    if (startKey)
-      params.ExclusiveStartKey = startKey
-    const r = await data['case-data'].query(params)
-
-    items = items.concat(r.Items)
-    // console.log(`params ${JSON.stringify(params)} got ${r.Items.length} cases`)
-
-    if (r.LastEvaluatedKey)
-      return await get(r.LastEvaluatedKey, items)
-
-    // console.log(`total ${items.length} case records`)
-    return items
-  }
-
-  return get().
-    then(buildTimeseries).
-    then(result => result[locationID])
+  const records = await recursiveGet(data['case-data'].query, params)
+  const ts = buildTimeseries(records)
+  return ts[locationID]
 }
 
 
@@ -46,25 +37,9 @@ async function getTimeseriesForLocation (data, locationID) {
  * Get all locations, paginated scan.
  */
 async function getAllLocations (data) {
-  console.log('getting all locations')
-  // Iterative recursion.
-  async function get (startKey = null, items = []) {
-    const params = {}
-    if (startKey)
-      params.ExclusiveStartKey = startKey
-    const r = await data.locations.scan(params)
-
-    items = items.concat(r.Items)
-    console.log(`params ${JSON.stringify(params)} got ${r.Items.length} locations`)
-
-    if (r.LastEvaluatedKey)
-      return await get(r.LastEvaluatedKey, items)
-
-    console.log(`total ${items.length} locations`)
-    return items
-  }
-
-  return await get()
+  const locations = await recursiveGet(data.locations.scan, {})
+  console.log(`locations count: ${locations.length}`)
+  return locations
 }
 
 
