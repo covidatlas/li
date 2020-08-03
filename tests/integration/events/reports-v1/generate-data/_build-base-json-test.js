@@ -12,25 +12,18 @@ const sourcesPath = path.join(intDir, 'fake-sources')
 test('smoke test report with single location', async t => {
   await utils.setup()
 
-  // Generated report should contain these dates:
-  const expectedDates = []
-
-  for (var i = 21; i <= 22; ++i) {
-    const date = '2020-05-' + i
-    expectedDates.push(date)
-
-    const caseData = {
-      cases: i,
-      deaths: Math.floor(i / 5),
-      tested: i * 10,
-      hospitalized: i % 5,
-      icu: Math.floor(i / 2),
+  const date = '2020-05-21'
+  const content = {
+    cases: 21,
+      deaths: 4,
+      tested: 210,
+      hospitalized: 1,
+      icu: 10,
       date
     }
-    utils.writeFakeSourceContent('json-source/data.json', caseData)
-    await utils.crawl('json-source')
-    await utils.scrape('json-source')
-  }
+  utils.writeFakeSourceContent('json-source/data.json', content)
+  await utils.crawl('json-source')
+  await utils.scrape('json-source')
 
   // Reports require locations.
   // Scrape creates an event to load location data with
@@ -40,7 +33,7 @@ test('smoke test report with single location', async t => {
   const locations = await utils.waitForDynamoTable('locations', 10000, 200)
   t.equal(locations.length, 1, `Sanity check, have 1 location: ${JSON.stringify(locations, null, 2)}`)
   const caseData = await utils.waitForDynamoTable('case-data', 10000, 200)
-  t.equal(caseData.length, 2, `Sanity check, have 2 case records: ${JSON.stringify(caseData, null, 2)}`)
+  t.equal(caseData.length, 1, `Sanity check, have 1 case records: ${JSON.stringify(caseData, null, 2)}`)
 
   const statusUpdates = []
   function updateStatus (index, total) {
@@ -52,21 +45,9 @@ test('smoke test report with single location', async t => {
 
   t.deepEqual(statusUpdates, [ '0 of 1' ], 'location status updates sent')
 
-  // Generated json has timestamps in it which is not deterministic,
-  // replace with generic tokens.
-  function clean (h, debugTitle) {
-    const s = JSON.stringify(h, null, 2).
-          replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/g, '__DATETIME__').
-          replace(/\.\./g, ' .. ')  // Required, or tape hides the lines!
-
-    if (debugTitle)
-      [ debugTitle, '============', s ].forEach(x => console.log(x))
-
-    return s
-  }
   // eslint-disable-next-line
   const expected = require('./expected.json')
-  t.equal(clean(expected), clean(actual, 'ACTUAL'), 'validate json')
+  t.deepEqual(expected, actual, 'validate json')
 
   await utils.teardown()
   t.end()
