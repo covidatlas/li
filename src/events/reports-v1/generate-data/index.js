@@ -73,7 +73,7 @@ function timeseriesByLocation (baseJson) {
 }
 
 /** Common fields to include in all CSV reports. */
-const baseCsvColumns = [
+const baseCsvProperties = [
   'locationID',
   'slug',
   'name',
@@ -87,7 +87,18 @@ const baseCsvColumns = [
   'population',
   'aggregate',
   'tz'
-].map(s => { return { key: s, header: s.replace('Name', '') } })
+]
+
+/** Prune a baseJson record to only include the fields required by the csv. */
+function csvRecord (rec) {
+  return baseCsvProperties.reduce((h, f) => {
+    h[f] = rec[f]
+    return h
+  }, {})
+}
+
+const baseCsvColumns = baseCsvProperties.
+      map(s => { return { key: s, header: s.replace('Name', '') } })
 
 
 function csvContent (baseJson, reduceRecord, cols) {
@@ -100,7 +111,7 @@ function locationsCsv (baseJson) {
   if (!baseJson) throw new Error('baseJson data is required')
 
   const reduceRecord = (arr, rec) => {
-    arr.push(rec)
+    arr.push(csvRecord(rec))
     return arr
   }
 
@@ -118,7 +129,7 @@ function latestCsv (baseJson) {
   const reduceRecord = (arr, rec) => {
     const dates = Object.keys(rec.dates).sort()
     const lastTs = rec.dates[ dates.slice(-1)[0] ]
-    arr.push({ ...rec, ...lastTs })
+    arr.push({ ...csvRecord(rec), ...lastTs })
     return arr
   }
 
@@ -135,7 +146,7 @@ function timeseries (baseJson) {
 
   const reduceRecord = (arr, rec) => {
     Object.keys(rec.dates).map(dt => {
-      arr.push({ ...rec, ...rec.dates[dt], date: dt })
+      arr.push({ ...csvRecord(rec), ...rec.dates[dt], date: dt })
     })
     return arr
   }
@@ -160,7 +171,7 @@ function timeseriesJhu (baseJson) {
     // Convert all 'cases' to { 'date1': count1, 'date2': count2, ... }
     const ts = rec.dates
     const cases = Object.keys(ts).reduce((hsh, dt) => Object.assign(hsh, { [dt]: ts[dt].cases }), {})
-    arr.push(Object.assign(rec, cases))
+    arr.push(Object.assign(csvRecord(rec), cases))
     return arr
   }
 
