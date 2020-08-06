@@ -1,79 +1,67 @@
-// Migrated from coronadatascraper, src/shared/scrapers/US/CA/solano-county.js
-
-const srcShared = '../../../'
-const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
-const parse = require(srcShared + 'sources/_lib/parse.js')
+const maintainers = require('../../_lib/maintainers.js')
+const arcgis = require('../../_lib/arcgis.js')
+const timeseriesFilter = require('../../_lib/timeseries-filter.js')
 
 module.exports = {
-  county: 'fips:06095',
-  state: 'iso2:US-CA',
   country: 'iso1:US',
-  maintainers: [ maintainers.jbencina ],
+  state: 'iso2:US-CA',
+  county: 'fips:06095',
+
+  maintainers: [ maintainers.mnguyen ],
+
+  timeseries: true,
+  priority: 1,
+  friendly: {
+    name: 'Solano County Public Health',
+    url: 'https://doitgis.maps.arcgis.com/apps/MapSeries/index.html?appid=055f81e9fe154da5860257e3f2489d67'
+  },
+
   scrapers: [
     {
-      startDate: '2020-03-13',
+      startDate: '2020-02-13',
       crawl: [
         {
-          type: 'page',
-          url: 'http://www.solanocounty.com/depts/ph/coronavirus.asp',
+          type: 'json',
+          paginated: arcgis.paginated('https://services2.arcgis.com/SCn6czzcqKAFwdGU/ArcGIS/rest/services/COVID19Surveypt1v3_view/FeatureServer/0/query'),
         },
       ],
-      scrape ($) {
-        const $el = $('*:contains("Number of Positive Cases")').first()
-        const matches = $el.text().match(/Number of Positive Cases in Solano County: (\d+)/)
-        return { cases: parse.number(matches[1]) }
-      }
-    },
-    {
-      startDate: '2020-03-23',
-      crawl: [
-        {
-          type: 'page',
-          data: 'paragraph',
-          url: 'http://www.solanocounty.com/depts/ph/coronavirus.asp',
-        },
-      ],
-      scrape ($) {
-        const lines = $('font:contains("Confirmed COVID-19")')
-              .html()
-              .split('<br>')
-        const cases = parse.number(lines[1].split(':')[1])
-        const deaths = parse.number(lines[2].split(':')[1])
-        return { cases, deaths }
-      }
-    },
-    {
-      startDate: '2020-03-24',
-      crawl: [
-        {
-          type: 'page',
-          data: 'paragraph',
-          url: 'http://www.solanocounty.com/depts/ph/coronavirus.asp',
+      scrape (data, date) {
+        const toYYYYMMDD = t => {
+          const date = new Date(t)
+          // Convert from UTC to PDT
+          date.setUTCHours(-7)
+          return date.toISOString().split('T')[0]
         }
-      ],
-      // eslint-disable-next-line
-      scrape ($) {
-        // throw new Error('Solano County, CA now uses a PDF');
+
+        const { filterDate, func } = timeseriesFilter(data, 'Date_reported', toYYYYMMDD, date)
+        var result = {
+          date: filterDate,
+        }
+        const filteredData = data.filter(func)
+
+        // Each of these fields has been null by itself at some point or another in the table.
+        if (filteredData[0].cumulative_cases !== null) {
+          result.cases = filteredData[0].cumulative_cases
+        }
+        if (filteredData[0].Active_cases !== null) {
+          result.active = filteredData[0].Active_cases
+        }
+        if (filteredData[0].currently_hospitalized_cases !== null) {
+          result.hospitalized_current = filteredData[0].currently_hospitalized_cases
+        }
+        if (filteredData[0].total_hospitalizations !== null) {
+          result.hospitalized = filteredData[0].total_hospitalizations
+        }
+        if (filteredData[0].total_deaths !== null) {
+          result.deaths = filteredData[0].total_deaths
+        }
+        if ("cases" in result && "active" in result && "deaths" in result) {
+          result.recovered = result.cases - result.active - result.deaths
+        }
+
+        return result
       }
     },
-    {
-      startDate: '2020-05-21',
-      crawl: [
-        {
-          // The below URL appears to be scrapable.  It is linked to
-          // from main page
-          // http://www.solanocounty.com/depts/ph/coronavirus.asp, and
-          // is the mobile-friendly version.  It may be constant, not
-          // sure, and the source json may perhaps be available
-          // elsewhere.
-          type: 'headless',
-          url: 'https://experience.arcgis.com/experience/1d7b01ace51c478aa0f0bcbb670b097e'
-        }
-      ],
-      // eslint-disable-next-line
-      scrape ($) {
-        // TODO (scrapers) scrape this, or find source data
-      }
-    }
   ]
+
 }
