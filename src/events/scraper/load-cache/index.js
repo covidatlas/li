@@ -9,117 +9,114 @@ const s3 = require('./_load-s3.js')
 
 const isLocal = process.env.NODE_ENV === 'testing'
 
+/** Throws if the cache doesn't have files matching the locale-cast date. */
+function validateDateBounds (files, date, tz) {
+  const { earliest, latest } = getDateBounds(files, tz)
+  if (datetime.dateIsBefore(date, earliest)) {
+    throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is before our earliest cache ${earliest}`)
+  }
+
+  if (datetime.dateIsAfter(date, latest)) {
+    throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is after our latest cache ${latest}`)
+  }
+}
+
 /**
  * Cache loader
- * Pulls data from local cache dir or S3, depending on environment and needs
+ * Pulls data from local cache dir or S3, depending on environment and needs.
+ * Returns null if cache misses.
  */
-async function load (params, useS3) {
+async function load (params, loader, loaderName) {
   let { source, scraper, date, tz } = params
   const { _sourceKey, timeseries } = source
 
-  if (!isLocal) useS3 = true // Force S3 in production
-  const loader = useS3 ? s3 : local
-
   let folders = await loader.getFolders(_sourceKey)
 
-  /**
-   * All cache data is saved with a 8601Z timestamp
-   *   In order to match the date requested to the timestamp, we must re-cast it to the locale in question
-   */
-  if (folders.length) {
-    // Sort from earliest to latest
-    folders = sorter(folders)
+  if (!folders.length)
+    return null
 
-    // Gets all eligible files for source
-    let { keys, files } = await loader.getFiles({
-      _sourceKey,
-      date,
-      folders,
-      timeseries,
-      tz
-    })
+  // Sort from earliest to latest
+  folders = sorter(folders)
 
-    // Remove duplicate filenames.
-    const fileset = new Set(files)
-    files = Array.from(fileset)
+  // Gets all eligible files for source
+  let { keys, files } = await loader.getFiles({
+    _sourceKey,
+    date,
+    folders,
+    timeseries,
+    tz
+  })
 
-    if (!timeseries && files.length) {
-      /**
-       * If date is earlier than we have cached, bail
-       */
-      const { earliest, latest } = getDateBounds(files, tz)
-      if (datetime.dateIsBefore(date, earliest) && useS3) {
-        console.error('Sorry McFly, we need more gigawatts to go back in time')
-        throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is before our earliest cache ${earliest}`)
-      }
+  files = [ ...new Set(files) ]  // Remove duplicates.
 
-      if (datetime.dateIsAfter(date, latest) && useS3) {
-        console.error('Sorry, without increasing gravity we cannot speed up time to get this data')
-        throw Error(`DATE_BOUNDS_ERROR: Date requested (${date}) is after our latest cache ${latest}`)
-      }
-
-      // Filter files that match date when locale-cast from UTC
-      files = files.filter(filename => {
-        const castDate = getLocalDateFromFilename(filename, tz)
-        return castDate === date
-      })
-    }
-
-    if (!files.length && useS3) {
-      const msg = timeseries
-        ? 'No cached files for this timeseries'
-        : `No cached files found for ${date}`
-      throw Error(msg)
-    }
-
-    let cache = []
-    for (const crawl of scraper.crawl) {
-      // We may have multiple crawls for a single scraper (each with a unique name key)
-      // Disambiguate and match them so we are getting back the correct data sources
-      const { name='default', paginated } = crawl
-
-      const matches = parseCacheFilename.matchName(name, files)
-
-      // Fall back to S3 cache
-      if (!matches.length) {
-        cache = 'miss'
-        break
-      }
-
-      // We may have multiple files for this day, choose the last one
-      const file = matches[matches.length - 1]
-
-      let fileset = [ file ]
-      if (paginated)
-        fileset = parseCacheFilename.matchPaginatedSet(file, files)
-
-      const allContent = fileset.map(file => loader.getFileContents({ _sourceKey, keys, file }))
-      crawl.pages = await Promise.all(allContent)
-      cache.push(crawl)
-    }
-    if (cache !== 'miss') {
-      console.log(`${useS3 ? 'S3' : 'Local'} cache hit for: ${_sourceKey} / ${date}`)
-      return cache
-    }
+  // All cache data is saved with a 8601Z timestamp.  In order to match
+  // the date requested to the timestamp, we must re-cast it to the
+  // locale in question
+  if (!timeseries && files.length) {
+    validateDateBounds(files, date, tz)
+    const filenameDateEqualsDate = f => (getLocalDateFromFilename(f, tz) === date)
+    files = files.filter(filenameDateEqualsDate)
   }
-  return false
+
+  if (!files.length)
+    return null
+
+  let cache = []
+  for (const crawl of scraper.crawl) {
+    // We may have multiple crawls for a single scraper (each with a unique name key)
+    // Disambiguate and match them so we are getting back the correct data sources
+    const { name='default', paginated } = crawl
+
+    const matches = parseCacheFilename.matchName(name, files)
+
+    if (!matches.length)
+      return null
+
+    // We may have multiple files for this day, choose the last one
+    const file = matches[matches.length - 1]
+
+    let fileset = [ file ]
+    if (paginated)
+      fileset = parseCacheFilename.matchPaginatedSet(file, files)
+
+    // Copy crawl so we don't accidentally mutate anything.
+    const result = Object.assign({}, crawl)
+    const allContent = fileset.map(file => loader.getFileContents({ _sourceKey, keys, file }))
+    result.pages = await Promise.all(allContent)
+    cache.push(result)
+  }
+
+  console.log(`${loaderName} cache hit for: ${_sourceKey} / ${date}`)
+  return cache
 }
 
 async function loadCache (params) {
-  let result = await load(params)
+  let result
+  const attemptedSources = []
+
+  // Try loading locally if testing.
+  if (isLocal) {
+    attemptedSources.push('local')
+    try {
+      result = await load(params, local, 'Local')
+      if (result)
+        return result
+      console.log('Local cache miss, attempting to pull cache from S3')
+    } catch (err) {
+      console.log('Local cache fail, attempting to pull cache from S3')
+    }
+  }
+
+  // Load s3, throw errors back to caller.
+  attemptedSources.push('S3')
+  result = await load(params, s3, 'S3')
+  // TODO (s3) Save downloaded stuff locally.
   if (result) {
     return result
   }
-  // Only try a second time if loading locally didn't work
-  // Force calling to S3 for cache if it isn't available locally
-  else if (isLocal) {
-    console.log('Local cache miss, attempting to pull cache from S3')
-    result = await load(params, true)
-    if (result) {
-      return result
-    }
-  }
-  throw Error('Could not load cache; cache not available locally or in S3')
+
+  const msg = `Could not load cache; cache not available in ${attemptedSources.join(' or ')}`
+  throw new Error(msg)
 }
 
 module.exports = loadCache
