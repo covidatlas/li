@@ -25,13 +25,14 @@ module.exports = {
           type: 'json',
           name: 'tests',
           url: 'https://data.sfgov.org/resource/nfpa-mg4g.json'
+        },
+        {
+          type: 'json',
+          name: 'hospitalizations',
+          url: 'https://data.sfgov.org/resource/nxjg-bhem.json'
         }
-        // There is another URL that appears to have some
-        // hospitalization data,
-        // https://data.sfgov.org/resource/nxjg-bhem.json, but I'm not
-        // sure how to use it.
       ],
-      scrape ({ base, tests }, date) {
+      scrape ({ base, tests, hospitalizations }, date) {
         function filterBy (f) {
           return function (c) {
             return c[f].split('T')[0] <= date
@@ -62,11 +63,21 @@ module.exports = {
         }).slice(-1)[0]
         const maxDate = maxDateEntry.specimen_collection_date.split('T')[0]
 
-        const result = {
+        var result = {
           cases,
           deaths,
           tested,
           date: maxDate
+        }
+
+        const hospitalizationsNow = hospitalizations.
+              filter(c => c.reportdate.split('T')[0] === date)
+        if (hospitalizationsNow.length !== 0) {
+          result.hospitalized_current = hospitalizationsNow.
+                reduce((sum, c) => sum + parseInt(c.patientcount, 10), 0)
+          result.icu_current = hospitalizationsNow.
+                filter(c => c.dphcategory === 'ICU').
+                reduce((sum, c) => sum + parseInt(c.patientcount, 10), 0)
         }
 
         return result
