@@ -1,5 +1,3 @@
-const assert = require('assert')
-
 /**
  * Open the arcgis iframe and look in the Network/XHR tab for requests with Name of "0".
  *
@@ -57,7 +55,7 @@ async function csvUrl (client, serverNumber, dashboardId, layerName) {
  * - additionalParams: additional parameters for this request.
  * Defaults to `where=0%3D0&outFields=*&returnGeometry=false`.
  */
-async function crawlPaginated (client, featureLayerURL, options = {}) {
+function paginated (featureLayerURL, options = {}) {
   const { featuresToFetch, additionalParams } = {
     featuresToFetch: undefined,
     additionalParams: 'where=0%3D0&outFields=*&returnGeometry=false',
@@ -68,47 +66,44 @@ async function crawlPaginated (client, featureLayerURL, options = {}) {
     throw new Error(`Invalid URL: "${featureLayerURL}" does not end with "query"`)
   }
 
-  let url = `${featureLayerURL.replace(/\?.*$/, '')}?f=json${additionalParams ? `&${additionalParams}` : ''}`
+  let baseUrl = `${featureLayerURL.replace(/\?.*$/, '')}?f=json${additionalParams ? `&${additionalParams}` : ''}`
 
   // Won't get anything back without these.  Note also that if any
   // query parameters are in there twice, you get a 400 back.
-  if (url.search('where=') === -1)
-    url += '&where=0%3D0'
-  if (url.search('outFields=') === -1)
-    url += '&outFields=*'
+  if (baseUrl.search('where=') === -1)
+    baseUrl += '&where=0%3D0'
+  if (baseUrl.search('outFields=') === -1)
+    baseUrl += '&outFields=*'
   if (featuresToFetch)
-    url += `&resultRecordCount=${featuresToFetch}`
+    baseUrl += `&resultRecordCount=${featuresToFetch}`
 
-  const result = []
-
-  let exceededTransferLimit = true
   let n = 0
-  while (exceededTransferLimit) {
-    console.log(`... getting offset ${n}`)
-    let { body } = await client( { url: `${url}&resultOffset=${n}` } )
-    result.push(body)
-    let j = JSON.parse(body)
-    exceededTransferLimit = j.exceededTransferLimit
-    n += j.features.length
+
+  return {
+    first: baseUrl,
+
+    next: hsh => {
+      const exceededTransferLimit = hsh.json.exceededTransferLimit
+      console.log(`exceededTransferLimit ? ${exceededTransferLimit}`)
+      if (!exceededTransferLimit) {
+        console.log('reached end of pages')
+        return null
+      }
+
+      n += hsh.json.features.length
+      console.log(`... arcgis offset ${n}`)
+      return Object.assign(hsh, { url: `${baseUrl}&resultOffset=${n}` })
+    },
+
+    records: json => {
+      return json.features.map(f => f.attributes)
+    }
   }
-
-  console.log(`returning ${result.length} pages, type = ${typeof(result)}`)
-  return result
-}
-
-
-/** Load the features from a crawlPaginated set of bodies. */
-function loadPaginatedFeatures (bodies) {
-  assert(Array.isArray(bodies), 'arcgis should have loaded an array')
-  console.log(`Loading ${bodies.length} pages of data`)
-  assert(bodies.some(b => b.features.length === 0) === false, 'All bodies have features')
-  return bodies.map(b => b.features).flat()
 }
 
 
 module.exports = {
   urlFromOrgId,
   csvUrl,
-  crawlPaginated,
-  loadPaginatedFeatures
+  paginated
 }

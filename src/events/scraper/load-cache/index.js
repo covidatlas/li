@@ -76,7 +76,7 @@ async function load (params, useS3) {
     for (const crawl of scraper.crawl) {
       // We may have multiple crawls for a single scraper (each with a unique name key)
       // Disambiguate and match them so we are getting back the correct data sources
-      const { name='default', paginated } = crawl
+      const { name='default' } = crawl
 
       const matches = parseCacheFilename.matchName(name, files)
 
@@ -89,12 +89,7 @@ async function load (params, useS3) {
       // We may have multiple files for this day, choose the last one
       const file = matches[matches.length - 1]
 
-      let fileset = [ file ]
-      if (paginated)
-        fileset = parseCacheFilename.matchPaginatedSet(file, files)
-
-      const allContent = fileset.map(file => loader.getFileContents({ _sourceKey, keys, file }))
-      crawl.pages = await Promise.all(allContent)
+      crawl.content = await loader.getFileContents({ _sourceKey, keys, file })
       cache.push(crawl)
     }
     if (cache !== 'miss') {
