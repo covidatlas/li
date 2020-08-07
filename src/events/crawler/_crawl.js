@@ -1,5 +1,4 @@
 const getSource = require('@architect/shared/sources/_lib/get-source.js')
-const assert = require('assert')
 const crawler = require('./crawler')
 const cache = require('./cache')
 
@@ -50,16 +49,35 @@ module.exports = async function crawl (event) {
         results.push(result)
       }
       if (paginated) {
-        const pc = crawler.makePaginatedClient(type, crawl)
-        const bodies = await paginated(pc)
-        assert(Array.isArray(bodies), `pagination must return an array, but got ${typeof(bodies)}`)
-        bodies.forEach((body, page) => {
-          const result = { ...baseResult, data: body, page }
-          results.push(result)
-        })
+        // Concatenation of all results.
+        let data = []
+
+        // First page of results.
+        const firstCrawl = { type, url: paginated.first }
+        const firstResp = await crawler(type, firstCrawl)
+        const firstJson = JSON.parse(firstResp.body.toString())
+        data = data.concat(paginated.records(firstJson))
+
+        // Subsequent pages, if any.
+        let nextHsh = Object.assign(firstResp, { json: firstJson })
+        let next = paginated.next(nextHsh)
+        let n = 2
+        while (next) {
+          console.log(`... page ${n}`)
+          const nextCrawl = { type, url: next.url }
+          const nextResp = await crawler(type, nextCrawl)
+          const nextJson = JSON.parse(nextResp.body.toString())
+          data = data.concat(paginated.records(nextJson))
+          let nextHsh = Object.assign(nextResp, { json: nextJson })
+          next = paginated.next(nextHsh)
+          ++n
+        }
+
+        const result = { ...baseResult, data: JSON.stringify(data) }
+        results.push(result)
       }
     }
-    // console.log(JSON.stringify(results, null, 2))
+
 
     const names = results.map(r => r._name)
     const uniqueNames = Array.from(new Set(names))

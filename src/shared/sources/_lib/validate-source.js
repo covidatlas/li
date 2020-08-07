@@ -98,10 +98,12 @@ function validateSource (source) {
         requirement(is.string(url) || is.function(url), datedError('Crawler url must be a string or function'))
       }
       if (paginated) {
-        requirement(
-          is.function(paginated) && paginated.constructor.name === 'AsyncFunction',
-          datedError('Crawler paginated must be an async function')
-        )
+        requirement(is.string(paginated.first),
+                    datedError('Crawler paginated.first must be string'))
+        requirement(is.function(paginated.next),
+                    datedError('Crawler paginated.next must be function'))
+        requirement(is.function(paginated.records),
+                    datedError('Crawler paginated.records must be function'))
       }
 
       // Crawl name keys

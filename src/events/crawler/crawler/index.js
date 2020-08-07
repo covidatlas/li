@@ -51,15 +51,6 @@ async function client (params) {
   return response
 }
 
-// Create an async client to pass to crawl.paginated functions
-function makePaginatedClient (type, sourceCrawl) {
-  return async function paginatedClient (url, options = {}) {
-    const crawlOpts = { ...sourceCrawl, url, ...options }
-    return crawl(type, crawlOpts)
-  }
-}
-
 crawl.client = client
-crawl.makePaginatedClient = makePaginatedClient
 
 module.exports = crawl

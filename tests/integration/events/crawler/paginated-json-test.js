@@ -30,14 +30,14 @@ async function doCrawl (t) {
   }
 }
 
-test('crawl saves paginated results to cache as separate files', async t => {
+test('crawl saves paginated results to cache as a single file', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
   utils.writeFakeSourceContent('paginated-json/page2.json', lastPage)
   utils.writeFakeSourceContent('paginated-json/deaths.json', { deaths: 5 })
   await doCrawl(t)
-  t.equal(3, testCache.allFiles().length, 'all files after crawl.')
+  t.equal(2, testCache.allFiles().length, 'all files after crawl.')
 
   await utils.teardown()
   t.end()
@@ -66,7 +66,7 @@ test('pagination saves nothing if file is missing', async t => {
   t.end()
 })
 
-test('paginated files are named correctly', async t => {
+test('paginated data is saved in a single file', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', firstPage)
@@ -75,13 +75,13 @@ test('paginated files are named correctly', async t => {
   await doCrawl(t)
 
   const cachedFiles = testCache.allFiles()
+  t.equal(2, cachedFiles.length, 'file count')
   t.haveMatchingCacheFile = pattern => {
     const match = cachedFiles.find(f => f.match(pattern))
     t.ok(match, `expected match for ${pattern} in ${cachedFiles.join()}`)
   }
-  t.haveMatchingCacheFile(/cases-0-/)
-  t.haveMatchingCacheFile(/cases-1-/)
-  t.haveMatchingCacheFile(/deaths-.{5}.json/)
+  t.haveMatchingCacheFile(/cases-.{5}.json.gz$/)
+  t.haveMatchingCacheFile(/deaths-.{5}.json.gz$/)
 
   await utils.teardown()
   t.end()
@@ -106,13 +106,13 @@ test('paginated files in one crawl are all given the same datetime', async t => 
     const datetimeLength = 24  // = '2020-05-24t23_39_57.562z'.length
     return path.basename(f).slice(0, datetimeLength)
   }
-  t.equal(datetimeStamp(/cases-0-/), datetimeStamp(/cases-1-/), 'timestamps equal')
+  t.equal(datetimeStamp(/cases/), datetimeStamp(/deaths/), 'timestamps equal')
 
   await utils.teardown()
   t.end()
 })
 
-test('single paginated file still has index', async t => {
+test('single paginated file is ok', async t => {
   await utils.setup()
 
   utils.writeFakeSourceContent('paginated-json/page1.json', lastPage)
@@ -120,11 +120,13 @@ test('single paginated file still has index', async t => {
   await doCrawl(t)
 
   const cachedFiles = testCache.allFiles()
+  t.equal(2, cachedFiles.length, 'file count')
   t.haveMatchingCacheFile = pattern => {
     const match = cachedFiles.find(f => f.match(pattern))
     t.ok(match, `expected match for ${pattern} in ${cachedFiles.join()}`)
   }
-  t.haveMatchingCacheFile(/cases-0-/)
+  t.haveMatchingCacheFile(/cases/)
+  t.haveMatchingCacheFile(/deaths/)
 
   await utils.teardown()
   t.end()
