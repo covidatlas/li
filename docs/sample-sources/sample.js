@@ -12,7 +12,7 @@ module.exports = {
 
   /** The location this source covers. */
   country: 'iso1:US',
-  state: 'iso2:CA',
+  state: 'iso2:US-CA',
 
   /** Who contributed the source crawl and scrape.  This is included
    * in generated reports.  Array of objects with `{ name, url,
