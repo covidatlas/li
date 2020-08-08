@@ -10,7 +10,7 @@ module.exports = {
   maintainers: [ maintainers.mnguyen ],
 
   timeseries: true,
-  priority: 1,
+  priority: 2,
   friendly: {
     name: 'Marin Health & Human Services',
     url: 'https://coronavirus.marinhhs.org/surveillance'
