@@ -7,6 +7,7 @@ module.exports = {
   state: 'iso2:US-CA',
   county: 'fips:06075',
   timeseries: true,
+  priority: 2,
   maintainers: [ maintainers.jbencina, maintainers.mnguyen, maintainers.jzohrab ],
   friendly: {
     name: 'SF Department of Public Health',
