@@ -9,7 +9,7 @@ module.exports = {
   maintainers: [ maintainers.mnguyen ],
 
   timeseries: true,
-  priority: 1,
+  priority: 2,
   friendly: {
     name: 'Alameda County Data Sharing Initiative',
     url: 'https://data.acgov.org/datasets/AC-HCSA::alameda-county-covid-19-data-by-date'
