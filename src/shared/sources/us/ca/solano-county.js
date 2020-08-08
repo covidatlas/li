@@ -10,7 +10,7 @@ module.exports = {
   maintainers: [ maintainers.mnguyen ],
 
   timeseries: true,
-  priority: 1,
+  priority: 2,
   friendly: {
     name: 'Solano County Public Health',
     url: 'https://doitgis.maps.arcgis.com/apps/MapSeries/index.html?appid=055f81e9fe154da5860257e3f2489d67'
