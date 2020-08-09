@@ -112,5 +112,13 @@ module.exports = {
     county: 'Santa Clara County',
     city: 'San José',
     flag: '🇺🇸'
+  },
+  dcardon: {
+    name: 'David Cardon',
+    email: 'dcardon@artemishealth.com',
+    url: 'https://artemishealth.com',
+    github: 'davidcardonAH',
+    country: 'USA',
+    flag: '🇺🇸'
   }
 }

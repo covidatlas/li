@@ -8,6 +8,11 @@ async function getNormal (req) {
   options = JSON.parse(options)
   let { cookies, url, headers } = options
 
+  // See comment in `src/shared/sources/_lib/arcgis.js` ... this is
+  // required for this lambda to be successfully called from
+  // `crawler/crawler/index.js`.
+  url = url.replace(/-QUOTE-/g, '"')
+
   const sslDefaults = {
     rejectUnauthorized: true,
     disableSSL: false
