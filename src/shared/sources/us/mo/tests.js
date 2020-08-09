@@ -1,63 +1,32 @@
 // Migrated from coronadatascraper, https://github.com/covidatlas/coronadatascraper/pull/1027/files
 
-
 const srcShared = '../../../'
-const assert = require('assert')
 const arcgis = require(srcShared + 'sources/_lib/arcgis.js')
-const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
-const parse = require(srcShared + 'sources/_lib/parse.js')
-const transform = require(srcShared + 'sources/_lib/transform.js')
-const { UNASSIGNED } = require(srcShared + 'sources/_lib/constants.js')
+const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
 
 
 const _countyMap = {
-  'Kansas City': 'Jackson County',
-  'St Louis': 'St. Louis County',
-  'St Charles': 'St. Charles County',
-  'St Clair': 'St. Clair County',
-  'Ste Genevieve': 'Ste. Genevieve County',
-  'St Francois': 'St. Francois County',
-  'Joplin': 'Jasper County',
-  'St Louis City': 'St. Louis City',
+  'KANSAS CITY': 'JACKSON COUNTY',
+  'ST LOUIS': 'ST. LOUIS COUNTY',
+  'ST CHARLES': 'ST. CHARLES COUNTY',
+  'ST CLAIR': 'ST. CLAIR COUNTY',
+  'STE GENEVIEVE': 'STE. GENEVIEVE COUNTY',
+  'ST FRANCOIS': 'ST. FRANCOIS COUNTY',
+  'JOPLIN': 'JASPER COUNTY',
+  'ST LOUIS CITY': 'ST. LOUIS CITY',
 }
 
-function _getCountyName (countyName) {
-  countyName = _countyMap[countyName] || countyName
-  if (!countyName.toUpperCase().includes(' CITY')) {
-    countyName = geography.addCounty(countyName)
+/** Using arcgis functions to determine test counts. */
+function arcgisPagination () {
+  const url = 'https://services6.arcgis.com/Bd4MACzvEukoZ9mR/arcgis/rest/services/Daily_COVID19_Testing_Report_for_OPI/FeatureServer/0/query'
+  const arcgisArgs = {
+    groupByFieldsForStatistics: 'county,result,test_date',
+    outStatistics: '[{"statisticType":"count","onStatisticField":"*","outStatisticFieldName":"Count"}]'
   }
-  if (countyName === 'TBD County') {
-    countyName = UNASSIGNED
-  }
-  return countyName
+  return arcgis.paginated(url, arcgisArgs)
 }
 
-
-// The testing data lists county names all in upper case and without
-// the " County" suffix.  This function takes the prettified county
-// list and punctuation map and builds an upper-case map; e.g.: UPPER
-// => Upper County
-function _generateUpperMap(counties, countyMap) {
-  const countySuffix = ' County';
-  const rval = {};
-  counties.forEach(element => {
-    const key = element.endsWith(countySuffix) ? element.substring(0, element.length - countySuffix.length) : element;
-    rval[key.toUpperCase()] = element;
-  });
-  Object.entries(countyMap).forEach(keyValue => {
-    const [key, value] = keyValue;
-    rval[key.toUpperCase()] = value;
-  });
-  return rval;
-}
-
-const arcgisArgs = {
-  where: '0=0',
-  groupByFieldsForStatistics: 'county,result,test_date',
-  outStatistics: '[{"statisticType":"count","onStatisticField":"*","outStatisticFieldName":"Count"}]'
-}
-  
 module.exports = {
   state: 'iso2:US-MO',
   country: 'iso1:US',
@@ -73,12 +42,36 @@ module.exports = {
       crawl: [
         {
           type: 'json',
-          paginated: arcgis.paginated('https://services6.arcgis.com/Bd4MACzvEukoZ9mR/arcgis/rest/services/Daily_COVID19_Testing_Report_for_OPI/FeatureServer/0/query', arcgisArgs)
+          paginated: arcgisPagination()
         }
       ],
       scrape (data, date) {
-        console.table(data)
-        throw new Error('blag')
+        // The arcgis query returns json like:
+        // Count; county; result; test_date
+        // 1, ADAIR, Negative, 1584358920000
+        // 17, ADAIR, Positive, 1584360840000
+        // 2, STE GENEVIEVE, Positive, 1584360840000
+        // The Count is not cumulative.
+
+        const getYYYYMMDD = n => new Date(n).toISOString().split('T')[0]
+        const { func, filterDate } = timeseriesFilter(data, 'test_date', getYYYYMMDD, date, '<=')
+        const sumPerCounty = data.filter(func).reduce((hsh, rec) => {
+          const c = rec.county
+          hsh[c] = hsh[c] || 0
+          hsh[c] += rec.Count
+          return hsh
+        }, {})
+
+        return Object.entries(sumPerCounty).
+          map(pair => {
+            let county = pair[0]
+            county = _countyMap[county] || county
+            return {
+              county,
+              tested: pair[1],
+              date: filterDate
+            }
+          })
       }
     }
   ]
