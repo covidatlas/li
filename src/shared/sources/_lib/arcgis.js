@@ -1,3 +1,5 @@
+const querystring = require('querystring')
+
 /**
  * Open the arcgis iframe and look in the Network/XHR tab for requests with Name of "0".
  *
@@ -43,22 +45,21 @@ async function csvUrl (client, serverNumber, dashboardId, layerName) {
  *
  * @param {string} featureLayerURL URL of the resource, up to and
  * including the feature layer number and `query`, e.g.
- * https://services5.arcgis.com/fsYDFeRKu1hELJJs/arcgis/rest/
- *    services/FOHM_Covid_19_FME_1/FeatureServer/1/query
- *
- * @param {object} options customizable options: - featuresToFetch:
- * number of features we want to receive for each request. A smaller
- * number means more request to grab the complete dataset, a larger
- * number may result in a partial dataset if we request more than `Max
- * Record Count`. Defaults to 500.
- *
- * - additionalParams: additional parameters for this request.
- * Defaults to `where=0%3D0&outFields=*&returnGeometry=false`.
+ * https://services5.arcgis.com/fsYDFeRKu1hELJJs/arcgis/rest/services/FOHM_Covid_19_FME_1/FeatureServer/1/query
  */
 function paginated (featureLayerURL, options = {}) {
-  const { featuresToFetch, additionalParams } = {
-    featuresToFetch: undefined,
-    additionalParams: 'where=0%3D0&outFields=*&returnGeometry=false',
+
+  const args = {
+    f: 'pjson',
+    where: '1=1',
+    outFields: '*',
+    sqlFormat: 'none',
+    resultType: 'standard',
+    returnIdsOnly: false,
+    returnUniqueIdsOnly: false,
+    returnCountOnly: false,
+    returnDistinctValues: false,
+    cacheHint: false,
     ...options
   }
 
@@ -66,21 +67,35 @@ function paginated (featureLayerURL, options = {}) {
     throw new Error(`Invalid URL: "${featureLayerURL}" does not end with "query"`)
   }
 
-  let baseUrl = `${featureLayerURL.replace(/\?.*$/, '')}?f=json${additionalParams ? `&${additionalParams}` : ''}`
+  function getUrl (resultOffset) {
+    let useArgs = Object.assign({}, args)
+    if (resultOffset)
+      useArgs = Object.assign(useArgs, { resultOffset })
 
-  // Won't get anything back without these.  Note also that if any
-  // query parameters are in there twice, you get a 400 back.
-  if (baseUrl.search('where=') === -1)
-    baseUrl += '&where=0%3D0'
-  if (baseUrl.search('outFields=') === -1)
-    baseUrl += '&outFields=*'
-  if (featuresToFetch)
-    baseUrl += `&resultRecordCount=${featuresToFetch}`
+    // Incredibly annoying hack!  This URL is eventually passed to
+    // `events/crawler/crawler/index.js`, but for some reason it
+    // throws a 400 ("Crawl returned status code: 400") if the query
+    // string contains a quotation mark.  Unsure why, and can't be
+    // bothered to get into it.  Replacing '"' with a token here, and
+    // then in `http/get-get-normal/index.js` we replace that token
+    // with '"' to get the URL we want.
+    useArgs = Object.keys(useArgs).reduce((hsh, k) => {
+      let newVal = useArgs[k]
+      if (typeof(newVal) === 'string') {
+        newVal = newVal.replace(/"/g, '-QUOTE-')
+      }
+      hsh[k] = newVal
+      return hsh
+    }, {})
+
+    let ret = `${featureLayerURL}?${querystring.stringify(useArgs)}`
+    return ret
+  }
 
   let n = 0
 
   return {
-    first: baseUrl,
+    first: getUrl(0),
 
     next: hsh => {
       const exceededTransferLimit = hsh.json.exceededTransferLimit
@@ -92,7 +107,7 @@ function paginated (featureLayerURL, options = {}) {
 
       n += hsh.json.features.length
       console.log(`... arcgis offset ${n}`)
-      return Object.assign(hsh, { url: `${baseUrl}&resultOffset=${n}` })
+      return Object.assign(hsh, { url: getUrl(n) })
     },
 
     records: json => {
