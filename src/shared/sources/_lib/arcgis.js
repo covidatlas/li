@@ -138,7 +138,7 @@ async function urlFromOrgId (client, serverNumber, orgId, layerName) {
 
 
 module.exports = {
+  paginated,
   urlFromOrgId,
-  csvUrl,
-  paginated
+  csvUrl
 }
