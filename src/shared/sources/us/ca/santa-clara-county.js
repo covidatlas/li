@@ -8,7 +8,7 @@ module.exports = {
   maintainers: [ maintainers.mnguyen ],
 
   timeseries: true,
-  priority: 1,
+  priority: 2,
   friendly: {
     name: 'County of Santa Clara Open Data Portal',
     url: 'https://data.sccgov.org/browse?category=COVID-19'
