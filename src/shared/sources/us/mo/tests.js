@@ -52,23 +52,10 @@ function _generateUpperMap(counties, countyMap) {
   return rval;
 }
 
-
-// window works
-// https://services6.arcgis.com/Bd4MACzvEukoZ9mR/arcgis/rest/services/Daily_COVID19_Testing_Report_for_OPI/FeatureServer/0/query?where=1%3D1&objectIds=&time=&resultType=none&outFields=county%2C+result%2C+test_date&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=county%2C+result%2C+test_date&outStatistics=%5B%7B%22statisticType%22%3A%22count%22%2C%22onStatisticField%22%3A%22*%22%2C%22outStatisticFieldName%22%3A%22Count%22%7D%5D&having=&resultOffset=&resultRecordCount=10&sqlFormat=none&f=pjson&token=
-
-// code fails
-// https://services6.arcgis.com/Bd4MACzvEukoZ9mR/arcgis/rest/services/Daily_COVID19_Testing_Report_for_OPI/FeatureServer/0/query?f=pjson&where=0%3D0&outFields=*&sqlFormat=none&resultType=standard&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&groupByFieldsForStatistics=county%2Cresult%2Ctest_date&outStatistics=%5B%7B%22statisticType%22%3A%22count%22%2C%22onStatisticField%22%3A%22*%22%2C%22outStatisticFieldName%22%3A%22Count%22%7D%5D
-
-
-// https://services6.arcgis.com/Bd4MACzvEukoZ9mR/arcgis/rest/services/Daily_COVID19_Testing_Report_for_OPI/FeatureServer/0/query?objectIds=&time=&resultType=none&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=county%2C+result%2C+test_date&outStatistics=%5B%7B%22statisticType%22%3A%22count%22%2C%22onStatisticField%22%3A%22*%22%2C%22outStatisticFieldName%22%3A%22Count%22%7D%5D&having=&resultOffset=&resultRecordCount=10&sqlFormat=none&token=
-
-// https://services6.arcgis.com/Bd4MACzvEukoZ9mR/arcgis/rest/services/Daily_COVID19_Testing_Report_for_OPI/FeatureServer/0/query?sqlFormat=none&resultType=standard&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&groupByFieldsForStatistics=county%2Cresult%2Ctest_date&outStatistics=%5B%7B%22statisticType%22%3A%22count%22%2C%22onStatisticField%22%3A%22*%22%2C%22outStatisticFieldName%22%3A%22Count%22%7D%5D
-
 const arcgisArgs = {
   where: '0=0',
-  groupByFieldsForStatistics: 'county,result,test_date' /*,
+  groupByFieldsForStatistics: 'county,result,test_date',
   outStatistics: '[{"statisticType":"count","onStatisticField":"*","outStatisticFieldName":"Count"}]'
-*/
 }
   
 module.exports = {
