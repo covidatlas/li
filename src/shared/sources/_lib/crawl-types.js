@@ -9,7 +9,8 @@
   'tsv',
   'pdf',
   'json',
-  'raw'
+  'raw',
+  'xlsx'
 ]
 
 const extensions = {
@@ -19,7 +20,8 @@ const extensions = {
   page: 'html',
   pdf: 'pdf',
   tsv: 'tsv',
-  raw: 'raw'
+  raw: 'raw',
+  xlsx: 'xlsx'
 }
 
 module.exports = {
