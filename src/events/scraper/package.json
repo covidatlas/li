@@ -6,6 +6,7 @@
     "csv-parse": "^4.8.9",
     "pdf2json": "^1.2.0",
     "slugify": "^1.4.5",
-    "spacetime": "^6.4.3"
+    "spacetime": "^6.4.3",
+    "xlsx": "^0.16.5"
   }
 }
