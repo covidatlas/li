@@ -36,6 +36,7 @@ function deleteAllFiles () {
 }
 
 module.exports = {
+  baseFolder,
   writeFile,
   copyFixture,
   deleteAllFiles
