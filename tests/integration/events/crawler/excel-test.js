@@ -28,7 +28,8 @@ test('can crawl Excel', async t => {
   t.end()
 })
 
-test.only('crawled Excel file has same parseable content as source', async t => {
+
+test('crawled Excel file has same parseable content as source', async t => {
   await utils.setup()
   utils.copyFixture('excel-source/excel-data.xlsx', 'excel-data.xlsx')
 

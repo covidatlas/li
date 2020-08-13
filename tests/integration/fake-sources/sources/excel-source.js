@@ -18,12 +18,11 @@ module.exports = {
         }
       ],
       scrape (data) {
-        console.log(JSON.stringify(data, null, 2))
-        // can get json referring to sheets by name
-        const caseRecords = data.json['cases']
-        const deathRecords = data.json['deaths']
-        console.log(caseRecords)
-        console.log(deathRecords)
+        // can get json referring to sheets by name.
+        // Not bothering to return realistic records for the tests.
+        const cases = data.json['cases'].map(d => Object.assign(d, { type: 'cases' }))
+        const deaths = data.json['deaths'].map(d => Object.assign(d, { type: 'deaths' }))
+        return cases.concat(deaths)
       }
     }
   ]

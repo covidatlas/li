@@ -5,8 +5,6 @@ const utils = require('../../_lib/utils.js')
 const testCache = utils.testCache
 
 
-// NOTE: this test will not work,
-// until the corresponding ../crawler/excet-test.js all passes.
 test('can scrape Excel', async t => {
   await utils.setup()
 
@@ -21,9 +19,27 @@ test('can scrape Excel', async t => {
   const actual = result.data
   t.ok(actual, 'Have data')
 
-  const expected = []
+  // The test scraper returns extra fields, only use those ones.
+  const prunedActual = actual.map(d => {
+    return {
+      Location: d.Location,
+      Date: d.Date,
+      Count: d.Count,
+      type: d.type
+    }
+  })
+  const expected = [
+    { Location: 'A', Date: '2020-08-01', Count: '11', type: 'cases' },
+    { Location: 'B', Date: '2020-08-01', Count: '1', type: 'cases' },
+    { Location: 'A', Date: '2020-08-02', Count: '22', type: 'cases' },
+    { Location: 'B', Date: '2020-08-02', Count: '2', type: 'cases' },
+    { Location: 'A', Date: '2020-08-01', Count: '0', type: 'deaths' },
+    { Location: 'B', Date: '2020-08-01', Count: '1', type: 'deaths' },
+    { Location: 'A', Date: '2020-08-02', Count: '2', type: 'deaths' },
+    { Location: 'B', Date: '2020-08-02', Count: '3', type: 'deaths' }
+  ]
 
-  t.equal(JSON.stringify(actual), JSON.stringify(expected))
+  t.equal(JSON.stringify(prunedActual), JSON.stringify(expected))
 
   await utils.teardown()
   t.end()
