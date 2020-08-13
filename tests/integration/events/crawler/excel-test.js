@@ -29,13 +29,14 @@ test('can crawl Excel', async t => {
 })
 
 test.only('crawled Excel file has same parseable content as source', async t => {
+  await utils.setup()
+  utils.copyFixture('excel-source/excel-data.xlsx', 'excel-data.xlsx')
+
   const srcFile = join(utils.fakeCrawlSites.baseFolder, 'excel-source', 'excel-data.xlsx')
   const srcWkb = XLSX.readFile(srcFile)
   const srcSheets = srcWkb.SheetNames
   t.equal('cases, deaths', srcSheets.sort().join(', '), 'sanity check of src sheets')
 
-  await utils.setup()
-  utils.copyFixture('excel-source/excel-data.xlsx', 'excel-data.xlsx')
   await utils.crawl('excel-source')
   t.equal(1, testCache.allFiles().length, 'sanity check.')
 
