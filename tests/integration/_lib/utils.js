@@ -181,6 +181,7 @@ module.exports = {
   teardown,
   srcPath,
   sourcesPath,
+  fakeCrawlSites,
   writeFakeSourceContent,
   copyFixture,
   crawl,

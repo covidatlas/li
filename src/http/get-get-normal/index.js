@@ -49,7 +49,7 @@ async function getNormal (req) {
       requestHeaders.cookie = cookie
     }
 
-    const response = await got(url, {
+    const params = {
       headers: requestHeaders,
       timeout,
       retry: 0,
@@ -58,7 +58,17 @@ async function getNormal (req) {
       // Repeating defaults jic
       isStream: false,
       encoding: 'utf8'
-    })
+    }
+
+    // got appears to auto-guess the response type, and with xlsx
+    // files it was assuming an incorrect stream type, resulting in
+    // mutated data.
+    // ref https://github.com/sindresorhus/got/issues/4
+    // Thanks very much to Ryan Block for sorting this out!
+    if (options.type === 'xlsx')
+      params.responseType = 'buffer'
+
+    const response = await got(url, params)
 
     const status = response.statusCode
     const is2xx = `${status}`.startsWith(2)
