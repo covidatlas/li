@@ -24,7 +24,7 @@ test('can crawl Excel', async t => {
 
   t.equal(crawledContent.toString(), srcContent.toString(), 'content strings match')
 
-  // await utils.teardown()
+  await utils.teardown()
   t.end()
 })
 
