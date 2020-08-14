@@ -16,7 +16,8 @@ async function upload (file) {
     ACL: 'public-read',
     Bucket,
     Key: key,
-    Body: Buffer.from(fs.readFileSync(file))
+    Body: Buffer.from(fs.readFileSync(file)),
+    ContentType: 'application/json'
   }
 
   console.log('Uploading ...')

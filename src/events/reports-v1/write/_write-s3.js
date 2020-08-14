@@ -1,4 +1,5 @@
 const aws = require('aws-sdk')
+const mime = require('mime')
 const getReportsBucket = require('@architect/shared/utils/reports-bucket.js')
 
 async function write (params) {
@@ -10,7 +11,8 @@ async function write (params) {
     ACL: 'public-read',
     Bucket,
     Key: key,
-    Body: Buffer.from(data)
+    Body: Buffer.from(data),
+    ContentType: mime.getType(filename)
   }
   const s3 = new aws.S3()
   const put = s3.putObject(putParams)
