@@ -43,7 +43,35 @@ async function crawl (type, params) {
   }
 }
 
-// Async client passed to crawl.url functions
+
+/** Async client passed to crawl.url functions.
+ *
+ * Samples:
+
+    // Get the final URL to call from a "table of contents" page.
+    url: async (client) => {
+      const { body } = await client({ url: 'some-url.html' })
+      const regex = new RegExp(`statistics<\/title><link>(?<url>[a-zA-Z\/.:_]+<\/link>`)
+      const matches = body.match(regex)
+      const url = matches && matches.groups && matches.groups.url
+      assert(url, `no url found for date: ${localDate}`)
+      return { url }
+    }
+
+
+    // Get first matching link in list of links.
+    url: async client => {
+      const indexPage = 'https://coronavirus.dc.gov/page/coronavirus-data'
+      const { body } = await client({ url: indexPage })
+      linkRe = /href="(?<relpath>.*?)"/g
+      const matches = Array.from(body.matchAll(linkRe))
+      const xlsxLinks = matches.
+            map(m => m.groups.relpath).
+            filter(r => r.match(/xlsx$/))
+      return { url: xlsxLinks[0] }
+    }
+
+ */
 async function client (params) {
   let response = await crawl('normal', params)
   // As a convenience, convert the client's body back to a string since we aren't piping to cache
