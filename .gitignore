@@ -1,11 +1,11 @@
 .arc-env
 .DS_Store
-crawler-cache/
-migrated-cache/
-node_modules/
+crawler-cache
+migrated-cache
+node_modules
 sam.json
 sam.yaml
-scratch/
+scratch
 test-results.txt
 
 # Generated reports.
