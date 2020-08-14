@@ -148,54 +148,10 @@ module.exports = {
         const data = Object.values(dataKeyedByDate).
               sort((a, b) => a.date < b.date ? -1 : 1)
 
-        console.table(data)
-
-        throw new Error('blah')
-
-        /*
         // Dates are now yyyymmdd already, no conversion needed.
         const toYYYYMMDD = s => s
-
-        const { filterDate, func } = timeseriesFilter(data, 'date', toYYYYMMDD, date)
-
-        const rows = data.filter(func)
-
-        if (rows.length === 0) {
-          throw new Error(`No data for filter date ${filterDate}`)
-        }
-        if (rows.length > 1) {
-          throw new Error(`${rows.length} rows returned for ${filterDate}`)
-        }
-
-        const result = []
-        const row = rows[0]
-
-        // Orleans county
-        result.push({
-          county: 'fips:22071',
-          cases: row.NO_Cases,
-          deaths: row.NO_Deaths,
-          tested: row.NO_Total_Tests,
-          // I don't feel we can rely on this data, as it doesn't
-          // specify if these are covid hospitalizations/icu.  The
-          // NO.hospitalized_current > LA.hospitalized_current if we
-          // use this data, which doesn't make sense.  jz
-          // icu_current: row.R1_ICU_Beds_In_Use,
-          // hospitalized_current: row.R1_Beds_In_Use,
-          date: filterDate
-        })
-
-        // State
-        result.push({
-          cases: row.LA_Cases,
-          deaths: row.LA_Deaths,
-          tested: row.LA_Total_Tests,
-          hospitalized_current: row.LA_COVID_Hospitalizations,
-          date: filterDate
-        })
-
-        return result
-*/
+        const { func } = timeseriesFilter(data, 'date', toYYYYMMDD, date)
+        return data.filter(func)[0]
       }
     }
   ]
