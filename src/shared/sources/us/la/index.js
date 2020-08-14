@@ -12,6 +12,7 @@ module.exports = {
   state: 'iso2:US-LA',
   country: 'iso1:US',
   aggregate: 'state',
+  priority: 1,
   maintainers: [ maintainers.sglyon, maintainers.jzohrab ],
   timeseries: true,
   friendly:   {
