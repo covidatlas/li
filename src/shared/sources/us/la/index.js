@@ -3,6 +3,7 @@
 
 const srcShared = '../../../'
 const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
+const arcgis = require(srcShared + 'sources/_lib/arcgis.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 
 
@@ -23,7 +24,13 @@ module.exports = {
       crawl: [
         {
           type: 'json',
-          url: 'https://gis.nola.gov/arcgis/rest/services/apps/LDH_Data/MapServer/0/query?f=json&where=Date%3Etimestamp%20%272020-03-18%2003%3A59%3A59%27&returnGeometry=falses&outFields=*&orderByFields=Date%20asc&resultOffset=0&resultRecordCount=1000',
+          paginated: arcgis.paginated(
+            'https://gis.nola.gov/arcgis/rest/services/apps/LDH_Data/MapServer/0/query',
+            {
+              outFields: 'Date,NO_Cases,NO_Deaths,NO_Total_Tests,R1_ICU_Beds_In_Use,' +
+                'R1_Beds_In_Use,LA_Cases,LA_Deaths,LA_Total_Tests,LA_COVID_Hospitalizations'
+            }
+          )
         },
       ],
       scrape (data, date) {
@@ -34,10 +41,10 @@ module.exports = {
           return d.toISOString().split('T')[0]
         }
 
-        const items = data.features.map(f => f.attributes)
-        const { filterDate, func } = timeseriesFilter(items, 'Date', toYYYYMMDD, date)
+        const { filterDate, func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date)
 
-        const rows = items.filter(func)
+        const rows = data.filter(func)
+
         if (rows.length === 0) {
           throw new Error(`No data for filter date ${filterDate}`)
         }
@@ -54,9 +61,13 @@ module.exports = {
           cases: row.NO_Cases,
           deaths: row.NO_Deaths,
           tested: row.NO_Total_Tests,
-          date: filterDate,
-          icu_current: row.R1_ICU_Beds_In_Use,
-          hospitalized_current: row.R1_Beds_In_Use
+          // I don't feel we can rely on this data, as it doesn't
+          // specify if these are covid hospitalizations/icu.  The
+          // NO.hospitalized_current > LA.hospitalized_current if we
+          // use this data, which doesn't make sense.  jz
+          // icu_current: row.R1_ICU_Beds_In_Use,
+          // hospitalized_current: row.R1_Beds_In_Use,
+          date: filterDate
         })
 
         // State
@@ -64,6 +75,7 @@ module.exports = {
           cases: row.LA_Cases,
           deaths: row.LA_Deaths,
           tested: row.LA_Total_Tests,
+          hospitalized_current: row.LA_COVID_Hospitalizations,
           date: filterDate
         })
 
