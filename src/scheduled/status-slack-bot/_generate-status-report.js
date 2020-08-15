@@ -35,8 +35,6 @@ async function getScraperReport () {
 
           return {
             source: d.source,
-            failure_type: failType,
-            source_failure: [ d.source, failType ].join(' '),
             message: d[`${failType}_error`],
             failing_for_days
           }
@@ -79,7 +77,7 @@ function failureTable (failures) {
   let table = []
   table.push([ 'Days', 'Failure' ])
   table.push([ '----', '-------' ])
-  table = table.concat(failures.map(f => [ f.failing_for_days, `${f.source_failure}: ${truncate(f.message)}` ]))
+  table = table.concat(failures.map(f => [ f.failing_for_days, `${f.source}: ${truncate(f.message)}` ]))
   table = table.map(r => makeRow(r))
 
   return [ '```', table.join('\n'), '```' ].join('')
