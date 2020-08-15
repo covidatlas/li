@@ -5,7 +5,6 @@
 
 const got = require('got')
 const site = require('@architect/shared/utils/site.js')
-const slackTable = require('slack-table').default
 
 const SINCE_LAUNCH = '(always)'
 
@@ -31,16 +30,14 @@ async function getScraperReport () {
         map(d => {
           const failType = (d.crawler_status !== 'success') ?
                 'crawler' : 'scraper'
-          const rawMessage = d[`${failType}_error`]
-          let message = rawMessage.split('\n')[0].slice(0, 50)
-          if (rawMessage.length > 100)
-            message += ' ...'
+
           const failing_for_days = daysSinceLastSuccess(now, d[`${failType}_last_success`])
 
           return {
             source: d.source,
             failure_type: failType,
-            message,
+            source_failure: [ d.source, failType ].join(' '),
+            message: d[`${failType}_error`],
             failing_for_days
           }
         }).
@@ -67,62 +64,66 @@ async function getScraperReport () {
 /** Markdown table of failures. */
 function failureTable (failures) {
 
-  // NO IDEA why I had to include sorting for the lengths, but when I
-  // removed it, node was sorting it as if it was alpha (e.g., 13 was
-  // sorting before 2).
-  const sortedNameLengths = failures.map(f => f.source).map(s => s.length).sort((a, b) => {
-    if (a === b)
-      return 0
-    if (a < b)
-      return -1
-    return 1
-  })
-  const longestSourceName = sortedNameLengths.slice(-1)[0]
+  function truncate (msg) {
+    const truncateAt = 50
+    let ret = msg.split('\n')[0].slice(0, truncateAt)
+    if (msg.length > truncateAt)
+      ret += ' ...'
+    return ret
+  }
 
-  const table = slackTable({
-    title: 'Failures',
-    columns: [
-      { width: longestSourceName + 2, title: 'Source', dataIndex: 'source' },
-      { width: 10, title: 'Failure', dataIndex: 'failure_type' },
-      { width: 10, title: 'Days', dataIndex: 'failing_for_days', align: 'right' },
-      { width: 60, title: 'Message', dataIndex: 'message' }
-    ],
-    dataSource: failures
-  })
+  function makeRow (row) {
+    return [ `${row[0]}`.padStart(4, ' '), row[1] ].join('   ')
+  }
 
-  return table.replace('*Failures*', '_Failures, sorted in desc order_')
+  let table = []
+  table.push([ 'Days', 'Failure' ])
+  table.push([ '----', '-------' ])
+  table = table.concat(failures.map(f => [ f.failing_for_days, `${f.source_failure}: ${truncate(f.message)}` ]))
+  table = table.map(r => makeRow(r))
+
+  return [ '```', table.join('\n'), '```' ].join('')
+}
+
+function bulletedList (arr) {
+  return arr.map(s => `* ${s}`).join('\n')
 }
 
 function getReportStruct (scraperReport) {
 
+  const statusPage = `${site.root()}/status?format=html`
   const summary = scraperReport.summary
 
-  return [
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `*Report for ${new Date().toISOString().split('T')[0]}:*`
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `
-Sources: ${summary.successes} successes, ${summary.failures} failures.
+  const alwaysFailing = scraperReport.failures.
+        filter(f => f.failing_for_days === SINCE_LAUNCH).
+        map(f => f.source)
+  const allFailList = [ '```', alwaysFailing.join(', '), '```' ].join('')
+  const alwaysFailingText = `${alwaysFailing.length} sources have never worked:
+${allFailList}`
 
-${failureTable(scraperReport.failures)}`
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `See details: ${site.root()}/status?format=html`
-      }
-    }
+  const failures = scraperReport.failures.filter(f => f.failing_for_days !== SINCE_LAUNCH)
+  let failuresText = `${failures.length} failures:
+${failureTable(failures)}`
+
+  // Can only have 3000 chars in text blocks.
+  // Ref https://api.slack.com/reference/block-kit/blocks#section_fields
+  const MAX_LENGTH = 3000
+  if (failuresText.length > MAX_LENGTH) {
+    failuresText = `_Failures (Insufficient space to show details ... see the [status page](${statusPage}))_
+${bulletedList(failures.map(f => f.source))}`
+  }
+
+  const text = [
+    `*Report for ${new Date().toISOString().split('T')[0]}:*`,
+    `Sources: ${summary.successes} successes, ${summary.failures} failures.`,
+    alwaysFailingText,
+    failuresText,
+    `See details: ${statusPage}`
   ]
+
+  return text.map(t => {
+    return { type: 'section', text: { type: 'mrkdwn', text: t } }
+  })
 
 }
 

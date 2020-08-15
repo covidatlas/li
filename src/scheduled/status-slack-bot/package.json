@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "@architect/functions": "^3.8.4",
-    "got": "^10.7.0",
-    "slack-table": "^0.1.2"
+    "got": "^10.7.0"
   }
 }
