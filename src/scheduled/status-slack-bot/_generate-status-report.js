@@ -5,9 +5,9 @@
 
 const got = require('got')
 const site = require('@architect/shared/utils/site.js')
+const slackTable = require('slack-table').default
 
-
-const SINCE_LAUNCH = '(never succeeded)'
+const SINCE_LAUNCH = '(always)'
 
 function daysSinceLastSuccess (now, last_success_string) {
   if (last_success_string === null)
@@ -32,7 +32,7 @@ async function getScraperReport () {
           const failType = (d.crawler_status !== 'success') ?
                 'crawler' : 'scraper'
           const rawMessage = d[`${failType}_error`]
-          let message = rawMessage.split('\n')[0].slice(0, 100)
+          let message = rawMessage.split('\n')[0].slice(0, 50)
           if (rawMessage.length > 100)
             message += ' ...'
           const failing_for_days = daysSinceLastSuccess(now, d[`${failType}_last_success`])
@@ -64,7 +64,36 @@ async function getScraperReport () {
   }
 }
 
-function generateReport (scraperReport) {
+/** Markdown table of failures. */
+function failureTable (failures) {
+
+  // NO IDEA why I had to include sorting for the lengths, but when I
+  // removed it, node was sorting it as if it was alpha (e.g., 13 was
+  // sorting before 2).
+  const sortedNameLengths = failures.map(f => f.source).map(s => s.length).sort((a, b) => {
+    if (a === b)
+      return 0
+    if (a < b)
+      return -1
+    return 1
+  })
+  const longestSourceName = sortedNameLengths.slice(-1)[0]
+
+  const table = slackTable({
+    title: 'Failures',
+    columns: [
+      { width: longestSourceName + 2, title: 'Source', dataIndex: 'source' },
+      { width: 10, title: 'Failure', dataIndex: 'failure_type' },
+      { width: 10, title: 'Days', dataIndex: 'failing_for_days', align: 'right' },
+      { width: 60, title: 'Message', dataIndex: 'message' }
+    ],
+    dataSource: failures
+  })
+
+  return table.replace('*Failures*', '_Failures, sorted in desc order_')
+}
+
+function reportStruct (scraperReport) {
 
   const summary = scraperReport.summary
 
@@ -83,7 +112,7 @@ function generateReport (scraperReport) {
         text: `
 Sources: ${summary.successes} successes, ${summary.failures} failures.
 
-TODO table here.`
+${failureTable(scraperReport.failures)}`
       }
     },
     {
@@ -97,9 +126,9 @@ TODO table here.`
 
 }
 
-(() => getScraperReport().then(d => console.log(generateReport(d))))()
+(() => getScraperReport().then(d => console.log(reportStruct(d))))()
 
 module.exports = {
   getScraperReport,
-  generateReport
+  reportStruct
 }
