@@ -74,8 +74,7 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: 'https://novascotia.ca/coronavirus/data/COVID-19-data.csv',
-
+          url: 'https://novascotia.ca/coronavirus/data/ns-covid19-data.csv',
           // The filename is COVID-19-data.csv, but it's not actually
           // valid CSV.  The first line appears to be obsolete
           // headings, and the actual CSV starts on line 2.
@@ -84,7 +83,7 @@ module.exports = {
       ],
       scrape (data, date) {
 
-        const expectedHeadings = [ 'Date', 'Cases', 'Negative', 'Recovered', 'non-ICU', 'ICU', 'Deaths' ]
+        const expectedHeadings = [ 'New', 'Tests', 'Resolved', 'non-ICU', 'ICU', 'Deaths' ]
         const missingExpected = expectedHeadings.filter(h => {
           return !Object.keys(data[0]).includes(h)
         })
@@ -95,7 +94,7 @@ module.exports = {
 
         let { func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date, '<=')
 
-        const numeric = 'Cases,Negative,Recovered,non-ICU,ICU,Deaths'.split(',')
+        const numeric = expectedHeadings
         const dataToDate = data.filter(func).
               sort((a, b) => a.Date < b.Date ? -1 : 1).
               map(d => {
@@ -115,14 +114,15 @@ module.exports = {
         // - non-ICU + ICU = current hospitalized
         const raw = dataToDate.reduce((total, rec) => {
           // Cumulative
-          total.Cases += rec.Cases
+          total.Cases = total.Cases || total.New
+          total.Cases += rec.New
           total.Deaths += rec.Deaths; // ; is required for some reason!
 
           // As-is
-          [ 'Date', 'Negative', 'Recovered', 'non-ICU', 'ICU' ].forEach(f => {
+          [ 'Date', 'Tests', 'Resolved', 'non-ICU', 'ICU' ].forEach(f => {
             total[f] = rec[f]
           })
-          total.Active = rec.Cases
+          total.Active = total.Cases - total.Resolved
 
           return total
         })
@@ -132,10 +132,10 @@ module.exports = {
 
         return {
           date: raw.Date,
-          recovered: raw.Recovered,
+          recovered: raw.Resolved,
           icu_current: raw.ICU,
           hospitalized_current: raw['non-ICU'],
-          tested: raw.Cases + raw.Recovered + raw.Negative,
+          tested: raw.Tests + raw.Cases,
           cases: raw.Cases,
           deaths: raw.Deaths
         }
