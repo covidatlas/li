@@ -6,6 +6,7 @@ const got = require('got')
 async function getNormal (req) {
   let options = decodeURIComponent(req.queryStringParameters.options)
   options = JSON.parse(options)
+
   let { cookies, url, headers } = options
 
   // See comment in `src/shared/sources/_lib/arcgis.js` ... this is
@@ -65,7 +66,12 @@ async function getNormal (req) {
     // mutated data.
     // ref https://github.com/sindresorhus/got/issues/4
     // Thanks very much to Ryan Block for sorting this out!
+    let useBuffer = false
     if (options.type === 'xlsx')
+      useBuffer = true
+    if (options.options && options.options.useBuffer)
+      useBuffer = true
+    if (useBuffer)
       params.responseType = 'buffer'
 
     const response = await got(url, params)
