@@ -1,5 +1,7 @@
-const arc = require('@architect/functions')
+const { reportStatus } = require('./_slack-post.js')
 
-exports.handler = async function generateReports () {
-  // Do the thing.
+/** Reports status to slack channel. */
+exports.handler = async function handleReportStatus () {
+  await reportStatus()
 }
+

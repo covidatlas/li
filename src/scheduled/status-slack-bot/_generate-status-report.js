@@ -93,7 +93,7 @@ function failureTable (failures) {
   return table.replace('*Failures*', '_Failures, sorted in desc order_')
 }
 
-function reportStruct (scraperReport) {
+function getReportStruct (scraperReport) {
 
   const summary = scraperReport.summary
 
@@ -126,9 +126,15 @@ ${failureTable(scraperReport.failures)}`
 
 }
 
-(() => getScraperReport().then(d => console.log(reportStruct(d))))()
+/** Public method to gen report data for Slack report. */
+async function generateReportJson () {
+  const data = await getScraperReport()
+  return getReportStruct(data)
+}
+
 
 module.exports = {
   getScraperReport,
-  reportStruct
+  getReportStruct,
+  generateReportJson
 }
