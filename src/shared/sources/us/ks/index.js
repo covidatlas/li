@@ -1,5 +1,7 @@
 // Migrated from coronadatascraper, src/shared/scrapers/US/KS/index.js
 
+// Kansas data has been ABSOLUTELY TERRIBLE to work with.  Have fun! jz
+
 const srcShared = '../../../'
 const assert = require('assert')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
