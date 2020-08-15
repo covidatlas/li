@@ -1,23 +1,11 @@
 // Migrated from coronadatascraper, src/shared/scrapers/US/KS/index.js
 
-
 const srcShared = '../../../'
-// const assert = require('assert')
-const constants = require(srcShared + 'sources/_lib/constants.js')
-const datetime = require(srcShared + 'datetime/index.js')
+const assert = require('assert')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
-const sorter = require(srcShared + 'utils/sorter.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
-// const { UNASSIGNED } = require(srcShared + 'sources/_lib/constants.js')
-const { join, sep } = require('path')
-// const usStates = require('./us-states.json')
-// const glob = require('glob').sync
-// const globJoin = require('../../utils/glob-join.js')
-// const gssCodeMap = require('../_shared.js')
-// const gssCodes = require('./gss-codes.json')
-// const latinizationMap = require('./latinization-map.json')
 
 const _counties = [
 'Allen County',
@@ -127,7 +115,7 @@ const _counties = [
 'Wyandotte County',
 ]
 
-function _extractPdfSentences(data, pages = [1, 2, 3]) {
+function _extractPdfSentences (data, pages = [ 1, 2, 3 ]) {
     const items = []
     // Remove nulls.
     for (const item of data) {
@@ -146,7 +134,7 @@ function _extractPdfSentences(data, pages = [1, 2, 3]) {
     })
     // console.log(pageYs)
     // Join text in order of x, joining things with spaces or not depending on the xdiff.
-    function joinLineGroup(items) {
+    function joinLineGroup (items) {
       const itemsOrderByX = items.sort((a, b) => (a.x < b.x ? -1 : 1))
       // console.log(itemsOrderByX)
       let lastX = 0
@@ -162,14 +150,14 @@ function _extractPdfSentences(data, pages = [1, 2, 3]) {
       // Comma separator.
       line = line.replace(/%2C/g, ',')
       // PDF xdiff seems to be off when separating numbers from text.
-      line = line.replace(/(\d)([a-zA-Z])/g, function(m, a, b) {
+      line = line.replace(/(\d)([a-zA-Z])/g, function (m, a, b) {
         return `${a} ${b}`
       })
-      line = line.replace(/([a-zA-Z])(\d)/g, function(m, a, b) {
+      line = line.replace(/([a-zA-Z])(\d)/g, function (m, a, b) {
         return `${a} ${b}`
       })
       // Remove comma separator between numbers.
-      line = line.replace(/(\d),(\d)/g, function(m, a, b) {
+      line = line.replace(/(\d),(\d)/g, function (m, a, b) {
         return `${a}${b}`
       })
       return line
@@ -178,15 +166,15 @@ function _extractPdfSentences(data, pages = [1, 2, 3]) {
     return lineGroups.map(joinLineGroup)
   }
 
-function _parseDailySummary(body) {
-    const sentences = this._extractPdfSentences(body)
+function _parseDailySummary (body) {
+    const sentences = _extractPdfSentences(body)
     // console.log(sentences)
     // Regex the items we want from the sentences.
     const stateDataREs = {
       cases: /were (\d+) cases/,
       deaths: /with (\d+) deaths/,
       hospitalized: /been (\d+) of .* cases that have been hospitalized/,
-      testedNeg: /(\d+) negative tests/
+      testedNeg: /(\d+) negative/
     }
     const rawStateData = Object.keys(stateDataREs).reduce((hsh, key) => {
       const re = stateDataREs[key]
@@ -208,52 +196,52 @@ function _parseDailySummary(body) {
     const countyData = sentences.filter(s => {
       return countyRE.test(s)
     })
+
     countyData.forEach(lin => {
       const cm = lin.trim().match(countyRE)
       // console.log(cm)
       const rawName = `${cm[1]} County`
       const countyName = geography.addCounty(rawName)
       const cases = cm[2]
-      if (this._counties.includes(countyName)) {
+      if (_counties.includes(countyName)) {
         data.push({
           county: countyName,
           cases: parse.number(cases)
         })
       }
     })
+
     const summedData = transform.sumData(data)
     data.push(summedData)
-    data.push({ ...rawStateData, aggregate: 'county' })
-    const result = geography.addEmptyRegions(data, this._counties, 'county')
-    // no sum because we explicitly add it above
-    return result
-  }
+
+  return data
+}
 
 
 module.exports = {
   state: 'iso2:US-KS',
   country: 'iso1:US',
   aggregate: 'county',
-  _baseUrl: 'https://khap2.kdhe.state.ks.us/NewsRelease/COVID19/',
-  maintainers: [ maintainers.paulboal, maintainers.aed3 ],
+  maintainers: [ maintainers.paulboal, maintainers.aed3, maintainers.jzohrab ],
   friendly:   {
     name: 'Kansas Department of Health and Environment',
     url: 'https://govstatus.egov.com/coronavirus',
   },
   scrapers: [
+    /* Disabled ancient code.  Go ahead and get it working if you need it! jz
     {
       startDate: '2020-03-24',
       crawl: [
         {
           type: 'pdf',
-          url: (client) => {
+          url: () => {
             const datePart = datetime.getMonthDYYYY(new Date())
-            const url = `${this._baseUrl}COVID-19_${datePart}_.pdf`
+            const url = `https://khap2.kdhe.state.ks.us/NewsRelease/COVID19/COVID-19_${datePart}_.pdf`
             return { url }
           }
         },
       ],
-      scrape (body) {
+      scrape (body, date) {
         if (body === null) {
           throw new Error(`No data for ${date}`)
         }
@@ -288,6 +276,7 @@ module.exports = {
         return geography.addEmptyRegions(counties, _counties, 'county')
       }
     },
+    */
     {
       startDate: '2020-03-28',
       crawl: [
@@ -336,7 +325,7 @@ module.exports = {
           name: 'deaths',
         },
       ],
-      scrape ({cases, deaths}) {
+      scrape ({ cases, deaths }) {
       const data = cases
         .filter(item => item && item.y > 6 && item.y < 46)
         .sort((a, b) => {
@@ -401,7 +390,7 @@ module.exports = {
       ],
       scrape (body) {
       if (body === null) {
-        throw new Error(`No pdf at ${this.url}`)
+        throw new Error(`No pdf at url`)
       }
       return _parseDailySummary(body)
 }
@@ -426,16 +415,13 @@ module.exports = {
               url = matches[1]
             assert(url, `no url found`)
             url = url.replace(/%3A/g, ':').replace(/%2F/g, '/')
-            console.log('got url = ' + url)
-            const { body2 } = await client({ url })
-            console.log('got body2 = ' + body2)
             return ({ url })
           }
         },
       ],
       scrape (body) {
         if (body === null) {
-          throw new Error(`No pdf at ${this.url}`)
+          throw new Error(`No pdf at url`)
         }
         return this._parseDailySummary(body)
       }
@@ -445,66 +431,23 @@ module.exports = {
       crawl: [
         {
           type: 'pdf',
-          url: async (client) => {
-            console.log('getting url 07-29')
-            // The main page has an href that points to an 'object moved' file
-            // which contains the latest data.  Garbage.
-            const entryUrl = 'https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---May-5'
 
-            /* curl -i entryUrl gives this:
+          // For **some reason**, KS has opted to use a very confusing set of redirects ...
+          // not going to figure out why.  The below URL actually redirects to get
+          // the latest file.
+          url: 'https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---July-29',
 
-https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---May-5
-HTTP/2 301 
-
-<html><head><title>Object moved</title></head><body>
-<h2>Object moved to <a href="/DocumentCenter/View/1125/Historical---July-29?bidId=">here</a>.</h2>
-</body></html>
-
-             */
-
-            // const { body } = await client({ url: entryUrl, followRedirect: false })
-            // console.log('got body = ' + body)
-            /*
-            const { body } = await client({ url: entryUrl })
-            console.log('got body = ... long ...' + body)
-            const matches = body.match(
-              /gcc01.safelinks.protection.outlook.com.*url=(.*?)&. * /
-            )
-            console.log(`match count = ${matches.length}`)
-            let url = null
-            if (matches.length > 0)
-              url = matches[1]
-            assert(url, `no url found`)
-            url = url.replace(/%3A/g, ':').replace(/%2F/g, '/')
-            console.log('got url = ' + url)
-            const { body2 } = await client({ url })
-          console.log('got body2 = ' + body2)
-            */
-
-            // AFTER REDIRECT HACK
-            const url = 'https://www.coronavirus.kdheks.gov/DocumentCenter/View/1125/Historical---July-29'
-            return ({ url })
-          }
+          // This is used in src/shared/http/get-get-normal/index.js,
+          // to ensure that got doesn't mutate data.
+          options: { useBuffer: true }
         },
       ],
       scrape (body) {
         if (body === null) {
           throw new Error(`No pdf at ${this.url}`)
         }
-        return this._parseDailySummary(body)
+        return _parseDailySummary(body)
       }
     }
   ]
 }
-
-
-// TODO: delete unused requires
-// TODO: multiple sources listed, only taking first, please verify
-// TODO: fix 0 start date
-// TODO: fix 0 scrape and crawl
-// TODO: fix 2020-03-28 scrape and crawl
-// TODO: fix 2020-04-01 scrape and crawl
-// TODO: fix 2020-04-02 scrape and crawl
-// TODO: fix 2020-04-30 scrape and crawl
-// TODO: fix 2020-05-06 scrape and crawl
-// TODO: "normalize" maintainers (replace with references, sorry :-) )
