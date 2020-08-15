@@ -5,6 +5,7 @@ const assert = require('assert')
 const datetime = require(srcShared + 'datetime/index.js')
 const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
+const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
 
 module.exports = {
@@ -73,8 +74,7 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
-          url: 'https://novascotia.ca/coronavirus/data/COVID-19-data.csv',
-
+          url: 'https://novascotia.ca/coronavirus/data/ns-covid19-data.csv',
           // The filename is COVID-19-data.csv, but it's not actually
           // valid CSV.  The first line appears to be obsolete
           // headings, and the actual CSV starts on line 2.
@@ -83,36 +83,26 @@ module.exports = {
       ],
       scrape (data, date) {
 
-        const expectedHeadings = [ 'Date', 'Cases', 'Negative', 'Recovered', 'non-ICU', 'ICU', 'Deaths' ]
+        const expectedHeadings = [ 'New', 'Tests', 'Resolved', 'non-ICU', 'ICU', 'Deaths' ]
         const missingExpected = expectedHeadings.filter(h => {
           return !Object.keys(data[0]).includes(h)
         })
         assert.equal(missingExpected.length, 0, `Missing headings ${missingExpected.join()}`)
 
-        // TODO (timezone) Have to interpret all date/times as 'America/Halifax' in Li
-        let scrapeDate = date
-        let scrapeDateString = datetime.getYYYYMMDD(scrapeDate)
-        const lastDateInTimeseries = new Date(`${data[data.length - 1].Date} 12:00:00`)
-        const firstDateInTimeseries = new Date(`${data[0].Date} 12:00:00`)
+        // ca-ns reports dates as yyyymmdd already (eg 2020-03-15)
+        const toYYYYMMDD = s => s
 
-        if (scrapeDate > lastDateInTimeseries) {
-          console.error(
-            `  🚨 timeseries for ${geography.getName(
-            this
-          )}: scrape date ${scrapeDateString} is newer than last sample time ${datetime.getYYYYMD(
-            lastDateInTimeseries
-          )}. Using last sample anyway`
-          )
-          scrapeDate = lastDateInTimeseries
-          scrapeDateString = datetime.getYYYYMD(scrapeDate)
-        }
-        if (scrapeDate < firstDateInTimeseries) {
-          throw new Error(`Timeseries starts later than scrape date ${scrapeDateString}`)
-        }
+        let { func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date, '<=')
 
-        const dataToDate = data.filter(row => {
-          return row.Date <= scrapeDate
-        })
+        const numeric = expectedHeadings
+        const dataToDate = data.filter(func).
+              sort((a, b) => a.Date < b.Date ? -1 : 1).
+              map(d => {
+                return numeric.reduce((hsh, f) => {
+                  hsh[f] = parseInt(d[f], 10)
+                  return hsh
+                }, { Date: d.Date })
+              })
 
         // The numbers in the data match the totals shown on
         // https://novascotia.ca/coronavirus/data/, but they are
@@ -122,41 +112,34 @@ module.exports = {
         // - Negative = total negative to date
         // - Recovered = recovered to date
         // - non-ICU + ICU = current hospitalized
-        let totalCases = 0
-        let totalDeaths = 0
+        const raw = dataToDate.reduce((total, rec) => {
+          // Cumulative
+          total.Cases = total.Cases || total.New
+          total.Cases += rec.New
+          total.Deaths += rec.Deaths; // ; is required for some reason!
 
-        let result = {}
-        for (const row of dataToDate) {
-          totalCases += parse.number(row.Cases)
-          totalDeaths += parse.number(row.Deaths)
-          if (row.Date === scrapeDateString) {
-            result = {
-              cases: totalCases,
-              tested: parse.number(row.Negative),
-              recovered: parse.number(row.Recovered),
-              deaths: totalDeaths
-            }
-          }
+          // As-is
+          [ 'Date', 'Tests', 'Resolved', 'non-ICU', 'ICU' ].forEach(f => {
+            total[f] = rec[f]
+          })
+          total.Active = total.Cases - total.Resolved
+
+          return total
+        })
+
+        if (raw.length === 0)
+          throw new Error(`No data for ${date}`)
+
+        return {
+          date: raw.Date,
+          recovered: raw.Resolved,
+          icu_current: raw.ICU,
+          hospitalized_current: raw['non-ICU'],
+          tested: raw.Tests + raw.Cases,
+          cases: raw.Cases,
+          deaths: raw.Deaths
         }
-
-        // Return
-        if (Object.keys(result).length == 0) {
-          const m = `Timeseries does not contain a sample for ${scrapeDateString}`
-          console.log(m)
-
-          // There is no data.  Don't throw an error, because this is
-          // to be expected of this data source.  We don't actually
-          // have the data yet, so return undefined.
-          result = {
-            cases: undefined,
-            tested: undefined,
-            recovered: undefined,
-            deaths: undefined
-          }
-        }
-
-        return result
-      }
+     }
     }
   ]
 }
