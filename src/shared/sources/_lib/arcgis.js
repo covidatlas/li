@@ -36,6 +36,7 @@ function paginated (featureLayerURL, options = {}) {
     f: 'pjson',
     where: '1=1',
     outFields: '*',
+    returnExceededLimitFeatures: true,
     sqlFormat: 'none',
     resultType: 'standard',
     returnIdsOnly: false,
