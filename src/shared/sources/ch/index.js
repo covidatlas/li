@@ -90,7 +90,7 @@ module.exports = {
         for (const item of data.hospitalized) {
           if (datetime.dateIsBeforeOrEqualTo(item.Date, date)) {
             for (const canton of cantons) {
-              dataByCanton[canton].hospitalized = parse.float(item[canton]) || dataByCanton[canton].hospitalized
+              dataByCanton[canton].hospitalized_current = parse.float(item[canton]) || dataByCanton[canton].hospitalized
             }
           }
         }
