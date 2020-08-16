@@ -119,7 +119,7 @@ module.exports = {
               // Store today's number to calculate formula above
               todayHospitalized: parse.number(item.hosp),
               // Sum number of new hospitalization
-              hospitalized: prev.hospitalized + newHospitalized,
+              hospitalized_current: prev.hospitalized + newHospitalized,
               deaths: parse.number(item.dc),
               discharged: parse.number(item.rad)
             }
@@ -127,7 +127,7 @@ module.exports = {
             // First day with info for this departement
             hospitalizedByDepartments[item.dep] = {
               todayHospitalized: parse.number(item.hosp),
-              hospitalized: parse.number(item.hosp),
+              hospitalized_current: parse.number(item.hosp),
               deaths: parse.number(item.dc),
               discharged: parse.number(item.rad)
             }
