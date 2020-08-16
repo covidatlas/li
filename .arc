@@ -32,7 +32,7 @@ status      # Status updater
 runner rate(2 hours)               # Regularly invokes crawls and scrapes
 regen-timeseries rate(15 minutes)  # Regularly regenerates timeseries sources
 gen-reports rate(2 hours)          # Fire event to regenerate reports
-status-slack-bot rate(24 hours)    # Send slack update
+status-slack-bot rate(15 minutes)    # Send slack update
 
 
 @storage-public
