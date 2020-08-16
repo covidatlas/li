@@ -99,7 +99,7 @@ module.exports = {
             }
             const provinceData = regionData[item.PROVINCE]
 
-            provinceData.hospitalized = parse.number(item.NEW_IN) + (provinceData.hospitalized || 0)
+            provinceData.hospitalized_current = parse.number(item.NEW_IN) + (provinceData.hospitalized || 0)
             provinceData.discharged = parse.number(item.NEW_OUT) + (provinceData.discharged || 0)
           }
         }
