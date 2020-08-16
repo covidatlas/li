@@ -12,16 +12,39 @@ const transform = require(srcShared + 'sources/_lib/transform.js')
  * eg. T_4022020 or T_04022020 -> '2020-04-02'
  */
 function parseDateField (s) {
-  // Sometimes AZ decides to output their dates differently, eg
-  // T_5122020,T_5202013 -- note the first is m/dd/yyyy, the
-  // next is m/yyyy/dd.  Other examples: T_3202021,T_3202022.  Super.
   let tmp = s
-  for (let y = 2020; y <= 2021; y++) {
-    const ys = `${y}`
-    if (tmp.includes(ys)) {
-      tmp = `${tmp.split(ys).join('')}${ys}`
-    }
-  }
+
+  // Sometimes AZ decides to output their dates differently, eg
+  // T_5122020,T_5202013 -- note the first is m/dd/yyyy, the next is
+  // m/yyyy/dd.  Great job, AZ!  Doing fixes for specific dates, b/c
+  // who knows what will happen in 2021.
+  const flipYearDay = [
+    'T_3202021',
+    'T_3202022',
+    'T_3202023',
+    'T_3202024',
+    'T_3202025',
+    'T_3202026',
+    'T_3202027',
+    'T_3202028',
+    'T_5202013',
+    'T_5202014',
+    'T_5202015',
+    'T_5202016',
+    'T_5202017',
+    'T_5202018',
+    'T_5202019'
+  ]
+  const fixDates = flipYearDay.reduce((hsh, t) => {
+    hsh[t] = t.replace('2020', '') + '2020'
+    return hsh
+  }, {})
+
+  // Other weird dates:
+  fixDates.T_04212020 = 'T_4212020'
+  fixDates.T_72352020 = 'T_7252020'  // Between T_7242020 and T_7262020
+
+  tmp = fixDates[tmp] || tmp
 
   let d = tmp.split('_')[1]
   d = d.padStart(8, '0')
@@ -107,11 +130,11 @@ module.exports = {
           counties.push({
             // unfortunately even arcgis isnt reporting any death data
             county: d.name,
-            cases: d[dateString]
+            cases: d[dateString],
+            date: dateString
           })
         }
-        counties.push(transform.sumData(counties))
-        // console.table(counties);
+        counties.push({ ...transform.sumData(counties), date: dateString })
         return counties
       }
     }
