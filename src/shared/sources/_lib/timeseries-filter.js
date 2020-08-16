@@ -74,7 +74,7 @@ module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date, 
   if (date > latestDate) {
     const daysDiff = daysDifference(date, latestDate)
     if (daysDiff > 7)
-      throw new Error(`stale timeseries data, latest date avail is ${latestDate} (${daysDiff} days old)`)
+      throw new Error(`stale: latest data is from ${latestDate}, ${daysDiff} days ago`)
   }
 
   let filterDate = date
