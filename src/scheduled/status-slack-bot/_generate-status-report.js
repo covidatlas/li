@@ -62,22 +62,27 @@ async function getScraperReport () {
 /** Markdown table of failures. */
 function failureTable (failures) {
 
-  function truncate (msg) {
-    const truncateAt = 50
-    let ret = msg.split('\n')[0].slice(0, truncateAt)
-    if (msg.length > truncateAt)
-      ret += ' ...'
-    return ret
+  function truncate (msg, truncateAt = 50) {
+    let tmp = msg.split('\n')[0]
+    if (tmp.length <= truncateAt)
+      return tmp
+    tmp = tmp.slice(0, truncateAt - 4)
+    return `${tmp} ...`
   }
 
   function makeRow (row) {
-    return [ `${row[0]}`.padStart(4, ' '), row[1] ].join('   ')
+    return [ `${row[0]}`.padStart(4, ' '), row[1] ].join('  ')
   }
 
+  const outrows = failures.
+        map(f => {
+          const msg = [ f.source, f.message ].join(': ')
+          return [ f.failing_for_days, truncate(msg, 70) ]
+        })
   let table = []
   table.push([ 'Days', 'Failure' ])
   table.push([ '----', '-------' ])
-  table = table.concat(failures.map(f => [ f.failing_for_days, `${f.source}: ${truncate(f.message)}` ]))
+  table = table.concat(outrows)
   table = table.map(r => makeRow(r))
 
   return [ '```', table.join('\n'), '```' ].join('')
@@ -111,17 +116,13 @@ ${failureTable(failures)}`
 ${bulletedList(failures.map(f => f.source))}`
   }
 
-  const text = [
+  return [
     `*Report for ${new Date().toISOString().split('T')[0]}:*`,
     `Sources: ${summary.successes} successes, ${summary.failures} failures.`,
     alwaysFailingText,
     failuresText,
     `See details: ${statusPage}`
-  ]
-
-  return text.map(t => {
-    return { type: 'section', text: { type: 'mrkdwn', text: t } }
-  })
+  ].map(t => { return { type: 'section', text: { type: 'mrkdwn', text: t } } })
 
 }
 
