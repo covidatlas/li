@@ -58,7 +58,7 @@ column when you do.
 To help you contribute a new source, please read the
 [Sources](./docs/sources.md) guide before you start!
 
-Send a pull request with your scraper, and be sure to run the scraper
+Send a pull request with your source, and be sure to crawl and scrape the source
 first with the instructions specified in the guide to make sure the
 data is valid.
 

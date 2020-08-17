@@ -5,20 +5,11 @@ Operations
 
 # Launching
 
-## How-to
+Launches to staging happen on push or PR to the `develop` branch.
 
-Launches are currently done by creating a tag on your local updated master branch and pushing it to GitHub.
+Launches to prod happen on push or PR to the `master` branch.
 
-```
-$ git checkout master
-$ git fetch upstream                       # or origin, or your name for the canonical repo
-$ git reset --hard upstream/master         # my own preference
-$ git tag                                  # list all tags
-$ npm version v1.0.xx                      # create a new commit, and tags it
-$ git push upstream master --follow-tags   # push the new commit and the tag
-```
-
-Problems with this approach: I (jz) dislike that this creates a new tag and modifies master on my own machine.  It would be best if this process occurred on a remote machine ... or perhaps this entire process needs to be rethought.  It's good enough for now though!
+See `/.github/workflows/`
 
 ## Launch failures
 
@@ -36,11 +27,12 @@ npx arc env production SLACK_STATUS_HOOK <hook-url>
 
 # Monitoring
 
-_We need better monitoring, but in the meantime ..._
+## Slack hooks
 
 Slack incoming hooks are configured at https://covid-atlas.slack.com/apps/A0F7XDUAZ-incoming-webhooks
 
 ## Status URLs
+
 Some status URLs:
 
 Staging
@@ -53,6 +45,9 @@ Prod
 * https://api.covidatlas.com/status?format=html
 * https://api.covidatlas.com/reports/status?format=html
 
+## TODOs
+
+We need better monitoring ... looking for guidance from AWS pros on how to make a nice dashboard, surface issues, etc.
 
 # AWS console sign-in
 
