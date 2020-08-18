@@ -40,6 +40,7 @@
     "puppeteer": "^2.1.1",
     "tap-spec": "^5.0.0",
     "tape": "^5.0.0",
+    "xlsx": "^0.16.6",
     "yargs": "^15.3.1"
   },
   "author": "Ryan Block <hello@ryanblock.com>",
