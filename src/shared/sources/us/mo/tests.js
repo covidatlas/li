@@ -54,7 +54,7 @@ module.exports = {
         // The Count is not cumulative.
 
         const getYYYYMMDD = n => new Date(n).toISOString().split('T')[0]
-        const { func, filterDate } = timeseriesFilter(data, 'test_date', getYYYYMMDD, date, '<=')
+        const { func, filterDate } = timeseriesFilter(data, 'test_date', getYYYYMMDD, date, { operator: '<=' })
         const sumPerCounty = data.filter(func).reduce((hsh, rec) => {
           const c = rec.county
           hsh[c] = hsh[c] || 0

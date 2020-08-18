@@ -42,7 +42,13 @@ scrape (data, date) {
   const counties = data.filter(func).map(row => {
 
  */
-module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date, operator = '===') {
+module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date, options = {}) {
+  const useOptions = {
+    operator: '===',
+    maxStaleDays: 7,
+    ...options
+  }
+
   const result = {
     func: () => true,
     filterDate: date
@@ -83,7 +89,7 @@ module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date, 
   console.log(`scraping data from ${filterDate}`)
 
   let func = null
-  switch (operator) {
+  switch (useOptions.operator) {
   case '===':
     func = (d) => getYYYYMMDD(d[dateField]) === filterDate
     break
@@ -91,7 +97,7 @@ module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date, 
     func = (d) => getYYYYMMDD(d[dateField]) <= filterDate
     break
   default:
-    throw new Error(`Unhandled operator ${operator}`)
+    throw new Error(`Unhandled operator ${useOptions.operator}`)
   }
 
   return { func, filterDate }
