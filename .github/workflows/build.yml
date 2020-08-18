@@ -36,12 +36,6 @@ jobs:
       - name: Install
         run: npm install
 
-      - name: Hydrate
-        run: npx arc hydrate
-        env:
-          CI: true
-          ARC_MAX_NPM: 10
-
       - name: Test
         env:
           CI: true
