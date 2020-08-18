@@ -15,8 +15,11 @@ const mapping = {
 }
 
 const isoMap = {
-  // Non-unique gets mapped straight to ISO2
-  "Nelson Marlborough": "iso2:NZ-NSN+iso2:NZ-MBH",
+  // Going to map this all to Nelson ...
+  // otherwise the location becomes
+  // iso1:nz#iso2:nz-nsn+iso2:nz-mbh when written to dynamoDB, which doesn't work
+  // well for reports.
+  "Nelson Marlborough": "iso2:NZ-NSN",
 }
 
 const nameToCanonical = {
@@ -81,9 +84,13 @@ module.exports = {
         dataRows.forEach((row) => {
           const stateData = normalizeKey.createHash(propColIndices, row)
           if (stateData.deaths === undefined) stateData.deaths = 0
+          let s = stateData.state
+          // Handle data variants.
+          if (/Managed Isolation/.test(s))
+            s = 'Managed Isolation & Quarantine'
           stateData.state = getIso2FromName({
             country,
-            name: stateData.state,
+            name: s,
             nameToCanonical,
             isoMap,
           })
