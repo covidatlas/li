@@ -1,6 +1,7 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
 const transform = require('../_lib/transform.js')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 
 const country = 'iso1:SA'
 
@@ -30,64 +31,37 @@ module.exports = {
       startDate: "2020-01-14",
       crawl: [
         {
-          type: "csv",
-          url:
-            "https://datasource.kapsarc.org/explore/dataset/saudi-arabia-coronavirus-disease-covid-19-situation/download/?format=csv&timezone=Australia/Sydney&lang=en&use_labels_for_header=true&csv_separator=,",
+          type: 'csv',
+          url: 'https://datasource.kapsarc.org/explore/dataset/saudi-arabia-coronavirus-disease-covid-19-situation/download/?format=csv&timezone=America/New_York&lang=en&use_labels_for_header=true&csv_separator=%2C',
+          options: { timeout: 60000 }
         },
       ],
       scrape ($, date, { getIso2FromName, groupBy }) {
         assert($.length > 0, "data is unreasonable")
-        const attributes = $.filter(
-          (item) => item["Daily / Cumulative"] === "Cumulative"
-        ).filter((item) => item.Date === date)
+        const attributes = $.
+              filter(r => r["Daily / Cumulative"] === "Cumulative").
+              filter(r => r.region !== 'Total')
 
-        assert(
-          attributes.length > 0,
-          `data fetch failed, no fields for date: ${date}`
-        )
+        // SA already reports dates as YYYY-MM-DD (eg '2020-06-16')
+        const toYYYYMMDD = s => s
+        const { filterDate, func } = timeseriesFilter(attributes, 'Date', toYYYYMMDD, date)
+        const dataAtDate = attributes.filter(func)
 
-        const groupedByState = groupBy(
-          attributes,
-          (attribute) => attribute.region
-        )
+        const groupedByState = groupBy(dataAtDate, rec => rec.region)
 
         const states = []
-        for (const [ stateName, stateAttributes ] of Object.entries(
-          groupedByState
-        )) {
-          if (stateName !== "Total") {
-            states.push({
-              state: getIso2FromName({
-                country,
-                name: stateName,
-                nameToCanonical,
-              }),
-              cases: sum(
-                stateAttributes.filter(
-                  (stateAttribute) => stateAttribute.Indicator === "Cases"
-                )
-              ),
-              active: sum(
-                stateAttributes.filter(
-                  (stateAttribute) =>
-                    stateAttribute.Indicator === "Active cases"
-                )
-              ),
-              recovered: sum(
-                stateAttributes.filter(
-                  (stateAttribute) => stateAttribute.Indicator === "Recoveries"
-                )
-              ),
-              deaths: sum(
-                stateAttributes.filter(
-                  (stateAttribute) => stateAttribute.Indicator === "Mortalities"
-                )
-              ),
-            })
-          }
+        for (const [ stateName, recs ] of Object.entries(groupedByState)) {
+          states.push({
+            state: getIso2FromName({ country, name: stateName, nameToCanonical }),
+            cases: sum(recs.filter(r => r.Indicator === "Cases")),
+            active: sum(recs.filter(r => r.Indicator === "Active cases")),
+            recovered: sum(recs.filter(r => r.Indicator === "Recoveries")),
+            deaths: sum(recs.filter(r => r.Indicator === "Mortalities")),
+            date: filterDate
+          })
         }
 
-        const summedData = transform.sumData(states)
+        const summedData = { ...transform.sumData(states), date: filterDate }
         assert(summedData.cases > 0, "Cases are not reasonable")
         states.push(summedData)
 

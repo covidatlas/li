@@ -28,7 +28,11 @@ async function getNormal (req) {
     const agent = 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_2) ' +
                   'AppleWebKit/537.36 (KHTML, like Gecko) ' +
                   'Chrome/80.0.3987.132 Safari/537.36'
-    const timeout = 30000
+    let timeout = 30000
+    if (options.options && options.options.timeout) {
+      console.log('override timeout')
+      timeout = options.options.timeout
+    }
 
     // Important: this prevents SSL from failing
     if (!sslOptions.rejectUnauthorized || sslOptions.disableSSL) {
