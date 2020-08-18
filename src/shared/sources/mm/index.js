@@ -1,5 +1,6 @@
 const assert = require('assert')
 const maintainers = require('../_lib/maintainers.js')
+const arcgis = require('../_lib/arcgis.js')
 const transform = require('../_lib/transform.js')
 
 const country = 'iso1:MM'
@@ -49,6 +50,44 @@ module.exports = {
           states.push({
             state: stateName,
             cases: cumulatedObject.Confirmed + (cumulatedObject.PUI || 0),
+            deaths: cumulatedObject.Death,
+            recovered: cumulatedObject.Recovered,
+            tested: cumulatedObject.Tested,
+          })
+        }
+
+        const summedData = transform.sumData(states)
+        states.push(summedData)
+        assert(summedData.cases > 0, 'Cases are not reasonable')
+        return states
+      }
+    },
+    {
+      startDate: '2020-08-17',
+      crawl: [
+        {
+          type: 'json',
+          paginated: arcgis.paginated('https://services7.arcgis.com/AB2LoFxJT2bJUJYC/ArcGIS/rest/services/CaseCount_130720/FeatureServer/0/query')
+        }
+      ],
+      scrape (attributes, date, { cumulateObjects,  getIso2FromName, groupBy }) {
+        assert(attributes.length > 0, 'data fetch failed, no attributes')
+
+        const getIso2FromNameForMM = (nameRaw) => {
+          const parentheticalRegex = / \(\w+\)/
+          const name = nameRaw.replace(parentheticalRegex, '').replace(' State', '').replace(' Region', '')
+
+          return getIso2FromName({ country, name, isoMap })
+        }
+
+        const groupedByState = groupBy(attributes, attribute => getIso2FromNameForMM(attribute.SR))
+        const states = []
+
+        for (const [ stateName, stateAttributes ] of Object.entries(groupedByState)) {
+          const cumulatedObject = cumulateObjects(stateAttributes)
+          states.push({
+            state: stateName,
+            cases: cumulatedObject.Confirmed,
             deaths: cumulatedObject.Death,
             recovered: cumulatedObject.Recovered,
             tested: cumulatedObject.Tested,
