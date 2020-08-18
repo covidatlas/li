@@ -108,7 +108,7 @@ test('scrape writes to dynamodb', async t => {
   const expectedLoc = {
     locationID: 'iso1:us#iso2:us-ca#fips:06007',
     slug: 'butte-county-california-us',
-    name: 'Butte County, California, US',
+    name: 'Butte County, California, United States',
     area: {
       squareMeters: 4348071591,
       landSquareMeters: 4238438186,

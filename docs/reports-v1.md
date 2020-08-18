@@ -30,7 +30,7 @@
 {
   "locationID": "iso1:us#iso2:us-ca#fips:06007",
   "slug": "butte-county-california-us",
-  "name": "Butte County, California, US",
+  "name": "Butte County, California, United States",
   "coordinates": [
     -121.6,
     39.67
@@ -67,7 +67,7 @@
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz
-iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, United States",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles
 ```
 
 ## features.json
@@ -125,7 +125,7 @@ The report is comprised of geojson and census data, keyed by `locationID`.
 {
   "locationID": "iso1:us#iso2:us-ca#fips:06007",
   "slug": "butte-county-california-us",
-  "name": "Butte County, California, US",
+  "name": "Butte County, California, United States",
   "coordinates": [
     -121.6,
     39.67
@@ -167,7 +167,7 @@ The report is comprised of geojson and census data, keyed by `locationID`.
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,cases,deaths,recovered,active,tested,hospitalized,hospitalized_current,discharged,icu,icu_current
-iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,4,,,200,5,,,2,
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, United States",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,4,,,200,5,,,2,
 ```
 
 # Timeseries
@@ -178,7 +178,7 @@ iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, Californ
 {
   "locationID": "iso1:us#iso2:us-ca#fips:06007",
   "slug": "butte-county-california-us",
-  "name": "Butte County, California, US",
+  "name": "Butte County, California, United States",
   "coordinates": [
     -121.6,
     39.67
@@ -241,7 +241,7 @@ If there are conflicts in the data (e.g., multiple sources return `cases`, but t
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,2020-05-21,2020-05-22
-iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,22
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, United States",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,22
 ```
 
 ## timeseries-tidy-small.csv
@@ -259,5 +259,5 @@ iso1:us#iso2:us-ca#fips:06007,2020-06-28,icu,2
 
 ```
 locationID,slug,name,level,city,county,state,country,lat,long,population,aggregate,tz,cases,deaths,recovered,active,tested,hospitalized,hospitalized_current,discharged,icu,icu_current,date
-iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, US",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,4,,,210,1,,,10,,2020-05-21
+iso1:us#iso2:us-ca#fips:06007,butte-county-california-us,"Butte County, California, United States",county,,Butte County,California,United States,39.67,-121.6,219186,,America/Los_Angeles,21,4,,,210,1,,,10,,2020-05-21
 ```

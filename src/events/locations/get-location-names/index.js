@@ -16,6 +16,7 @@ module.exports = function getLocationNames (locationIDs) {
     // Construct the mostly-denormalized location object (including
     // the human-readable slug) from ISO / FIPS data
     let locationName = []
+    let locationSlug = []
     for (const bit of bits) {
 
       // Some locations report some data as UNASSIGNED for the state
@@ -39,26 +40,28 @@ module.exports = function getLocationNames (locationIDs) {
       }
 
       if (level === 'iso1' && iso1Codes[id]) {
-        // Location name
-        locationName.push(id)
+        const { name } = iso1Codes[id]
+        locationName.push(name)
+        locationSlug.push(id)
       }
       if (level === 'iso2' && iso2Codes[id]) {
         const { name } = iso2Codes[id]
-        // Location name
         locationName.unshift(name)
+        locationSlug.unshift(name)
       }
       if (level === 'fips' && fipsCodes[id]) {
         const { name } = fipsCodes[id]
-        // Location name
         locationName.unshift(name)
+        locationSlug.unshift(name)
       }
       else if (id === UNASSIGNED) {
         locationName.unshift(UNASSIGNED)
+        locationSlug.unshift(UNASSIGNED)
       }
     }
 
     // Slugify / lowcase
-    location.slug = slugify(locationName.join('-'), { lower: true })
+    location.slug = slugify(locationSlug.join('-'), { lower: true })
     if (location.slug.startsWith(UNASSIGNED)) {
       location.slug = location.slug.replace(UNASSIGNED, 'unassigned')
     }
