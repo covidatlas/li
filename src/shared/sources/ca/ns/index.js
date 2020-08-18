@@ -92,7 +92,7 @@ module.exports = {
         // ca-ns reports dates as yyyymmdd already (eg 2020-03-15)
         const toYYYYMMDD = s => s
 
-        let { func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date, '<=')
+        let { func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date, { operator: '<=' })
 
         const numeric = expectedHeadings
         const dataToDate = data.filter(func).

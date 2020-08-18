@@ -40,7 +40,7 @@ module.exports = {
         // dataTransform.transform returns dates as YYYYMMDD already.
         const toYYYYMMDD = s => s
 
-        const { filterDate, func } = timeseriesFilter(data, 'date', toYYYYMMDD, date, '<=')
+        const { filterDate, func } = timeseriesFilter(data, 'date', toYYYYMMDD, date, { operator: '<=' })
 
         const dailies = data.filter(func)
 
