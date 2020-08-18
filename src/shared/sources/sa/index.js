@@ -44,7 +44,7 @@ module.exports = {
 
         // SA already reports dates as YYYY-MM-DD (eg '2020-06-16')
         const toYYYYMMDD = s => s
-        const { filterDate, func } = timeseriesFilter(attributes, 'Date', toYYYYMMDD, date)
+        const { filterDate, func } = timeseriesFilter(attributes, 'Date', toYYYYMMDD, date, { maxStaleDays: 30 })
         const dataAtDate = attributes.filter(func)
 
         const groupedByState = groupBy(dataAtDate, rec => rec.region)

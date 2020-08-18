@@ -79,7 +79,7 @@ module.exports = function timeseriesFilter (data, dateField, getYYYYMMDD, date, 
 
   if (date > latestDate) {
     const daysDiff = daysDifference(date, latestDate)
-    if (daysDiff > 7)
+    if (daysDiff > useOptions.maxStaleDays)
       throw new Error(`stale: latest data is from ${latestDate}, ${daysDiff} days ago`)
   }
 
