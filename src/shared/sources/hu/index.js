@@ -32,6 +32,7 @@ module.exports = {
   country: 'iso1:HU',
   aggregate: 'state',
   maintainers: [ maintainers.jzohrab ],
+  curators: [ { name: 'Attila Bátorfy', twitter: '@attilabatorfy' } ],
   timeseries: true,
   priority: 1,
   friendly:   {
@@ -51,7 +52,9 @@ module.exports = {
         // The date is stored in yyyymmdd already (e.g 2020-03-04)
         const toYYYYMMDD = s => s
 
-        const { filterDate, func } = timeseriesFilter(data, 'Dátum', toYYYYMMDD, date)
+        // They only update their data once a week now.
+        const opts = { maxStaleDays: 10 }
+        const { filterDate, func } = timeseriesFilter(data, 'Dátum', toYYYYMMDD, date, opts)
 
         const useData = data.filter(func)[0]
         console.log(Object.keys(useData).
