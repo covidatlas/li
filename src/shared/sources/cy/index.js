@@ -25,9 +25,11 @@ module.exports = {
         },
       ],
       scrape ($, date) {
-        // Sample date: '13/3/2020'
+        // Sample date: '13/3/2020' ... but sometimes they report the year as '20'.
         function toYYYYMMDD (datestring) {
-          const [ d, m, y ] = datestring.split("/")
+          let [ d, m, y ] = datestring.split("/")
+          if (y === '20')
+            y = '2020'
           return [ y, m.padStart(2, "0"), d.padStart(2, "0") ].join("-")
         }
 
