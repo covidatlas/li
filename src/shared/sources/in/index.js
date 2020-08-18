@@ -1,4 +1,5 @@
 const maintainers = require('../_lib/maintainers.js')
+const assert = require('assert')
 const parse = require('../_lib/parse.js')
 const transform = require('../_lib/transform.js')
 
@@ -14,8 +15,8 @@ const mapping = {
 }
 
 const isoMap = {
-  // Non-unique gets mapped straight to ISO2
-  "Dadra and Nagar Haveli and Daman and Diu": "iso2:IN-DN+iso2:IN-DD",
+  // Can't combine locations, messes up storage and reporting.
+  "Dadra and Nagar Haveli and Daman and Diu": "iso2:IN-DN",
 }
 
 const nameToCanonical = {
@@ -74,6 +75,41 @@ module.exports = {
           nonHeaderRows.find((row) => row.some((cell) => cell.startsWith("Total")))[indexForCases]
         )
         assertTotalsAreReasonable({ computed: summedData.cases, scraped: casesFromTotalRow })
+        return states
+      }
+    },
+    {
+      startDate: '2020-08-18',
+      crawl: [
+        {
+          type: 'json',
+          url: 'https://www.mohfw.gov.in/data/datanew.json'
+        }
+      ],
+      scrape (data, date, { getIso2FromName }) {
+
+        const states = data.
+              filter(d => d.state_name !== '').
+              map(d => {
+                const s = getIso2FromName({
+                  country,
+                  name: d.state_name,
+                  nameToCanonical,
+                  isoMap
+                })
+                return {
+                  state: s,
+                  active: parseInt(d.active, 10),
+                  cases: parseInt(d.positive, 10),
+                  recovered: parseInt(d.cured, 10),
+                  deaths: parseInt(d.death, 10)
+                }
+        })
+
+        const summedData = transform.sumData(states)
+        assert(summedData.cases > 0, 'cases are not reasonable')
+        states.push(summedData)
+
         return states
       }
     }
