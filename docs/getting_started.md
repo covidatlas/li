@@ -1,40 +1,18 @@
 # Getting started
 
-## Tools
-
 You'll need the following:
 
-* [Node.js 12](https://nodejs.org/en/download/)
+* [Node.js 12](https://nodejs.org/en/download/) or newer
 
-## Repo
-
-First, [fork the repository](https://github.com/covidatlas/li.git) so you're ready to contribute back.
-
-### 1. Clone, init submodules, and add upstream
-
-Replace `yourusername` below with your Github username:
+Clone the repository and install its dependencies:
 
 ```
-git clone https://github.com/yourusername/li.git
+git clone https://github.com/covidatlas/li.git
 cd li
-git remote add upstream https://github.com/covidatlas/li.git
-```
-
-### 2. Install dependencies
-
-```
 npm install
 ```
 
 If you get an error message saying you have an incompatible version of `node`, you may need to change versions.  You can use `n` or `nvm` if you don't want to install Node.js 12.x.
-
-### 3. Pull from upstream often
-
-This gets you the latest sources.
-
-```
-git pull upstream master
-```
 
 
 ## Usage
