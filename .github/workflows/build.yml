@@ -3,12 +3,16 @@ name: Node CI
 # Push tests commits; pull_request tests PR merges
 on: [push, pull_request]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
 
   # Test the build
   build:
     # Setup
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         node-version: [ 12.x ]
@@ -32,6 +36,11 @@ jobs:
           echo "SHA:        ${{ github.sha }}"
           VER=`node --version`; echo "Node ver:   $VER"
           VER=`npm --version`; echo "npm ver:    $VER"
+
+      - name: Set up Windows
+        run: |
+          npm config set script-shell "C:\\Program Files\\Git\\bin\\bash.exe"
+        if: matrix.os == 'windows-latest'
 
       - name: Install
         run: npm install
