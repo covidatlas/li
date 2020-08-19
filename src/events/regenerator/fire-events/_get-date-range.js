@@ -1,4 +1,4 @@
-const datetime = require('@architect/shared/datetime/index.js')
+const spacetime = require('spacetime')
 
 
 function throwIfNonDate (d) {
@@ -22,12 +22,13 @@ module.exports = function getDatesRange (earliestYYYYMMDD, latestYYYYMMDD) {
   if (earliestYYYYMMDD > latestYYYYMMDD)
     throw new Error(`${earliestYYYYMMDD} > ${latestYYYYMMDD}`)
 
-  const d = new Date(earliestYYYYMMDD)
-  const latest = new Date(latestYYYYMMDD)
+  let d = spacetime(earliestYYYYMMDD)
+  const latest = spacetime(latestYYYYMMDD)
+
   let dates = []
-  while (d <= latest) {
-    d.setDate(d.getDate() + 1)
-    dates.push(datetime.getYYYYMMDD(d))
+  while (!d.isAfter(latest)) {
+    dates.push(d.format('YYYY-MM-DD'))
+    d = d.add(1, 'day')
   }
   return dates
 }
