@@ -72,11 +72,12 @@ function assertContentsEqual (t, filename) {
   const actualFilename = join(d, 'v1', filename)
   const expectedFilename = join(__dirname, 'expected-results', filename)
 
-  function sortKeys (item) {
-    const keys = Object.keys(item).sort()
-    return keys.reduce((hsh, k) => {
-      return { ...hsh, [k]: item[k] }
-    })
+  function sortKeys(item) {
+    const ordered = {}
+    for (let key of Object.keys(item).sort()) {
+      ordered[key] = item[key]
+    }
+    return ordered
   }
 
   function clean (f) {
