@@ -30,9 +30,7 @@ Each of these tests could fail for different reasons; see "Possible errors" belo
 
 These tests run `git diff` for your current branch against some baseline branch to determine what sources are new or changed.
 
-Since it's impossible for us to accurately guess what the right baseline branch would be in your case (`origin/master`? `upstream/master`?), you will need to create a `gitdiff.json` in `tests/integration/shared/sources`.  See `gitdiff.json.example` in that folder for reference.
-
-If this file is missing, the test will stop with a giant warning message.  (In CI, we just use `origin/master` as the base branch, and this file isn't required).
+If your upstream branch is not named `origin/master`, you will need to create a `gitdiff.json` in `tests/integration/shared/sources`.  See `gitdiff.json.example` in that folder for reference.
 
 Note you can ignore the `git diff` by setting some environment
 variables, see below.
