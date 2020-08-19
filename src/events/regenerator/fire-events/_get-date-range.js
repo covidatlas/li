@@ -14,7 +14,7 @@ function throwIfNonDate (d) {
  *
  * Such a simple function, but js can make it difficult.
  */
-module.exports = function getDatesRange (earliestYYYYMMDD, latestYYYYMMDD) {
+module.exports = function getDateRange (earliestYYYYMMDD, latestYYYYMMDD) {
 
   throwIfNonDate(earliestYYYYMMDD)
   throwIfNonDate(latestYYYYMMDD)
