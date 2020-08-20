@@ -8,11 +8,13 @@ jobs:
   # Test the build
   build:
     # Setup
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         node-version: [ 12.x ]
-        os: [ windows-latest, ubuntu-latest, macOS-latest ]
+        # Currently, windows tests fail, see https://github.com/covidatlas/li/issues/591.
+        # When that issue is resolved, we should add windows-list to the os list.
+        os: [ ubuntu-latest, macOS-latest ]
 
     # Go
     steps:
