@@ -68,15 +68,15 @@ module.exports = {
         // Belgium is divided into 3 regions, some of which are
         // divided further into provinces.
         const dataByRegion = {}
-        const dataByProvince = {}
+        const dataByRegionThenProvince = {}
 
         let nationalData = { tested: 0 }
 
         for (const item of cases.filter(item => item.DATE <= date)) {
-            if (!dataByProvince[item.REGION]) {
-              dataByProvince[item.REGION] = {}
+            if (!dataByRegionThenProvince[item.REGION]) {
+              dataByRegionThenProvince[item.REGION] = {}
             }
-            const regionData = dataByProvince[item.REGION]
+            const regionData = dataByRegionThenProvince[item.REGION]
 
             if (!regionData[item.PROVINCE]) {
               regionData[item.PROVINCE] = {}
@@ -96,10 +96,10 @@ module.exports = {
         }
 
         for (const item of hospitalized.filter(item => item.DATE <= date)) {
-            if (!dataByProvince[item.REGION]) {
-              dataByProvince[item.REGION] = {}
+            if (!dataByRegionThenProvince[item.REGION]) {
+              dataByRegionThenProvince[item.REGION] = {}
             }
-            const regionData = dataByProvince[item.REGION]
+            const regionData = dataByRegionThenProvince[item.REGION]
 
             if (!regionData[item.PROVINCE]) {
               regionData[item.REGION] = {}
@@ -116,7 +116,7 @@ module.exports = {
 
         const data = []
 
-        for (const reg of Object.keys(dataByProvince)) {
+        for (const reg of Object.keys(dataByRegionThenProvince)) {
           let regionData = {
             state: getIso2FromName({ country, name: reg, isoMap, nameToCanonical }),
             ...dataByRegion[reg]
@@ -124,11 +124,11 @@ module.exports = {
 
           if ([ 'Flanders', 'Wallonia' ].includes(reg)) {
             const provinceData = []
-            for (const prov of Object.keys(dataByProvince[reg])) {
+            for (const prov of Object.keys(dataByRegionThenProvince[reg])) {
               provinceData.push({
                 state: getIso2FromName({ country, name: reg, isoMap, nameToCanonical }),
                 county: getIso2FromName({ country, name: prov, isoMap, nameToCanonical }),
-                ...dataByProvince[reg][prov]
+                ...dataByRegionThenProvince[reg][prov]
               })
             }
 
@@ -137,7 +137,7 @@ module.exports = {
             data.push(regionData)
           } else if (reg === 'Brussels') {
             regionData = {
-              ...dataByProvince[reg][reg],
+              ...dataByRegionThenProvince[reg][reg],
               ...regionData
             }
 
@@ -150,7 +150,7 @@ module.exports = {
           } else if (reg === 'NA') {
             // Simply add this to the country total
             regionData = {
-              ...dataByProvince[reg][reg],
+              ...dataByRegionThenProvince[reg][reg],
               ...regionData
             }
           }
