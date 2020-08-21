@@ -1,8 +1,6 @@
 const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
-const datetime = require('../../datetime/index.js')
 const transform = require('../_lib/transform.js')
-const timeseriesFilter = require('../_lib/timeseries-filter.js')
 const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:BE'
@@ -67,10 +65,10 @@ module.exports = {
 
         const dataByRegion = {}
         const dataByProvince = {}
+
         let nationalData = { tested: 0 }
 
-        for (const item of cases) {
-          if (item.DATE === 'NA' || datetime.dateIsBeforeOrEqualTo(item.DATE, date)) {
+        for (const item of cases.filter(item => item.DATE <= date)) {
             if (!dataByProvince[item.REGION]) {
               dataByProvince[item.REGION] = {}
             }
@@ -82,22 +80,18 @@ module.exports = {
             const provinceData = regionData[item.PROVINCE]
 
             provinceData.cases = parse.number(item.CASES) + (provinceData.cases || 0)
-          }
         }
 
-        for (const item of deaths) {
-          if (item.DATE === 'NA' || datetime.dateIsBeforeOrEqualTo(item.DATE, date)) {
+        for (const item of deaths.filter(item => item.DATE <= date)) {
             if (!dataByRegion[item.REGION]) {
               dataByRegion[item.REGION] = {}
             }
             const regionData = dataByRegion[item.REGION]
 
             regionData.deaths = parse.number(item.DEATHS) + (regionData.deaths || 0)
-          }
         }
 
-        for (const item of hospitalized) {
-          if (item.DATE === 'NA' || datetime.dateIsBeforeOrEqualTo(item.DATE, date)) {
+        for (const item of hospitalized.filter(item => item.DATE <= date)) {
             if (!dataByProvince[item.REGION]) {
               dataByProvince[item.REGION] = {}
             }
@@ -110,13 +104,10 @@ module.exports = {
 
             provinceData.hospitalized_current = parse.number(item.NEW_IN) + (provinceData.hospitalized || 0)
             provinceData.discharged = parse.number(item.NEW_OUT) + (provinceData.discharged || 0)
-          }
         }
 
-        for (const item of tested) {
-          if (item.DATE === 'NA' || datetime.dateIsBeforeOrEqualTo(item.DATE, date)) {
+        for (const item of tested.filter(item => item.DATE <= date)) {
             nationalData.tested += parse.number(item.TESTS_ALL)
-          }
         }
 
         const data = []
