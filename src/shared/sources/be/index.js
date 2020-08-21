@@ -61,8 +61,12 @@ module.exports = {
             if (r.DATE === 'NA')
               r.DATE = '2020-02-28'
           })
+          console.table(d.slice(0, 4))
         })
 
+        // Per https://en.wikipedia.org/wiki/Provinces_of_Belgium,
+        // Belgium is divided into 3 regions, some of which are
+        // divided further into provinces.
         const dataByRegion = {}
         const dataByProvince = {}
 
