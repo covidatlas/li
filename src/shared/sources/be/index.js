@@ -2,6 +2,7 @@ const maintainers = require('../_lib/maintainers.js')
 const parse = require('../_lib/parse.js')
 const datetime = require('../../datetime/index.js')
 const transform = require('../_lib/transform.js')
+const timeseriesFilter = require('../_lib/timeseries-filter.js')
 const { UNASSIGNED } = require('../_lib/constants.js')
 
 const country = 'iso1:BE'
@@ -29,7 +30,7 @@ module.exports = {
     name: 'Sciensano',
     url: 'https://www.sciensano.be/en'
   },
-  maintainers: [ maintainers.qgolsteyn, maintainers.camjc ],
+  maintainers: [ maintainers.qgolsteyn, maintainers.camjc, maintainers.jzohrab ],
   scrapers: [
     {
       startDate: '2020-03-01',
@@ -56,6 +57,14 @@ module.exports = {
         }
       ],
       scrape ({ cases, deaths, hospitalized, tested }, date, { getIso2FromName }) {
+        [ cases, deaths, hospitalized, tested ].forEach(d => {
+          // If the DATE is 'NA', assume it's from before dates were recorded.
+          d.forEach(r => {
+            if (r.DATE === 'NA')
+              r.DATE = '2020-02-28'
+          })
+        })
+
         const dataByRegion = {}
         const dataByProvince = {}
         let nationalData = { tested: 0 }
@@ -106,7 +115,7 @@ module.exports = {
 
         for (const item of tested) {
           if (item.DATE === 'NA' || datetime.dateIsBeforeOrEqualTo(item.DATE, date)) {
-            nationalData.tested += parse.number(item.TESTS)
+            nationalData.tested += parse.number(item.TESTS_ALL)
           }
         }
 
@@ -155,6 +164,11 @@ module.exports = {
 
         data.push(nationalData)
 
+        const cl = console.log
+        cl(`should be`)
+        const checkline = `│   14    │             'iso1:be'             │ '2020-08-21' │ ` +
+              `79479 │          35          │   18079    │  9969  │ 2049976 │`
+        cl(checkline)
         return data
       }
     }
