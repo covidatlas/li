@@ -67,51 +67,46 @@ module.exports = {
         // Per https://en.wikipedia.org/wiki/Provinces_of_Belgium,
         // Belgium is divided into 3 regions, some of which are
         // divided further into provinces.
-        const dataByRegion = {}
-        const dataByRegionThenProvince = {}
+
+        // Build full empty list of records for all region/provice
+        // pairs, and all regions.
+        const dataByRegionThenProvince = cases.
+              concat(hospitalized).
+              reduce((hsh, item) => {
+                const r = item.REGION
+                const p = item.PROVINCE
+                hsh[r] = hsh[r] || {}
+                hsh[r][p] = hsh[r][p] || {}
+                return hsh
+              }, {})
+
+        const dataByRegion = deaths.
+              reduce((hsh, item) => {
+                const r = item.REGION
+                hsh[r] = hsh[r] || {}
+                return hsh
+              }, {})
 
         let nationalData = { tested: 0 }
 
         for (const item of cases.filter(item => item.DATE <= date)) {
-            if (!dataByRegionThenProvince[item.REGION]) {
-              dataByRegionThenProvince[item.REGION] = {}
-            }
-            const regionData = dataByRegionThenProvince[item.REGION]
-
-            if (!regionData[item.PROVINCE]) {
-              regionData[item.PROVINCE] = {}
-            }
-            const provinceData = regionData[item.PROVINCE]
-
-            provinceData.cases = parse.number(item.CASES) + (provinceData.cases || 0)
+          const p = dataByRegionThenProvince[item.REGION][item.PROVINCE]
+          p.cases = parse.number(item.CASES) + (p.cases || 0)
         }
 
         for (const item of deaths.filter(item => item.DATE <= date)) {
-            if (!dataByRegion[item.REGION]) {
-              dataByRegion[item.REGION] = {}
-            }
-            const regionData = dataByRegion[item.REGION]
-
-            regionData.deaths = parse.number(item.DEATHS) + (regionData.deaths || 0)
+          const r = dataByRegion[item.REGION]
+          r.deaths = parse.number(item.DEATHS) + (r.deaths || 0)
         }
 
         for (const item of hospitalized.filter(item => item.DATE <= date)) {
-            if (!dataByRegionThenProvince[item.REGION]) {
-              dataByRegionThenProvince[item.REGION] = {}
-            }
-            const regionData = dataByRegionThenProvince[item.REGION]
-
-            if (!regionData[item.PROVINCE]) {
-              regionData[item.REGION] = {}
-            }
-            const provinceData = regionData[item.PROVINCE]
-
-            provinceData.hospitalized_current = parse.number(item.NEW_IN) + (provinceData.hospitalized || 0)
-            provinceData.discharged = parse.number(item.NEW_OUT) + (provinceData.discharged || 0)
+          const p = dataByRegionThenProvince[item.REGION][item.PROVINCE]
+          p.hospitalized_current = parse.number(item.NEW_IN) + (p.hospitalized || 0)
+          p.discharged = parse.number(item.NEW_OUT) + (p.discharged || 0)
         }
 
         for (const item of tested.filter(item => item.DATE <= date)) {
-            nationalData.tested += parse.number(item.TESTS_ALL)
+          nationalData.tested += parse.number(item.TESTS_ALL)
         }
 
         const data = []
