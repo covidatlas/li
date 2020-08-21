@@ -25,7 +25,7 @@ module.exports = {
   maintainers: [ maintainers.camjc, maintainers.jzohrab ],
   scrapers: [
     {
-      startDate: '2020-02-29',
+      startDate: '2020-03-01',
       crawl: [
         {
           type: 'csv',
