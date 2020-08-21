@@ -61,7 +61,6 @@ module.exports = {
             if (r.DATE === 'NA')
               r.DATE = '2020-02-28'
           })
-          console.table(d.slice(0, 4))
         })
 
         // Per https://en.wikipedia.org/wiki/Provinces_of_Belgium,
