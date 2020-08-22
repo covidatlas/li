@@ -28,8 +28,6 @@ module.exports = {
       scrape (data, date) {
         const toYYYYMMDD = t => {
           const date = new Date(t)
-          // Convert from UTC to PDT
-          date.setUTCHours(-7)
           return date.toISOString().split('T')[0]
         }
 
