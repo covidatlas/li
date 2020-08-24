@@ -26,14 +26,20 @@ module.exports = {
         },
       ],
       scrape (data, date) {
+        // It appears that they return 'null' when they don't have
+        // data yet (the above arcgis query returns 'null' for the
+        // last date, but they do have the previous date), so skip
+        // 'null' records.
+        const fields = [ 'Total_Cases', 'Total_Recovered_', 'Total_Hospitalized', 'Total_Deaths' ]
+        const useData = data.filter(d => fields.map(f => d[f]).some(v => v !== null))
         const toYYYYMMDD = t => new Date(t).toISOString().split('T')[0]
-        const { filterDate, func } = timeseriesFilter(data, 'Date', toYYYYMMDD, date)
-        const filteredData = data.filter(func)
+        const { filterDate, func } = timeseriesFilter(useData, 'Date', toYYYYMMDD, date)
+        const rec = useData.filter(func)[0]
         return {
-          cases: filteredData[0].Total_Cases,
-          recovered: filteredData[0].Total_Recovered_,
-          hospitalized: parseInt(filteredData[0].Total_Hospitalized, 10),
-          deaths: parseInt(filteredData[0].Total_Deaths, 10),
+          cases: rec.Total_Cases,
+          recovered: rec.Total_Recovered_,
+          hospitalized: parseInt(rec.Total_Hospitalized, 10),
+          deaths: parseInt(rec.Total_Deaths, 10),
           date: filterDate,
         }
       }
