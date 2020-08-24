@@ -140,20 +140,18 @@ module.exports = {
         },
       ],
       scrape (data) {
-        let counties = []
-        data.forEach((item) => {
-          const county = `${_titleCase(item.County)} County`
-          const cases = parse.number(item.Cases)
-          const deaths = parse.number(item.Deaths)
-          const recovered = parse.number(item.Recovered)
-          const countyObj = { county, cases, deaths, recovered }
-          if (countyObj.county === "Total County") {
-            console.log.warn(`rejecting ${countyObj}`)
-          } else {
-            counties.push(countyObj)
-          }
-        })
-        counties = geography.addEmptyRegions(counties, _counties, "county")
+        const counties = data.
+              filter(item => item.County !== '').
+              filter(item => item.County.toUpperCase() !== 'TOTAL').
+              map(item => {
+                return {
+                  county: `${_titleCase(item.County)} County`,
+                  cases: parse.number(item.Cases),
+                  deaths: parse.number(item.Deaths),
+                  recovered: parse.number(item.Recovered),
+                  date: item.ReportDate
+                }
+              })
         const summedData = transform.sumData(counties)
         assert(summedData.cases > 0, "Cases are not reasonable")
         counties.push(summedData)
