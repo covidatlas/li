@@ -50,6 +50,25 @@ module.exports = {
           deaths: valueFor('Total COVID-19 Deaths')
         }
       }
+    },
+    {
+      startDate: '2020-08-24',
+      crawl: [
+        {
+          type: 'page',
+          url: 'https://www.buttecounty.net/ph/COVID19',
+        },
+      ],
+      scrape ($) {
+        const valueFor = title => {
+          const v = $(`td:contains("${title}")`).next().text()
+          return parseInt(v.trim(), 10)
+        }
+        return {
+          cases: valueFor('Total COVID-19 Cases'),
+          deaths: valueFor('Total COVID-19 Deaths')
+        }
+      }
     }
   ]
 }
