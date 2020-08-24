@@ -10,7 +10,7 @@
     "todos": "node tools/list-dev-todos.js",
     "test": "arc hydrate && tape 'tests/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec && node tests/warnings.js",
     "test:reports": "arc hydrate && node tests/run-report-tests.js | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec && node tests/warnings.js",
-    "test:unit": "arc hydrate && tape 'tests/unit/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec && node tests/warnings.js",
+    "test:unit": "tape 'tests/unit/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec && node tests/warnings.js",
     "test:integration": "arc hydrate && tape 'tests/integration/**/*-test.js' | node tests/save-test-results.js | node tools/clean-tap-output.js | tap-spec && node tests/warnings.js",
     "migrate:all": "./tools/migrate-entire-cache",
     "migrate:latest": "./tools/migrate-latest-cache",
