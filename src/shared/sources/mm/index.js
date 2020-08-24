@@ -71,6 +71,8 @@ module.exports = {
         }
       ],
       scrape (attributes, date, { cumulateObjects,  getIso2FromName, groupBy }) {
+        // Null row was introduced 2020-08-23, contains no data.
+        attributes = attributes.filter(a => a.SR !== null)
         assert(attributes.length > 0, 'data fetch failed, no attributes')
 
         const getIso2FromNameForMM = (nameRaw) => {
