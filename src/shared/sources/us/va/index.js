@@ -6,6 +6,7 @@ const geography = require(srcShared + 'sources/_lib/geography/index.js')
 const maintainers = require(srcShared + 'sources/_lib/maintainers.js')
 const parse = require(srcShared + 'sources/_lib/parse.js')
 const transform = require(srcShared + 'sources/_lib/transform.js')
+const timeseriesFilter = require(srcShared + 'sources/_lib/timeseries-filter.js')
 
 
 const _counties = [
@@ -316,6 +317,7 @@ module.exports = {
       crawl: [
         {
           type: 'csv',
+          // This stopped being updated as at 7/21/2020.
           url: 'https://www.vdh.virginia.gov/content/uploads/sites/182/2020/05/VDH-COVID-19-PublicUseDataset-Cases.csv',
           options: { disableSSL: true }
         },
@@ -358,6 +360,51 @@ module.exports = {
         })
         counties = geography.addEmptyRegions(counties, _counties, 'county')
         counties.push(transform.sumData(counties))
+        return counties
+      }
+    },
+    {
+      startDate: '2020-08-24',
+      crawl: [
+        {
+          type: 'csv',
+          url: 'https://data.virginia.gov/api/views/bre9-aqqr/rows.csv?accessType=DOWNLOAD',
+          options: { disableSSL: true }
+        },
+      ],
+      scrape (data, date) {
+
+        // VA reports dates as MM/DD/YYYY e.g. '03/17/2020'
+        function toYYYYMMDD (s) {
+          const [ mm, dd, yyyy ] = s.split('/')
+          return [ yyyy, mm, dd ].join('-')
+        }
+
+        const { func, filterDate } = timeseriesFilter(data, 'Report Date', toYYYYMMDD, date)
+
+        const counties = data.filter(func).map(location => {
+          let name = null
+          const s = location.Locality
+          if (fullNameCounties.includes(s)) {
+            name = s
+          } else if (_citiesAScounties.includes(s)) {
+            name = s + ' City'
+          } else if (_citiesAScounties.includes(s.replace(' city', ''))) {
+            name = s.replace(' city', ' City')
+          } else {
+            name = geography.addCounty(s)
+          }
+
+          return {
+            county: parse.string(name),
+            cases: parse.number(location['Total Cases']),
+            hospitalized: parse.number(location.Hospitalizations),
+            deaths: parse.number(location.Deaths),
+            date: filterDate
+          }
+        })
+
+        counties.push({ ...transform.sumData(counties), date: filterDate })
         return counties
       }
     }
