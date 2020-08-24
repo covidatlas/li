@@ -26,7 +26,7 @@ module.exports = {
   state: 'iso2:US-MA',
   country: 'iso1:US',
   aggregate: 'county',
-  maintainers: [ maintainers.qgolsteyn, maintainers.aed3 ],
+  maintainers: [ maintainers.qgolsteyn, maintainers.aed3, maintainers.jzohrab ],
   friendly:   {
     url: 'https://www.mass.gov/orgs/department-of-public-health',
     name: 'Massachusetts DPH',
@@ -133,8 +133,14 @@ module.exports = {
             deaths,
             tested
           }
+
+          // The data has a record where County = "DUKES/NANTUCKET",
+          // and also has a record where County = "NANTUCKET."  Since
+          // our data model doesn't really support combining
+          // locations, I'm arbitrarily assigning this to Dukes, b/c
+          // we have a specific record for Nantucket.
           if (countyLC.includes('nantucket') && countyLC.includes('dukes')) {
-            countyObj.county = [ 'Dukes County', 'Nantucket County' ]
+            countyObj.county = 'Dukes County'
           }
           if (county.includes('Unknown')) {
             countyObj.county = UNASSIGNED
@@ -151,6 +157,7 @@ module.exports = {
           summedData.tested = sumTested
         }
         counties.push(summedData)
+
         return geography.addEmptyRegions(counties, _counties, 'county')
 
       }
