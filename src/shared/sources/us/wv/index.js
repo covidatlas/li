@@ -71,13 +71,17 @@ const _counties = [
  * consistently followe exactly the same format.  Since I can't
  * find any scrapable underlying source data, I'll scrape this
  * page with regexes.  Fun.
+ *
  * WV publishes two pages each day:
  * - https://dhhr.wv.gov/News/2020/Pages/COVID-19-Daily-Update-5-4-2020---10-AM.aspx
  * - https://dhhr.wv.gov/News/2020/Pages/COVID-19-Daily-Update-5-4-2020---5-PM.aspx
-          //
+ *
  * Sometimes they add extra dashes in front of the date ... :-( "...---5-6-2020")
  * so handle that too.
-          //
+ *
+ * Update Aug-23: now they're only reporting one page a day, so
+ * optionally drop the time part.  Because hey, why not?
+ *
  * Depending on the time we try to scrape, we may get 5 PM or 10 AM from today,
  * or 10 PM from yesterady.  Try each of these in turn, and stop when we get a hit.
  * Throw if we don't get any hits.
@@ -88,12 +92,15 @@ async function getCurrentUrl (client) {
     return ds.split(',')[0]
   }
 
+  const root = 'https://dhhr.wv.gov/News/2020/Pages/COVID-19-Daily-Update'
+
   const addUrls = (urls, dt, times) => {
     const ds = getDateString(dt).replace(/\//g, '-')
     for (const dateSep of [ '---', '-' ]) {
+      const rootPlusDate = `${root}${dateSep}${ds}`
+      urls.push(`${rootPlusDate}.aspx`)
       for (const t of times) {
-        const root = 'https://dhhr.wv.gov/News/2020/Pages/COVID-19-Daily-Update'
-        urls.push([ root, dateSep, ds, '---', t, '.aspx' ].join(''))
+        urls.push(`${rootPlusDate}---${t}.aspx`)
       }
     }
   }
