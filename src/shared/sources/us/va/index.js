@@ -384,20 +384,19 @@ module.exports = {
 
         const counties = data.filter(func).map(location => {
           let name = null
-          if (fullNameCounties.includes(location.Locality)) {
-            name = location.Locality
-          } else if (_citiesAScounties.includes(location.Locality)) {
-            location.Locality += ' City'
-            name = parse.string(location.Locality)
-          } else if (_citiesAScounties.includes(location.Locality.replace(' city', ''))) {
-            location.Locality.replace(' city', ' City')
-            name = parse.string(location.Locality)
+          const s = location.Locality
+          if (fullNameCounties.includes(s)) {
+            name = s
+          } else if (_citiesAScounties.includes(s)) {
+            name = s + ' City'
+          } else if (_citiesAScounties.includes(s.replace(' city', ''))) {
+            name = s.replace(' city', ' City')
           } else {
-            name = parse.string(geography.addCounty(location.Locality))
+            name = geography.addCounty(s)
           }
 
           return {
-            county: name,
+            county: parse.string(name),
             cases: parse.number(location['Total Cases']),
             hospitalized: parse.number(location.Hospitalizations),
             deaths: parse.number(location.Deaths),
