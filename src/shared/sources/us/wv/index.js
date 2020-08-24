@@ -297,13 +297,19 @@ module.exports = {
         // County-level
         let rawcounty = p[0].split(':')[1]
         assert(rawcounty, 'Have rawcounty')
-        rawcounty.split(',').forEach(c => {
-          const cre = /(.*)\((.*)\/.*\)/
-          const cmatch = c.match(cre)
-          assert(cmatch, `Got match for ${cre} in ${c}`)
+
+        // Data has been reported in a few ways, e.g.:
+        // https://dhhr.wv.gov/News/2020/Pages/COVID-19-Daily-Update-8-12-2020.aspx:
+        // "County (cases/probable)" (e.g. "Barbour (29/0), ...")
+        // https://dhhr.wv.gov/News/2020/Pages/COVID-19-Daily-Update-8-23-2020.aspx:
+        // "County (cases)" (e.g. "Barbour (33), ...")
+        const rawmatches =  [ ...rawcounty.matchAll(/(?<county>.*?)\((?<data>.*?)\)/g) ]
+        rawmatches.forEach(m => {
+          const rawcounty = m.groups.county.replace(/^, +/, '')
           // Remove County in case some names end in 'County' and some don't, then add it.
-          const county = `${cmatch[1].replace(/County/, '').trim()} County`
-          const cases = parseInt(cmatch[2].trim(), 10)
+          const county = `${rawcounty.replace(/County/, '').trim()} County`
+          const rawcases = m.groups.data.split('/')[0].replace(',', '').trim()
+          const cases = parseInt(rawcases, 10)
           data.push({
             county,
             cases
