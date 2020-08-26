@@ -40,6 +40,8 @@ async function getScraperReport () {
 function failureTable (failures) {
 
   function daysSinceLastSuccess (now, last_success_string) {
+    if (last_success_string === null)
+      return '-'
     const last_success = new Date(last_success_string)
     const diff = (now.getTime() - last_success.getTime())
     const failure_for_days = Math.floor(diff / (1000 * 60 * 60 * 24))
@@ -79,19 +81,17 @@ function getReportStruct (scraperReport) {
   const statusPage = `${site.root()}/status?format=html`
   const summary = scraperReport.summary
 
-  const alwaysFailing = scraperReport.failures.
-        filter(f => f.last_success === null).
-        map(f => f.source)
-  const allFailList = [ '```', alwaysFailing.join(', '), '```' ].join('')
-  const alwaysFailingText = `${alwaysFailing.length} sources have never worked:
-${allFailList}`
+  // If a record has never succeeded, return a dummy date so it sorts
+  // to the top when the records are sorted by descending date order.
+  const lastSuccess = rec => rec.last_success || '1000-01-01'
 
   const failures = scraperReport.failures.
-        filter(f => f.last_success !== null).
         sort((a, b) => {
-          if (a.last_success === b.last_success)
+          const aLast = lastSuccess(a)
+          const bLast = lastSuccess(b)
+          if (aLast === bLast)
             return 0
-          if (a.last_success > b.last_success)
+          if (aLast > bLast)
             return 1
           return -1
         })
@@ -106,7 +106,6 @@ ${bulletedList(failures.map(f => f.source))}`
   return [
     `*Report for ${new Date().toISOString().split('T')[0]}:*`,
     `Sources: ${summary.successes} successes, ${summary.failures} failures.`,
-    alwaysFailingText,
     failuresText,
     `See details: ${statusPage}`
   ].map(t => { return { type: 'section', text: { type: 'mrkdwn', text: t } } })
