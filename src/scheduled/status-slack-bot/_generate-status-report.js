@@ -121,7 +121,8 @@ function getReportStruct (scraperReport) {
   return [
     `*Report for ${new Date().toISOString().split('T')[0]}:*`,
     `Sources: ${summary.successes} successes, ${summary.failures} failures.`,
-    getSection(failures, 'crawler and scraper'),
+    getSection(failures.filter(f => f.failType === 'crawler'), 'crawler'),
+    getSection(failures.filter(f => f.failType === 'scraper'), 'scraper'),
     `See details: ${statusPage}`
   ].
     filter(s => s).
