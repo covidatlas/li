@@ -23,6 +23,7 @@ async function getScraperReport () {
           const failType = (d.crawler_status !== 'success') ? 'crawler' : 'scraper'
           return {
             source: d.source,
+            failType: failType,
             message: d[`${failType}_error`],
             last_success: d[`${failType}_last_success`]
           }
