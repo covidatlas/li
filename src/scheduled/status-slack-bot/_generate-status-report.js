@@ -76,6 +76,28 @@ function bulletedList (arr) {
   return arr.map(s => `* ${s}`).join('\n')
 }
 
+function getSection (failures, failType) {
+  if (failures.length === 0)
+    return null
+
+  const title = `${failures.length} ${failType} failures:`
+  let failuresText = `${title}
+${failureTable(failures)}`
+
+  if (failuresText.length > MAX_SLACK_TEXT_BLOCK_LENGTH) {
+    failuresText = `${title}
+_(Insufficient space to show details)_
+${bulletedList(failures.map(f => f.source))}`
+  }
+
+  if (failuresText.length > MAX_SLACK_TEXT_BLOCK_LENGTH) {
+    failuresText = `${title}
+_(Insufficient space to list sources)_`
+  }
+
+  return failuresText
+}
+
 function getReportStruct (scraperReport) {
 
   const statusPage = `${site.root()}/status?format=html`
@@ -95,21 +117,20 @@ function getReportStruct (scraperReport) {
             return 1
           return -1
         })
-  let failuresText = `${failures.length} failures:
-${failureTable(failures)}`
-
-  if (failuresText.length > MAX_SLACK_TEXT_BLOCK_LENGTH) {
-    failuresText = `_Failures (Insufficient space to show details ... see the [status page](${statusPage}))_
-${bulletedList(failures.map(f => f.source))}`
-  }
 
   return [
     `*Report for ${new Date().toISOString().split('T')[0]}:*`,
     `Sources: ${summary.successes} successes, ${summary.failures} failures.`,
-    failuresText,
+    getSection(failures, 'crawler and scraper'),
     `See details: ${statusPage}`
-  ].map(t => { return { type: 'section', text: { type: 'mrkdwn', text: t } } })
-
+  ].
+    filter(s => s).
+    map(t => {
+      return {
+        type: 'section',
+        text: { type: 'mrkdwn', text: t }
+      }
+    })
 }
 
 /** Public method to gen report data for Slack report. */
