@@ -124,3 +124,8 @@ module.exports = {
   getReportStruct,
   generateReportJson
 }
+
+
+if (module.parent === null) {
+  generateReportJson().then(r => console.log(r))
+}
