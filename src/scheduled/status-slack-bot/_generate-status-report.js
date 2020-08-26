@@ -6,6 +6,9 @@
 const got = require('got')
 const site = require('@architect/shared/utils/site.js')
 
+// Can only have 3000 chars in text blocks.
+// Ref https://api.slack.com/reference/block-kit/blocks#section_fields
+const MAX_SLACK_TEXT_BLOCK_LENGTH = 3000
 
 /** Get the failures. */
 async function getScraperReport () {
@@ -94,10 +97,7 @@ ${allFailList}`
   let failuresText = `${failures.length} failures:
 ${failureTable(failures)}`
 
-  // Can only have 3000 chars in text blocks.
-  // Ref https://api.slack.com/reference/block-kit/blocks#section_fields
-  const MAX_LENGTH = 3000
-  if (failuresText.length > MAX_LENGTH) {
+  if (failuresText.length > MAX_SLACK_TEXT_BLOCK_LENGTH) {
     failuresText = `_Failures (Insufficient space to show details ... see the [status page](${statusPage}))_
 ${bulletedList(failures.map(f => f.source))}`
   }
@@ -127,5 +127,22 @@ module.exports = {
 
 
 if (module.parent === null) {
-  generateReportJson().then(r => console.log(r))
+  (async () => {
+    const result = await generateReportJson().
+          then(d => d.map(rec => {
+            rec.length = rec.text.text.length
+            return rec
+          })).
+          then(d => d.map(rec => {
+            rec.warning = (rec.length > MAX_SLACK_TEXT_BLOCK_LENGTH ? 'TOO_LONG' : null)
+            return rec
+          }))
+
+    console.log(result)
+    if (result.some(rec => rec.warning !== null)) {
+      console.log('*'.repeat(40))
+      console.log('WARNING -- this will not work in slack.')
+      console.log('*'.repeat(40))
+    }
+  })()
 }
