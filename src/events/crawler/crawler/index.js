@@ -32,14 +32,19 @@ async function crawl (type, params) {
     return response
   }
   else {
-    let error = `Crawl returned status code: ${statusCode}\n` +
-                `Type: ${type} (${getType})\n` +
-                `Params: ${JSON.stringify(params, null, 2)}`
+    const error = [
+      `Crawl returned status code: ${statusCode}`,
+      `Type: ${type} (${getType})`,
+      `Params: ${JSON.stringify(params, null, 2)}`
+    ]
     if (body) {
+      error.push(`Getter body: ${body}`)
       const response = JSON.parse(body)
-      error += `\nGetter error: ${response.error}`
+      error.push(`Getter error: ${response.error}`)
     }
-    throw Error(error)
+    console.log('ERROR:')
+    console.log(error.join('\n'))
+    throw Error(error.join('\n'))
   }
 }
 
