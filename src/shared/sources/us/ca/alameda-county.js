@@ -22,38 +22,17 @@ module.exports = {
         {
           type: 'json',
           name: 'base',
-          paginated: arcgis.paginated('https://services3.arcgis.com/1iDJcsklY3l3KIjE/arcgis/rest/services/AC_dates2/FeatureServer/0/query'),
-        },
-        {
-          type: 'json',
-          name: 'hospitalizations',
-          paginated: arcgis.paginated('https://services3.arcgis.com/1iDJcsklY3l3KIjE/arcgis/rest/services/AC_hospitalized2/FeatureServer/0/query'),
-        },
-        {
-          type: 'json',
-          name: 'tests',
-          paginated: arcgis.paginated('https://services3.arcgis.com/1iDJcsklY3l3KIjE/arcgis/rest/services/AC_testing_dates2/FeatureServer/0/query'),
+          paginated: arcgis.paginated('https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/arcgis/rest/services/COVID_19_Statistics/FeatureServer/4/query'),
         },
       ],
-      scrape ({ base, hospitalizations, tests }, date) {
+      scrape (base, date) {
         var result = {}
         const timestampToISO = t => new Date(t).toISOString().split('T')[0]
 
-        const datedBase = base.filter(f => date === timestampToISO(f.Date))
+        const datedBase = base.filter(f => date === timestampToISO(f.dtcreate))
         if (datedBase.length !== 0) {
-          result.cases = datedBase[0].AC_CumulCases
-          result.deaths = datedBase[0].AC_CumulDeaths
-        }
-
-        const datedHospitalizations = hospitalizations.filter(f => date === timestampToISO(f.Date))
-        if (datedHospitalizations.length !== 0) {
-          result.hospitalized_current = datedHospitalizations[0].Hospitalized_COVID_19_Positive_
-          result.icu_current = datedHospitalizations[0].ICU_COVID_19_Positive_Patients
-        }
-
-        const datedTests = tests.filter(f => date === timestampToISO(f.Date))
-        if (datedTests.length !== 0) {
-          result.tested = datedTests[0].AC_Tests
+          result.cases = parseInt(datedBase[0].Alameda_County__Cumulative, 10)
+          result.deaths = parseInt(datedBase[0].Alameda_County_Deaths__Cumulati, 10)
         }
 
         if (Object.keys(result).length === 0) {
