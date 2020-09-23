@@ -12,7 +12,7 @@ Live sources are in `src/shared/sources/` as well.
 
 ## Criteria for sources
 
-See [./source-criteria.md](Source criteria) to determine if a source should be included in this project.
+See [Source criteria](./source-criteria.md) to determine if a source should be included in this project.
 
 ## Writing a source
 
