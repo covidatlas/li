@@ -9,82 +9,84 @@ region us-west-1
 
 @cdn
 @http
-get /get/normal
-get /get/headless
+# get /get/normal
+# get /get/headless
 
-# API (api.covidatlas.com)
-get /locations
-get /locations/:location
-get /status
-get /reports/status
-get /invocations
-
-@events
-crawler     # Crawls our sources
-scraper     # Operates the scrapers
-locations   # Update location data
-regenerator # Regenerates a source from cache
-reports-v1  # Generate v1 reports
-status      # Status updater
+# # API (api.covidatlas.com)
+# get /locations
+# get /locations/:location
+# get /status
+# get /reports/status
+# get /invocations
 
 
-@scheduled
-runner rate(2 hours)               # Regularly invokes crawls and scrapes
-regen-timeseries rate(15 minutes)  # Regularly regenerates timeseries sources
-gen-reports rate(2 hours)          # Fire event to regenerate reports
-status-slack-bot cron(0 12 * * ? *)  # Report to slack every day at 12:00pm UTC
+# @events
+# crawler     # Crawls our sources
+# scraper     # Operates the scrapers
+# locations   # Update location data
+# regenerator # Regenerates a source from cache
+# reports-v1  # Generate v1 reports
+# status      # Status updater
+
+
+# @scheduled
+# runner rate(2 hours)               # Regularly invokes crawls and scrapes
+# regen-timeseries rate(15 minutes)  # Regularly regenerates timeseries sources
+# gen-reports rate(2 hours)          # Fire event to regenerate reports
+# status-slack-bot cron(0 12 * * ? *)  # Report to slack every day at 12:00pm UTC
 
 
 @storage-public
-cache   # Main crawler cache
-reports # Generated reports
+backups # Final backups of crawler caches and generated reports
+# cache   # Main crawler cache
+# reports # Generated reports
 
 
-@tables
-# Primary location store
-locations
-  slug *String
+# @tables
+# # Primary location store
+# locations
+#   slug *String
 
-# Per-location case data
-case-data
-  locationID *String
-  dateSource **String
+# # Per-location case data
+# case-data
+#   locationID *String
+#   dateSource **String
 
-# Keeps track of regenerate invocations
-invokes
-  type *String
-  key **String
-  # sourceKey
-  # lastRan
-  # contentHash
+# # Keeps track of regenerate invocations
+# invokes
+#   type *String
+#   key **String
+#   # sourceKey
+#   # lastRan
+#   # contentHash
 
-# GeoJSON features for fips + iso1 + iso2 locations
-geojson
-  locationID *String
+# # GeoJSON features for fips + iso1 + iso2 locations
+# geojson
+#   locationID *String
 
-# Monitors source status
-status
-  source *String
-  event **String
+# # Monitors source status
+# status
+#   source *String
+#   event **String
 
-report-generation-status
-  report *String
-  version **String
+# report-generation-status
+#   report *String
+#   version **String
 
-# Running log of source status changes
-status-logs
-  source *String
-  ts **String
+# # Running log of source status changes
+# status-logs
+#   source *String
+#   ts **String
 
 
-@indexes
-locations
-  locationID *String
+# @indexes
+# locations
+#   locationID *String
 
-case-data
-  locationID *String
+# case-data
+#   locationID *String
 
 
 @macros
 architect/macro-storage-public
-public-bucket-policy
+# public-bucket-policy
